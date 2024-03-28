@@ -9,6 +9,6 @@ generate-sdk:android-deps
 	cp -r flutter_app/ios ./SDK/flutter-sdk
 	mkdir SDK/flutter-sdk/lib
 	cp -r flutter_app/lib/Service ./SDK/flutter-sdk/lib/
-	cp -r flutter_app/lib/ExotelSDKClient.dart ./SDK/flutter-sdk/lib/
-	tar -czvf SDK/flutter-sdk.tar.gz ./SDK/flutter-sdk
+	cp -r flutter_app/lib/exotelSDK ./SDK/flutter-sdk/lib/
+	cd SDK && tar -czvf flutter-sdk.tar.gz ./flutter-sdk/
 	rm -rf SDK/flutter-sdk
