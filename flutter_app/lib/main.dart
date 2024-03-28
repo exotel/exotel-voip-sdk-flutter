@@ -1,9 +1,9 @@
 import 'Utils/ApplicationUtils.dart';
 import 'package:flutter/material.dart';
-import 'login_page.dart';
-import 'home_page.dart';
+import 'UI/login_page.dart';
+import 'UI/home_page.dart';
 import 'exotelSDK/ExotelSDKClient.dart';
-import 'call_page.dart';
+import 'UI/call_page.dart';
 import 'callStates/connected.dart';
 import 'callStates/ringing.dart';
 import 'callStates/dtmf_page.dart';
