@@ -15,10 +15,6 @@ import 'package:flutter_app/Service/PushNotificationService.dart';
 import 'package:flutter_app/exotelSDK/ExotelSDKCallback.dart';
 
 import 'package:flutter/services.dart';
-import 'package:flutter/material.dart';
-import '../login_page.dart';
-import '../home_page.dart';
-import '../main.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class ExotelSDKClient {
@@ -27,7 +23,6 @@ class ExotelSDKClient {
   static final ExotelSDKClient _instance = ExotelSDKClient._internal();
 
   MethodChannel? androidChannel;
-  HomePage? homePage;
 
   ExotelSDKCallback? mCallBack;
   static ExotelSDKClient getInstance() {

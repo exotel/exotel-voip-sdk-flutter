@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'exotelSDK/ExotelSDKClient.dart';
+import '../exotelSDK/ExotelSDKClient.dart';
 import 'login_page.dart';
-import 'main.dart';
+import '../main.dart';
 import 'call_page.dart';
-import 'Utils/ApplicationUtils.dart';
+import '../Utils/ApplicationUtils.dart';
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import '../firebase_options.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);

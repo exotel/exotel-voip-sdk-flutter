@@ -1,12 +1,12 @@
 import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 
-import 'Utils/ApplicationUtils.dart';
+import '../Utils/ApplicationUtils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'exotelSDK/ExotelSDKClient.dart';
+import '../exotelSDK/ExotelSDKClient.dart';
 import 'home_page.dart';
-import 'main.dart';
+import '../main.dart';
 
 class LoginPage extends StatefulWidget {
   final Function(String, String, String, String) onLoggedin;
