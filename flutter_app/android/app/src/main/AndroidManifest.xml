@@ -5,7 +5,8 @@
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:label="exotel_voice_sample">
+        android:label="exotel_voice_sample"
+        android:enableOnBackInvokedCallback="true">
         <activity
             android:name=".ExotelSDKChannel"
             android:exported="false" />

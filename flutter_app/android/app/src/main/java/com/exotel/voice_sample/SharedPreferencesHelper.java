@@ -28,7 +28,7 @@ public class SharedPreferencesHelper {
         return preferences.getString(key,"");
     }
 
-    public boolean getBoolean(String key, boolean isLoggedIn) {
+    public boolean getBoolean(String key) {
 
         String sharedPrefFile = context.getPackageName();
         SharedPreferences preferences = context.getSharedPreferences(sharedPrefFile, MODE_PRIVATE);

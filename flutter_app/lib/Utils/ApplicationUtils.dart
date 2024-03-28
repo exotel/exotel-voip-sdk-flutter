@@ -19,9 +19,14 @@ class ApplicationUtils {
 
   String? mDialTo;
 
-  String? mVersion;
+  String mVersion = "waiting..";
 
   String? mStatus;
+
+  String? mCallId;
+
+  String? mDestination;
+
 
   ApplicationUtils._internal();
   static ApplicationUtils? _instance;
@@ -78,10 +83,11 @@ class ApplicationUtils {
     );
   }
   void navigateToIncoming() {
+   print("in navigateToIncoming");
     navigatorKey.currentState!.pushNamedAndRemoveUntil(
       '/incoming',
           (Route<dynamic> route) => false,
-      arguments: {'dialTo': mDialTo, 'userId': mUserId, 'password': mPassword, 'displayName': mUserId, 'accountSid': mAccountSid, 'hostname': mHostName }, //Hard-coded
+      arguments: {'dialTo': mDialTo, 'userId': mUserId, 'password': mPassword, 'displayName': mUserId, 'accountSid': mAccountSid, 'hostname': mHostName, 'callId': mCallId, 'destination':mDestination }, //Hard-coded
     );
   }
   void navigateToRinging() {
@@ -146,6 +152,12 @@ class ApplicationUtils {
 
   void setDialTo(String dialTo) {
     mDialTo = dialTo;
+  }
+  void setDestination(String destination) {
+    mDestination = destination;
+  }
+  void setCallId(String callId) {
+    mCallId = callId;
   }
 
   void setVersion(String version) {

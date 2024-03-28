@@ -15,6 +15,10 @@ import 'package:flutter_app/Service/PushNotificationService.dart';
 
 import 'Utils/ApplicationUtils.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
+import 'login_page.dart';
+import 'home_page.dart';
+import 'main.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class ExotelSDKClient {
@@ -24,6 +28,7 @@ class ExotelSDKClient {
 
   MethodChannel? androidChannel;
   ApplicationUtils? applicationUtils;
+  HomePage? homePage;
   static ExotelSDKClient getInstance() {
     return _instance;
   }
@@ -170,7 +175,6 @@ class ExotelSDKClient {
     try {
       // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
       return await androidChannel?.invokeMethod('sendDtmf',{'digit': digit});
-      //loading UI
     } catch (e) {
       response = "Failed to Invoke: '${e.toString()}'.";
       rethrow;
@@ -221,6 +225,24 @@ class ExotelSDKClient {
     }
   }
 
+  Future<String> uploadLogs(DateTime startDate, DateTime endDate, String description) async{
+    log("uploadLogs function start");
+
+    try {
+      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
+      String startDateString = startDate.toIso8601String();
+      String endDateString = endDate.toIso8601String();
+      log("startDateString: $startDateString, endDateString: $endDateString");
+      return await androidChannel?.invokeMethod('uploadLogs', {
+        'startDateString': startDateString,
+        'endDateString': endDateString,
+        'description': description,
+      });    }
+    catch (e) {
+      rethrow;
+    }
+  }
+
   // Future<int> checkCallDuration() async{
   //   log("checkCallDuration function start");
   //   try {
@@ -243,6 +265,10 @@ class ExotelSDKClient {
     Map<Permission, PermissionStatus> statuses = await [
       Permission.phone,
       Permission.microphone,
+      Permission.notification,
+      Permission.nearbyWifiDevices,
+      Permission.accessMediaLocation,
+      Permission.location,
       // Add other permissions you want to request
     ].request();
     // Check permission status and handle accordingly
@@ -270,11 +296,22 @@ class ExotelSDKClient {
         if(callingStatus == "Ringing"){
           applicationUtils?.navigateToRinging();
         } else if(callingStatus == "Connected"){
-          applicationUtils?.navigateToConnected();
-        } else if(callingStatus == "Ended"){
+          applicationUtils?.navigateToConnected();}
+        // else if(callingStatus == "Incoming"){
+        //   applicationUtils?.navigateToIncoming();
+        // }
+        else if(callingStatus == "Ended"){
           applicationUtils?.showToast(callingStatus);
           applicationUtils?.navigateToHome();
         }
+        break;
+      case "incoming"://to-do: need to refactor, need code optimization
+        String callId = call.arguments['callId'];
+        String destination = call.arguments['destination'];
+        print('in FlutterCallHandler(), callId is $callId, destination is $destination ');
+        applicationUtils?.setCallId(callId);
+        applicationUtils?.setDestination(destination);
+        applicationUtils?.navigateToIncoming();
         break;
       case "version":
         String? Version =  call.arguments.toString();

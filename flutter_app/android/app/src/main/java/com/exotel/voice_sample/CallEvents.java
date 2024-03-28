@@ -20,4 +20,7 @@ public interface CallEvents {
     void onMediaDisrupted(Call call);
 
     void onRenewingMedia(Call call);
+
+    void onCallIncoming(Call call);
+
 }

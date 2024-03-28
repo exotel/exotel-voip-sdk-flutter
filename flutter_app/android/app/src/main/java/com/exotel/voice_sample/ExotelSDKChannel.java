@@ -13,8 +13,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
-
+import java.util.HashMap;
+import java.util.Map;
+import com.exotel.voice.ExotelVoiceError;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
 import okhttp3.Callback;
@@ -26,7 +31,7 @@ import okhttp3.Response;
 
 //Exotel Channel Class
 // it is a Channel class b/w flutter and native.
-public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents {
+public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUploadEvents {
     private static final String CHANNEL = "android/exotel_sdk";
     private static final String TAG = "ExotelSDKChannel";
 
@@ -61,6 +66,7 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents {
          */
         mService.addStatusEventListener(ExotelSDKChannel.this);
         mService.addCallEventListener(ExotelSDKChannel.this);
+        mService.logUploadEventsListener(ExotelSDKChannel.this);
     }
 
     /**
@@ -130,6 +136,10 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents {
                             hangup();
                             result.success("hangup successful");
                             break;
+                        case "answer":
+                            answer();
+                            result.success("answer() successful");
+                            break;
                         case "getCallDuration":
                             getCallDuration();
                             result.success("getCallDuration successful");
@@ -149,6 +159,29 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents {
                             }
                             result.success("getCallDuration successful");
                             break;
+                        case "uploadLogs":
+                            VoiceAppLogger.debug(TAG, "ExotelSDKChannel uploadLogs Start.");
+                            String startDateString = call.argument("startDateString");
+                            String endDateString = call.argument("endDateString"); // Corrected line
+                            String description = call.argument("description");
+                            VoiceAppLogger.debug(TAG, "startDateString = " + startDateString+ " endDateString = " + endDateString);
+
+                            try {
+                                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+                                Date startDate = formatter.parse(startDateString);
+                                Date endDate = formatter.parse(endDateString);
+
+                                VoiceAppLogger.debug(TAG, "startDate = " + startDate);
+                                VoiceAppLogger.debug(TAG, "endDate = " + endDate);
+                                VoiceAppLogger.debug(TAG, "description = " + description);
+
+                                uploadLogs(startDate, endDate, description);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            break;
+
+
                         case "lastCallFeedback":
                             int rating = call.argument("rating");
                             String issue = call.argument("issue");
@@ -175,6 +208,10 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents {
                             VoiceAppLogger.debug(TAG, "rating = " + rating);
 
                             postFeedback(rating , callIssue);
+                            break;
+                        case "relayNotificationData":
+                            Map<String, String> data = call.argument("data");
+                            processPushNotification(data);
                             break;
                         default:
                             System.out.println("fail");
@@ -289,6 +326,10 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents {
                     accountSid = jObject.getString("account_sid");
                     exophone = jObject.getString("exophone");
                     contactDisplayName = jObject.getString("contact_display_name");
+                    SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
+                    sharedPreferencesHelper.putBoolean(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), true);
+                    boolean res = sharedPreferencesHelper.getBoolean(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString());
+                    VoiceAppLogger.debug(TAG, "set IS_LOGGED_IN:" + res);
                 } catch (Exception e) {
                     response.body().close();
                     return;
@@ -335,14 +376,14 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents {
             mService.reset();
         }
         SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-        sharedPreferencesHelper.getBoolean(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), isLoggedIn);
+        sharedPreferencesHelper.getBoolean(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString());
         isLoggedIn = false;
         VoiceAppLogger.debug(TAG, "isLoggedIn(f) = " + isLoggedIn);
 
         VoiceAppLogger.debug(TAG, "Return from logout in HomeActivity");
     }
-private boolean isloggedin(){
-        return isLoggedIn;
+private ApplicationSharedPreferenceData isloggedin(){
+        return ApplicationSharedPreferenceData.IS_LOGGED_IN;
 }
     @Override
     public void onStatusChange() {
@@ -468,7 +509,9 @@ private boolean isloggedin(){
         channel.invokeMethod("version", version);
     }
 
-
+    private void processPushNotification(Map<String, String> remoteData) {
+        mService.processPushNotification(remoteData);
+    }
 
     private void sendDtmf(char digitChar) {
         mService.sendDtmf(digitChar);
@@ -552,6 +595,18 @@ private boolean isloggedin(){
             }
         });
     }
+
+
+    private void uploadLogs(Date startDate, Date endDate, String description){
+        VoiceAppLogger.debug(TAG, "ExotelSDKChannel uploadLogs() Start.");
+        try {
+            mService.uploadLogs( startDate,  endDate,  description);
+        } catch (Exception e) {
+            VoiceAppLogger.debug(TAG, "Exception in uploadLogs: " + e.getMessage());
+        }
+        VoiceAppLogger.debug(TAG, "ExotelSDKChannel uploadLogs() end.");
+    }
+
     @Override
     public void onMissedCall(String remoteUserId, Date time) {
         VoiceAppLogger.debug(TAG,"onMissedCall");
@@ -564,6 +619,33 @@ private boolean isloggedin(){
 
     @Override
     public void onRenewingMedia(Call call) {
+
+    }
+
+    @Override
+    public void onCallIncoming(Call call) {
+        VoiceAppLogger.debug(TAG, "onCallIncoming");
+        String callId = call.getCallDetails().getCallId();
+        String destination = call.getCallDetails().getRemoteId();
+        VoiceAppLogger.debug(TAG, "in onCallIncoming(), callId = " + callId + "destination = " +destination);
+
+        /**
+         * [sdk-calling-flow] sending message to flutter that dialer number is ringing
+         */
+        uiThreadHandler.post(()->{
+            HashMap<String, Object> arguments = new HashMap<>();
+            arguments.put("callId", callId);
+            arguments.put("destination", destination);
+            channel.invokeMethod("incoming", arguments);
+        });
+    }
+
+    public void onUploadLogSuccess() {
+        VoiceAppLogger.getSignedUrlForLogUpload();
+    }
+
+    @Override
+    public void onUploadLogFailure(ExotelVoiceError error) {
 
     }
 
