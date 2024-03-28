@@ -13,7 +13,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.Base64;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import androidx.annotation.NonNull;
 
 import com.exotel.voice.Call;
@@ -44,6 +44,8 @@ import java.util.List;
 import java.util.Map;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.embedding.engine.FlutterEngine;
+
 import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -66,6 +68,8 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
     private Call mPreviousCall;
     private List<VoiceAppStatusEvents> voiceAppStatusListenerList = new ArrayList<>();
     private LogUploadEvents logUploadEventListener;
+    private List<LogUploadEvents> logUploadEventsList = new ArrayList<>();
+
     private long ringingStartTime = 0;
     private DatabaseHelper databaseHelper;
 
@@ -79,6 +83,17 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
     private Context context;
     private CallContextEvents callContextListener;
 
+
+    String pushNotificationPayloadVersion;
+    String pushNotificationPayload;
+    boolean relayPushNotification;
+    String subscriberName;
+    String hostname;
+    String subscriberToken;
+    String accountSid;
+    String displayName;
+
+//    private ExotelSDKChannel mChannel;
 
     public VoiceAppService(Context context) {
         VoiceAppLogger.debug(TAG, "Constructor for sample app service");
@@ -235,7 +250,12 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
             VoiceAppLogger.debug(TAG, "Listener is: " + events);
         }
     }
+    public void logUploadEventsListener(LogUploadEvents logUploadEvents) {
+        synchronized (statusListenerListMutex) {
+            logUploadEventsList.add(logUploadEvents);
+        }
 
+    }
     public void removeCallEventListener(CallEvents callEvents) {
         VoiceAppLogger.debug(TAG, "Remvoing call event listener: " + callEvents + " Class name: " + callEvents.getClass().getName());
         List<CallEvents> removeList = new ArrayList<>();
@@ -468,14 +488,20 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
         }
     }
 
-    @Override
-    public void onUploadLogSuccess() {
-        logUploadEventListener.onUploadLogSuccess();
+    public void uploadLogs(Date startDate, Date endDate, String description) throws Exception {
+        VoiceAppLogger.debug(TAG, "uploadLogs: startDate: " + startDate + " EndDate: " + endDate);
+        exotelVoiceClient.uploadLogs(startDate, endDate, description);
     }
 
-    @Override
+    public void onUploadLogSuccess() {
+        for (LogUploadEvents logUploadEvents : logUploadEventsList) {
+            logUploadEvents.onUploadLogSuccess();
+        }
+    }
     public void onUploadLogFailure(ExotelVoiceError error) {
-        logUploadEventListener.onUploadLogFailure(error);
+        for (LogUploadEvents logUploadEvents : logUploadEventsList) {
+            logUploadEvents.onUploadLogFailure(error);
+        }
     }
 
     /**
@@ -537,6 +563,9 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
         VoiceAppLogger.debug(TAG, "Incoming call Received, callId: " + call.getCallDetails().getCallId());
         tonePlayback.startTone();
         mCall = call;
+        for (CallEvents callEvents : callEventListenerList) {
+            callEvents.onCallIncoming(call);
+        }
     }
 
     @Override
@@ -805,6 +834,115 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
 
             }
         });
+    }
+
+    void processPushNotification(Map<String, String> remoteData) {
+
+        VoiceAppLogger.debug(TAG,"Got a push notification!!");
+        VoiceAppLogger.debug(TAG,"Printing all the key value pairs in the hashmap");
+        for (String entry : remoteData.keySet()) {
+            String value = remoteData.get(entry);
+            VoiceAppLogger.debug(TAG,"Now printing values");
+            VoiceAppLogger.debug(TAG,"Key is: "+entry);
+            VoiceAppLogger.debug(TAG,"Value is: "+remoteData.get(entry));
+
+
+        }
+        VoiceAppLogger.debug(TAG,"Trying to decode the JSON");
+
+
+        final ObjectMapper mapper = new ObjectMapper();
+        final PushNotificationData pushNotificationData = mapper.convertValue(remoteData,
+                PushNotificationData.class);
+        VoiceAppLogger.debug(TAG,"Version is: "+pushNotificationData.getPayloadVersion());
+        VoiceAppLogger.debug(TAG,"Payload is: "+pushNotificationData.getPayload());
+        VoiceAppLogger.debug(TAG,"User ID is: "+pushNotificationData.getSubscriberName());
+
+        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
+        String subscriberName = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.USER_NAME.toString());
+        if(!subscriberName.equals(pushNotificationData.getSubscriberName())) {
+            VoiceAppLogger.error(TAG,"User ID in push notification: "
+                    + pushNotificationData.getSubscriberName() + " Current User Id: "+subscriberName);
+            return;
+        }
+
+        /* Check for Logged In Status */
+        boolean isLoggedIn = sharedPreferencesHelper.getBoolean(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString());
+        if(!isLoggedIn) {
+            VoiceAppLogger.error(TAG,"Not logged in, blocking the call: ");
+            return;
+        }
+        VoiceAppLogger.debug(TAG,"Creating intent for service");
+         pushNotificationPayloadVersion =pushNotificationData.getPayloadVersion();
+         pushNotificationPayload = pushNotificationData.getPayload();
+
+        subscriberName = pushNotificationData.getSubscriberName();
+        relayPushNotification =true;
+
+
+        String hostname = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString());
+        String subscriberToken = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString());
+        String accountSid = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
+        displayName = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.DISPLAY_NAME.toString());
+
+//        VoiceAppLogger.debug(TAG,"Service is NULL");
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            intent.putExtra("foreground",true);
+//            startForegroundService(intent);
+//
+//        } else {
+//            startService(intent);
+//        }
+        VoiceAppLogger.debug(TAG,"Calling bind Service");
+
+        if (relayPushNotification) {
+            VoiceAppLogger.debug(TAG, "Payload Version: " + pushNotificationPayloadVersion
+                    + "payload: " + pushNotificationPayload + " userId: " + subscriberName);
+            try {
+                initialize(hostname, subscriberName, accountSid, subscriberToken, displayName);
+            } catch (Exception e) {
+                VoiceAppLogger.error(TAG, "Exception in initialization for push notification");
+            }
+            VoiceAppLogger.debug(TAG, "Before sendPushNotifcationData");
+            sendPushNotificationData(pushNotificationPayload, pushNotificationPayloadVersion, subscriberName);
+        }
+
+    }
+
+
+    public void sendPushNotificationData(String payload, String payloadVersion, String userId) {
+        VoiceAppLogger.debug(TAG, "Sending push notification data function");
+        Map<String, String> pushNotificationData = new HashMap<>();
+        pushNotificationData.put("payload", payload);
+        pushNotificationData.put("payloadVersion", payloadVersion);
+        if (null != exotelVoiceClient) {
+            try {
+                if (!exotelVoiceClient.relaySessionData(pushNotificationData)) {
+                    makeServiceBackground();
+                }
+            } catch (Exception e) {
+                VoiceAppLogger.error(TAG, "Exception in relaySessionData: " + e.getMessage());
+                makeServiceBackground();
+            }
+
+        } else {
+            VoiceAppLogger.error(TAG, "Initialize has not been called before relaySessionData");
+
+        }
+    }
+
+    public void makeServiceBackground() {
+
+        if (null == mCall) {
+            VoiceAppLogger.debug(TAG, "Removing the service from foreground");
+
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+//                stopForeground(STOP_FOREGROUND_REMOVE);
+//            } else {
+//                stopForeground(true);
+//            }
+        }
+
     }
 
     public void removeCallContext(String userId) {

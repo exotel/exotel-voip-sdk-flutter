@@ -38,8 +38,8 @@ class _HomePageState extends State<HomePage> {
     final String hostname = arguments['hostname'];
     TextEditingController dialNumberController = TextEditingController(text: "8123674275");
 
-    Future<String?> getVersion() async{
-      String? ver;
+    Future<String> getVersion() async{
+      String ver;
        ver = await mApplicationUtil.mVersion;
       return ver;
     }
@@ -54,9 +54,9 @@ class _HomePageState extends State<HomePage> {
       showDialog(
         context: context,
         builder: (BuildContext context) {
-          return FutureBuilder<String?>(
+          return FutureBuilder<String>(
             future: getVersion(),
-            builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
+            builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return AlertDialog(
                   title: Text('Loading...'),
@@ -86,7 +86,7 @@ class _HomePageState extends State<HomePage> {
 
     void showDropdownDialog(BuildContext context) {
       int? dropdownValue1 = 3;
-      String? dropdownValue2 = "ECHO";
+      String? dropdownValue2 = "NO_ISSUE";
 
       showDialog(
         context: context,
@@ -180,6 +180,43 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
+    void showReportProblem(BuildContext context) {
+      final TextEditingController controller = TextEditingController();
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Description'),
+            content: TextField(
+              controller: controller,
+              decoration: InputDecoration(hintText: ""),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text('CANCEL'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  String description = controller.text;
+                  final Duration day = Duration(days: 1);
+                  final int uploadLogNumDays = 7;
+                  final DateTime endDate = DateTime.now();
+                  final DateTime startDate = endDate.subtract(day * uploadLogNumDays);
+                  print('User input: $description, startDate: $startDate, endDate: $endDate');
+                  ExotelSDKClient.getInstance().uploadLogs(startDate, endDate, description);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
 
     return DefaultTabController(
       length: 3,
@@ -209,6 +246,7 @@ class _HomePageState extends State<HomePage> {
                             break;
                           case 'Button 2':
                           // Handle Button 2 press
+                            showReportProblem(context);
                             print('Button 2 pressed');
                             break;
                           case 'Button 3':

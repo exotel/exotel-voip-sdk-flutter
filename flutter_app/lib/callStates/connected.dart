@@ -63,12 +63,15 @@ class _ConnectedState extends State<Connected> {
   @override
   Widget build(BuildContext context) {
     final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
-    final String dialTo = arguments['dialTo'];
+    final String? dialTo = arguments['dialTo'];
     final String userId = arguments['userId'];
     final String password = arguments['password'];
     final String displayName = arguments['displayName'];
     final String accountSid = arguments['accountSid'];
     final String hostname = arguments['hostname'];
+    final String? callId = arguments['callId'];
+    final String? destination = arguments['destination'];
+    final String display = dialTo ?? destination ?? ''; // Use the null-aware operator (??) to handle null values
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -88,7 +91,7 @@ class _ConnectedState extends State<Connected> {
               children: <Widget>[
                 Padding(
                   padding: const EdgeInsets.only(top: 80.0, bottom: 12.0),
-                  child: Text(dialTo, style: const TextStyle(fontSize: 20.0)),
+                  child: Text(display, style: const TextStyle(fontSize: 20.0)),
                 ),
                 const Padding(
                   padding: EdgeInsets.only(top: 80.0, bottom: 12.0),
