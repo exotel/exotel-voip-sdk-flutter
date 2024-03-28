@@ -2,7 +2,7 @@ import 'Utils/ApplicationUtils.dart';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'home_page.dart';
-import 'ExotelSDKClient.dart';
+import 'exotelSDK/ExotelSDKClient.dart';
 import 'call_page.dart';
 import 'callStates/connected.dart';
 import 'callStates/ringing.dart';
@@ -28,8 +28,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     var mApplicationUtil =  ApplicationUtils.getInstance(context);
     ExotelSDKClient exotelSDKClient = ExotelSDKClient.getInstance();
+    exotelSDKClient.setExotelSDKCallback(mApplicationUtil);
     exotelSDKClient.registerMethodHandler();
-    exotelSDKClient.registerUtils(mApplicationUtil);
     //TBD
     PushNotificationService pushNotificationService = PushNotificationService.getInstance();
     pushNotificationService.initialize();

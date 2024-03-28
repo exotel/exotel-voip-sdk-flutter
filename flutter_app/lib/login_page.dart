@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'Utils/ApplicationUtils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'ExotelSDKClient.dart';
+import 'exotelSDK/ExotelSDKClient.dart';
 import 'home_page.dart';
 import 'main.dart';
 

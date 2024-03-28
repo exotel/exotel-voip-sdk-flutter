@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'ExotelSDKClient.dart';
+import 'exotelSDK/ExotelSDKClient.dart';
 import 'login_page.dart';
 import 'main.dart';
 import 'call_page.dart';
