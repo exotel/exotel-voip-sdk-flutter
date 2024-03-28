@@ -12,13 +12,13 @@
 
 import 'dart:developer';
 import 'package:flutter_app/Service/PushNotificationService.dart';
+import 'package:flutter_app/exotelSDK/ExotelSDKCallback.dart';
 
-import 'Utils/ApplicationUtils.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import 'login_page.dart';
-import 'home_page.dart';
-import 'main.dart';
+import '../login_page.dart';
+import '../home_page.dart';
+import '../main.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class ExotelSDKClient {
@@ -27,8 +27,9 @@ class ExotelSDKClient {
   static final ExotelSDKClient _instance = ExotelSDKClient._internal();
 
   MethodChannel? androidChannel;
-  ApplicationUtils? applicationUtils;
   HomePage? homePage;
+
+  ExotelSDKCallback? mCallBack;
   static ExotelSDKClient getInstance() {
     return _instance;
   }
@@ -281,42 +282,29 @@ class ExotelSDKClient {
       case "loggedInStatus":
         loginStatus =  call.arguments.toString();
         log("loginStatus = $loginStatus");
-        applicationUtils?.setStatus(loginStatus);
         if(loginStatus == "Ready"){
-          applicationUtils?.navigateToHome();
+          mCallBack?.onLoggedInSucess();
         } else {
-          applicationUtils?.stopLoadingDialog();
-          applicationUtils?.showToast(loginStatus);
-          applicationUtils?.navigateToStart();
+          mCallBack?.onLoggedInFailure(loginStatus);
         }
         break;
       case "callStatus":
         callingStatus =  call.arguments.toString();
         log("callingStatus = $callingStatus");
         if(callingStatus == "Ringing"){
-          applicationUtils?.navigateToRinging();
+          mCallBack?.onCallRinging();
         } else if(callingStatus == "Connected"){
-          applicationUtils?.navigateToConnected();}
-        // else if(callingStatus == "Incoming"){
-        //   applicationUtils?.navigateToIncoming();
-        // }
+          mCallBack?.onCallConnected();
+        }
         else if(callingStatus == "Ended"){
-          applicationUtils?.showToast(callingStatus);
-          applicationUtils?.navigateToHome();
+          mCallBack?.onCallEnded();
         }
         break;
       case "incoming"://to-do: need to refactor, need code optimization
         String callId = call.arguments['callId'];
         String destination = call.arguments['destination'];
         print('in FlutterCallHandler(), callId is $callId, destination is $destination ');
-        applicationUtils?.setCallId(callId);
-        applicationUtils?.setDestination(destination);
-        applicationUtils?.navigateToIncoming();
-        break;
-      case "version":
-        String? Version =  call.arguments.toString();
-        print('in FlutterCallHandler(), version is $Version');
-        applicationUtils?.setVersion(Version);
+        mCallBack?.onCallIncoming(call.arguments);
         break;
       default:
         break;
@@ -324,12 +312,12 @@ class ExotelSDKClient {
     return "";
   }
 
-  void registerUtils(ApplicationUtils mApplicationUtil) {
-    applicationUtils = mApplicationUtil;
-  }
-
   void relayFirebaseMessagingData(Map<String, dynamic> data) {
     androidChannel?.invokeMethod('relayNotificationData',{'data':data});
+  }
+
+  void setExotelSDKCallback(ExotelSDKCallback callback) {
+    mCallBack = callback;
   }
 
 

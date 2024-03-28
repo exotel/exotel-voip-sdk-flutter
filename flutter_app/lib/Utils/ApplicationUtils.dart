@@ -4,11 +4,12 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/exotelSDK/ExotelSDKCallback.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:flutter_app/main.dart';
 
-class ApplicationUtils {
+class ApplicationUtils implements ExotelSDKCallback {
   String? mUserId;
 
   String? mPassword;
@@ -168,4 +169,43 @@ class ApplicationUtils {
     mStatus = status;
     print('in setStatus(), mStatus is: $mStatus');
   }
+
+  @override
+  void onLoggedInSucess() {
+    setStatus("Ready");
+    navigateToHome();
+  }
+
+  @override
+  void onLoggedInFailure(String loginStatus) {
+    stopLoadingDialog();
+    showToast(loginStatus);
+    navigateToStart();
+  }
+
+  @override
+  void onCallRinging() {
+    navigateToRinging();
+  }
+
+  @override
+  void onCallConnected() {
+    navigateToConnected();
+  }
+
+  @override
+  void onCallEnded() {
+    showToast("Ended");
+    navigateToHome();
+  }
+
+  @override
+  void onCallIncoming(Map<String, String> arguments) {
+    String? callId = arguments['callId'];
+    String? destination = arguments['destination'];
+    setCallId(callId!);
+    setDestination(destination!);
+    navigateToIncoming();
+  }
+
 }
