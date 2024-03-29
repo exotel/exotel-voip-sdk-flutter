@@ -9,6 +9,12 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:flutter_app/main.dart';
 
+import 'package:intl/intl.dart';
+import 'package:timezone/timezone.dart' as tz;
+
+import 'package:provider/provider.dart';
+import 'package:flutter_app/UI/home_page.dart';
+
 class ApplicationUtils implements ExotelSDKCallback {
   String? mUserId;
 
@@ -77,6 +83,7 @@ class ApplicationUtils implements ExotelSDKCallback {
     );
   }
   void navigateToConnected() {
+    print("in navigateToConnected()");
     navigatorKey.currentState!.pushNamedAndRemoveUntil(
       '/connected',
           (Route<dynamic> route) => false,
@@ -85,11 +92,13 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
   void navigateToIncoming() {
    print("in navigateToIncoming");
-    navigatorKey.currentState!.pushNamedAndRemoveUntil(
-      '/incoming',
-          (Route<dynamic> route) => false,
-      arguments: {'dialTo': mDialTo, 'userId': mUserId, 'password': mPassword, 'displayName': mUserId, 'accountSid': mAccountSid, 'hostname': mHostName, 'callId': mCallId, 'destination':mDestination }, //Hard-coded
-    );
+   WidgetsBinding.instance.addPostFrameCallback((_) {
+     Navigator.pushReplacementNamed(
+       context!,
+       '/incoming',
+       arguments: {'dialTo': mDialTo, 'userId': mUserId, 'password': mPassword, 'displayName': mUserId, 'accountSid': mAccountSid, 'hostname': mHostName, 'callId': mCallId, 'destination':mDestination }, //Hard-coded
+     );
+   });
   }
   void navigateToRinging() {
     navigatorKey.currentState!.pushNamedAndRemoveUntil(
@@ -186,6 +195,7 @@ class ApplicationUtils implements ExotelSDKCallback {
   @override
   void onCallRinging() {
     navigateToRinging();
+    _fetchData(mDialTo!, 'OUTGOING');
   }
 
   @override
@@ -200,12 +210,31 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   @override
-  void onCallIncoming(Map<String, String> arguments) {
-    String? callId = arguments['callId'];
-    String? destination = arguments['destination'];
-    setCallId(callId!);
-    setDestination(destination!);
+  void onCallIncoming(String callId, String destination) {
+    print("in onCallIncoming application utils");
+    setCallId(callId);
+    setDestination(destination);
     navigateToIncoming();
+    _fetchData(mDestination!, 'INCOMING');
   }
+
+  void _fetchData(String number, String status) {
+    DateTime time = DateTime.now();
+    final newCall = Call(
+      timeFormatted: '$time',
+      number: number,
+      status: status,
+    );
+
+    // Format the time
+    final formattedTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(time);
+
+    // Update the newCall with the formatted time
+    newCall.timeFormatted = formattedTime;
+
+    // Add the new call to the list
+    Provider.of<CallList>(context!, listen: false).addCall(newCall);
+  }
+
 
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/main.dart';
 import 'package:flutter_app/exotelSDK/ExotelSDKClient.dart';
 import 'dart:async';
+import 'package:provider/provider.dart';
+import 'package:flutter_app/UI/home_page.dart';
 
 class Incoming extends StatefulWidget {
   @override
@@ -9,6 +11,7 @@ class Incoming extends StatefulWidget {
 }
 
 class _IncomingState extends State<Incoming> {
+
   @override
   Widget build(BuildContext context) {
     final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
@@ -20,6 +23,7 @@ class _IncomingState extends State<Incoming> {
     final String hostname = arguments['hostname'];
     final String callId = arguments['callId'];
     final String destination = arguments['destination'];
+
 
     return Scaffold(
       appBar: AppBar(
@@ -46,13 +50,14 @@ class _IncomingState extends State<Incoming> {
                   padding: EdgeInsets.only(top: 80.0, bottom: 12.0),
                   child: Text('Incoming', style: TextStyle(fontSize: 20.0)),
                 ),
+
                 Padding(
                   padding: const EdgeInsets.only(top: 30.0, bottom: 12.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
                       SizedBox(height: 200),
-                      SizedBox(width: 50), // Add space
+                      SizedBox(width: 65), // Add space
                       ElevatedButton(
                         onPressed: () {
                           ExotelSDKClient.getInstance().answer();

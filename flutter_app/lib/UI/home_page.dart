@@ -7,6 +7,8 @@ import '../Utils/ApplicationUtils.dart';
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import '../firebase_options.dart';
+import 'package:provider/provider.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -85,7 +87,7 @@ class _HomePageState extends State<HomePage> {
 
 
     void showDropdownDialog(BuildContext context) {
-      int? dropdownValue1 = 3;
+      int? dropdownValue1 = 5;
       String? dropdownValue2 = "NO_ISSUE";
 
       showDialog(
@@ -117,7 +119,7 @@ class _HomePageState extends State<HomePage> {
                             }).toList(),
                           ),
                           SizedBox(height: 30),
-                          Text('Dropdown 2:'), // Heading for the second dropdown
+                          Text('Issue:'), // Heading for the second dropdown
                           DropdownButton<String?>(
                             value: dropdownValue2,
                             onChanged: (String? newValue) {
@@ -332,68 +334,154 @@ class _HomePageState extends State<HomePage> {
           ),
           backgroundColor: const Color(0xFF0800AF),
         ),
-        body: TabBarView(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 0), // Added horizontal and vertical padding
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  const Padding(
-                    padding: EdgeInsets.only(top: 80.0, bottom: 12.0),
-                    child: Text('Dial To', style: TextStyle(fontSize: 20.0)),
-                  ),
-                  TextField(
-                    controller: dialNumberController,
-                    decoration: InputDecoration(
-                      labelText: 'Enter Number',
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF0800AF), // Set the border color to blue
-                          width: 2.0, // Set the border width
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 30.0, bottom: 12.0),
-                    child:ElevatedButton(
-                      onPressed: () {
-                        String dialTo = dialNumberController.text;
-                        mApplicationUtil.setDialTo(dialTo);
-                        ExotelSDKClient.getInstance().call(userId,dialTo);
-                        // WidgetsBinding.instance.addPostFrameCallback((_) {
-                        //   Navigator.pushReplacementNamed(
-                        //     context,
-                        //     '/connected',
-                        //     arguments: {'dialTo': dialTo, 'userId': userId, 'password': password, 'displayName': displayName, 'accountSid': accountSid, 'hostname': hostname },
-                        //   );});
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF2E42BF), // background color
-                        shape: CircleBorder(), // shape of button
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12), // padding
-                      ),
-                      child: ClipOval(
-                        child: Image.asset(
-                          'assets/call_icon.PNG', // Replace with your icon path
-                          width: 35.0, // Set your desired width
-                          height: 35.0, // Set your desired height
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Center(child: Text('Contacts Page')),
-            const Center(child: Text('Recent Calls Page')),
-          ],
-        ),
+          body: TabBarView(
+            children: [
+              DialTabContent(),
+              ContactsTabContent(),
+              RecentCallsTabContent(),
+            ],
+          )
       ),
     );
   }
 }
+
+class DialTabContent extends StatefulWidget {
+  @override
+  State<DialTabContent> createState() => _DialTabContentState();
+}
+
+class _DialTabContentState extends State<DialTabContent> {
+  @override
+  Widget build(BuildContext context) {
+    var mApplicationUtil = ApplicationUtils.getInstance(context);
+    final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
+    final String userId = arguments['userId'];
+    final String password = arguments['password'];
+    final String displayName = arguments['displayName'];
+    final String accountSid = arguments['accountSid'];
+    final String hostname = arguments['hostname'];
+    TextEditingController dialNumberController = TextEditingController(text: "8123674275");
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 0), // Added horizontal and vertical padding
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          const Padding(
+            padding: EdgeInsets.only(top: 80.0, bottom: 12.0),
+            child: Text('Dial To', style: TextStyle(fontSize: 20.0)),
+          ),
+          TextField(
+            controller: dialNumberController,
+            decoration: InputDecoration(
+              labelText: 'Enter Number',
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(5),
+                borderSide: const BorderSide(
+                  color: Color(0xFF0800AF), // Set the border color to blue
+                  width: 2.0, // Set the border width
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 30.0, bottom: 12.0),
+            child:ElevatedButton(
+              onPressed: () {
+                String dialTo = dialNumberController.text;
+                mApplicationUtil.setDialTo(dialTo);
+                ExotelSDKClient.getInstance().call(userId,dialTo);
+                // WidgetsBinding.instance.addPostFrameCallback((_) {
+                //   Navigator.pushReplacementNamed(
+                //     context,
+                //     '/connected',
+                //     arguments: {'dialTo': dialTo, 'userId': userId, 'password': password, 'displayName': displayName, 'accountSid': accountSid, 'hostname': hostname },
+                //   );});
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF2E42BF), // background color
+                shape: CircleBorder(), // shape of button
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12), // padding
+              ),
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/call_icon.PNG', // Replace with your icon path
+                  width: 35.0, // Set your desired width
+                  height: 35.0, // Set your desired height
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ContactsTabContent extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text('Contacts Tab Content'),
+    );
+  }
+}
+
+
+class RecentCallsTabContent extends StatefulWidget {
+  @override
+  State<RecentCallsTabContent> createState() => _RecentCallsTabContentState();
+}
+
+class _RecentCallsTabContentState extends State<RecentCallsTabContent> {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<CallList>(
+      builder: (context, callList, child) {
+        return ListView.builder(
+          itemCount: callList.recentCalls.length,
+          itemBuilder: (context, index) {
+            final call = callList.recentCalls[index];
+            return ListTile(
+              title: Text(call.number),
+              subtitle: Text('Status: ${call.status}, Time: ${call.timeFormatted}'),
+              trailing: ElevatedButton(
+                onPressed: () {
+                  // ExotelSDKClient.getInstance().call(userId,dialTo);
+                },
+                child: Icon(Icons.phone),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class Call {
+  final String number;
+  String timeFormatted;
+  final String status;
+
+  Call({
+    required this.number,
+    required this.timeFormatted,
+    required this.status,
+  });
+}
+
+class CallList extends ChangeNotifier {
+  List<Call> _recentCalls = [];
+
+  List<Call> get recentCalls => _recentCalls;
+
+  void addCall(Call call) {
+    _recentCalls.insert(0, call);
+    notifyListeners();
+  }
+}
+
+
