@@ -12,6 +12,7 @@
 
 import 'dart:developer';
 import 'package:flutter_app/Service/PushNotificationService.dart';
+import 'package:flutter_app/Utils/ApplicationUtils.dart';
 import 'package:flutter_app/exotelSDK/ExotelSDKCallback.dart';
 
 import 'package:flutter/services.dart';
@@ -256,7 +257,7 @@ class ExotelSDKClient {
   //   return duration;
   // }
 
-  static Future<void> requestPermissions() async {
+  static Future<PermissionStatus> requestPermissions() async {
     // You can request multiple permissions at once
     Map<Permission, PermissionStatus> statuses = await [
       Permission.phone,
@@ -267,6 +268,7 @@ class ExotelSDKClient {
       Permission.location,
       // Add other permissions you want to request
     ].request();
+    return await Permission.location.status;
     // Check permission status and handle accordingly
   }
 
@@ -296,10 +298,16 @@ class ExotelSDKClient {
         }
         break;
       case "incoming"://to-do: need to refactor, need code optimization
+        log("in case incoming in exotelsdkclient.dart");
         String callId = call.arguments['callId'];
         String destination = call.arguments['destination'];
         print('in FlutterCallHandler(), callId is $callId, destination is $destination ');
-        mCallBack?.onCallIncoming(call.arguments);
+        mCallBack?.onCallIncoming(callId, destination);
+        break;
+      case "version":
+        String? Version =  call.arguments.toString();
+        print('in FlutterCallHandler(), version is $Version');
+        mCallBack?.setVersion(Version);
         break;
       default:
         break;
