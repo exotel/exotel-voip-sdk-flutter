@@ -13,4 +13,5 @@ abstract class ExotelSDKCallback {
 
   void setVersion(String version) {}
 
+  void setjsonData(String jsonData) {}
 }

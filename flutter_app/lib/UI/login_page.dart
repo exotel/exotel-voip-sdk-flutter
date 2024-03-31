@@ -192,13 +192,28 @@ class _LoginPageState extends State<LoginPage> {
                         showAdvancedSettings = !showAdvancedSettings;
                       });
                     },
-                    child: const Text(
-                      'Advanced Settings',
-                      style: TextStyle(
-                        color: Color(0xFF0405B4),
-                        decoration: TextDecoration.underline,
-                        fontSize: 20,
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 50.0),
+                          child: const Text(
+                            'Advanced Settings',
+                            style: TextStyle(
+                              color: Color(0xFF0405B4),
+                              decoration: TextDecoration.underline,
+                              fontSize: 20,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(showAdvancedSettings ? Icons.arrow_drop_up : Icons.arrow_drop_down, size: 42.0),
+                          onPressed: () {
+                            setState(() {
+                              showAdvancedSettings = !showAdvancedSettings;
+                            });                },
+                        ),
+                      ],
                     ),
                   ),
                   Visibility(

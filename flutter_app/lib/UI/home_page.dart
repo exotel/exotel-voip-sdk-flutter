@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import '../exotelSDK/ExotelSDKClient.dart';
 import 'login_page.dart';
 import '../main.dart';
@@ -346,6 +347,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+//dial tab content
 class DialTabContent extends StatefulWidget {
   @override
   State<DialTabContent> createState() => _DialTabContentState();
@@ -387,28 +389,22 @@ class _DialTabContentState extends State<DialTabContent> {
           ),
           Padding(
             padding: const EdgeInsets.only(top: 30.0, bottom: 12.0),
-            child:ElevatedButton(
-              onPressed: () {
-                String dialTo = dialNumberController.text;
-                mApplicationUtil.setDialTo(dialTo);
-                ExotelSDKClient.getInstance().call(userId,dialTo);
-                // WidgetsBinding.instance.addPostFrameCallback((_) {
-                //   Navigator.pushReplacementNamed(
-                //     context,
-                //     '/connected',
-                //     arguments: {'dialTo': dialTo, 'userId': userId, 'password': password, 'displayName': displayName, 'accountSid': accountSid, 'hostname': hostname },
-                //   );});
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF2E42BF), // background color
-                shape: CircleBorder(), // shape of button
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12), // padding
-              ),
+            child: GestureDetector(
+              onTap:() {
+            String dialTo = dialNumberController.text;
+            navigatorKey.currentState!.pushNamedAndRemoveUntil(
+              '/ringing',
+                  (Route<dynamic> route) => false,
+              arguments: {'state': "Connecting...." , 'dialTo': dialTo, 'userId': userId, 'password': password, 'displayName': displayName, 'accountSid': accountSid, 'hostname': hostname },
+            );
+            mApplicationUtil.setDialTo(dialTo);
+            ExotelSDKClient.getInstance().call(userId,dialTo);
+            },
               child: ClipOval(
                 child: Image.asset(
                   'assets/call_icon.PNG', // Replace with your icon path
-                  width: 35.0, // Set your desired width
-                  height: 35.0, // Set your desired height
+                  width: 55.0, // Set your desired width
+                  height: 55.0, // Set your desired height
                   fit: BoxFit.cover,
                 ),
               ),
@@ -420,16 +416,233 @@ class _DialTabContentState extends State<DialTabContent> {
   }
 }
 
-class ContactsTabContent extends StatelessWidget {
+
+//contacts page content
+
+class ContactsTabContent extends StatefulWidget {
+  const ContactsTabContent({Key? key}) : super(key: key);
+
+  @override
+  State<ContactsTabContent> createState() => _ContactsTabContentState();
+}
+
+class _ContactsTabContentState extends State<ContactsTabContent> {
+  late TextEditingController searchController;
+  late bool showContacts;
+  List<Contact> allContacts = [];
+  late ApplicationUtils mApplicationUtil; // Declare but don't initialize here
+
+  late Future<void> _fetchAndParseJsonData;
+
+  @override
+  void initState() {
+    super.initState();
+    searchController = TextEditingController();
+    showContacts = false;
+    mApplicationUtil = ApplicationUtils.getInstance(context); // Initialize here
+    _fetchAndParseJsonData = _fetchAndParseData();
+  }
+
+  Future<void> _fetchAndParseData() async {
+    try {
+      final jsonData = await _getJsonData();
+      final contacts = _parseJsonData(jsonData!); // Ensure jsonData is not null
+      setState(() {
+        allContacts = contacts;
+      });
+    } catch (error) {
+      // Handle error
+      print('Error: $error');
+    }
+  }
+
+  Future<String?> _getJsonData() async{
+    String? jsonData;
+    jsonData = await mApplicationUtil.mJsonData;
+    return jsonData;
+  }
+
+  List<Contact> _parseJsonData(String jsonData) {
+    final Map<String, dynamic> data = json.decode(jsonData);
+    final List<dynamic> contactsJson = data['response'][0]['data']['contacts'];
+    final String groupJson = data['response'][0]['data']['group'];
+
+    _displayGroup(groupJson);
+
+    return contactsJson.map<Contact>((json) => Contact.fromJson(json)).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text('Contacts Tab Content'),
+    return FutureBuilder<void>(
+      future: _fetchAndParseJsonData,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        return _buildContent();
+      },
+    );
+  }
+
+  String groupJson = "All contacts";
+  void _displayGroup(String group) {
+    groupJson = group;
+  }
+
+  Widget _buildContent() {
+    List<Contact> filteredContacts = allContacts.where((contact) {
+      final String query = searchController.text.toLowerCase();
+      return contact.name.toLowerCase().contains(query);
+    }).toList();
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+            controller: searchController,
+            decoration: InputDecoration(
+              labelText: "Search",
+              suffixIcon: IconButton(
+                icon: Icon(Icons.clear),
+                onPressed: () {
+                  searchController.clear();
+                },
+              ),
+            ),
+            onChanged: (value) {
+              setState(() {}); // Trigger rebuild to update filteredContacts
+            },
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              showContacts = !showContacts;
+            });
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  '$groupJson',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: Icon(showContacts ? Icons.arrow_drop_up : Icons.arrow_drop_down, size: 42.0),
+                onPressed: () {
+                  setState(() {
+                    showContacts = !showContacts;
+                  });                },
+              ),
+            ],
+          ),
+
+        ),
+        Visibility(
+          visible: showContacts,
+          child: Expanded(
+            child: ListView.builder(
+              itemCount: filteredContacts.length,
+              itemBuilder: (context, index) {
+                return ContactItem(
+                  contact: filteredContacts[index],
+                  onCallPressed: () {
+                    String dialTo = filteredContacts[index].number;
+                    print("DialTo is:  $dialTo");
+                    String? userId = mApplicationUtil.mUserId as String;
+                    print("userId is:  $userId");
+                    mApplicationUtil.setDialTo(dialTo);
+                    ExotelSDKClient.getInstance().call(userId, dialTo);
+                    print("Calling ${filteredContacts[index].name}");
+                  },
+                  onWhatsAppCallPressed: () {
+                    // Implement WhatsApp call functionality
+                    print("WhatsApp calling ${filteredContacts[index].name}");
+                  },
+                );
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class Contact {
+  final String name;
+  final String number;
+
+  Contact({required this.name, required this.number});
+
+  factory Contact.fromJson(Map<String, dynamic> json) {
+    return Contact(
+      name: json['contact_name'],
+      number: json['contact_number'],
     );
   }
 }
 
 
+class ContactItem extends StatelessWidget {
+  final Contact contact;
+  final VoidCallback onCallPressed;
+  final VoidCallback onWhatsAppCallPressed;
+
+  const ContactItem({
+    required this.contact,
+    required this.onCallPressed,
+    required this.onWhatsAppCallPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(contact.name),
+      subtitle: Text(contact.number),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            onTap: onCallPressed, // Add your WhatsApp call functionality here
+            child: ClipOval(
+              child: Image.asset(
+                'assets/call_icon.PNG', // Replace with your icon path
+                width: 35.0, // Set your desired width
+                height: 35.0, // Set your desired height
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          SizedBox(width: 15),
+          GestureDetector(
+            onTap: onWhatsAppCallPressed, // Add your WhatsApp call functionality here
+            child: ClipOval(
+              child: Image.asset(
+                'assets/btn_call_whatsapp.png', // Replace with your icon path
+                width: 35.0, // Set your desired width
+                height: 35.0, // Set your desired height
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+
+        ],
+      ),
+    );
+  }
+}
+
+//recent calls page content
 class RecentCallsTabContent extends StatefulWidget {
   @override
   State<RecentCallsTabContent> createState() => _RecentCallsTabContentState();
@@ -447,11 +660,18 @@ class _RecentCallsTabContentState extends State<RecentCallsTabContent> {
             return ListTile(
               title: Text(call.number),
               subtitle: Text('Status: ${call.status}, Time: ${call.timeFormatted}'),
-              trailing: ElevatedButton(
-                onPressed: () {
+              trailing: GestureDetector(
+                onTap: (){
                   // ExotelSDKClient.getInstance().call(userId,dialTo);
                 },
-                child: Icon(Icons.phone),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/call_icon.PNG', // Replace with your icon path
+                    width: 45.0, // Set your desired width
+                    height: 45.0, // Set your desired height
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
             );
           },

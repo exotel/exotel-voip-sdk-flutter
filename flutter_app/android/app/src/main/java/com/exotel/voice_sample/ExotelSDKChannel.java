@@ -5,6 +5,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 
+import androidx.annotation.NonNull;
+
 
 import com.exotel.voice.Call;
 import com.exotel.voice.CallIssue;
@@ -16,8 +18,10 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import com.exotel.voice.ExotelVoiceError;
 import io.flutter.embedding.engine.FlutterEngine;
@@ -28,6 +32,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+
+
 
 //Exotel Channel Class
 // it is a Channel class b/w flutter and native.
@@ -126,6 +132,7 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                             break;
                         case "enableSpeaker":
                             enableSpeaker();
+                            result.success("enableSpeaker successful");
                             result.success("enableSpeaker successful");
                             break;
                         case "disableSpeaker":
@@ -298,6 +305,7 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
 
     }
 
+
     private Callback mCallback = new Callback() {
         @Override
         public void onFailure(okhttp3.Call call, IOException e) {
@@ -394,7 +402,7 @@ private ApplicationSharedPreferenceData isloggedin(){
              */
             channel.invokeMethod("loggedInStatus",mService.getCurrentStatus().getMessage());
         });
-
+        fetchContactList();
     }
 
     @Override
@@ -595,6 +603,50 @@ private ApplicationSharedPreferenceData isloggedin(){
             }
         });
     }
+
+
+
+    private void fetchContactList() {
+
+        OkHttpClient okHttpClient = new OkHttpClient();
+        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
+        String url = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.APP_HOSTNAME.toString());
+        String accountSid = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
+        String username = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.USER_NAME.toString());
+
+        url = url + "/accounts/" + accountSid + "/subscribers/" + username + "/contacts";
+        VoiceAppLogger.debug(TAG, "contactApiUrl :" + url);
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        okHttpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
+                VoiceAppLogger.error(TAG, "getContactList: Failed to get response"
+                        + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(@NonNull okhttp3.Call call, @NonNull Response response) throws IOException {
+                VoiceAppLogger.debug(TAG, "response code :" + response.code());
+                String jsonData;
+                jsonData = response.body().string();
+                JSONObject jsonObject;
+                VoiceAppLogger.debug(TAG, "Response body: " + jsonData);
+                try {
+                    uiThreadHandler.post(()->{
+                        channel.invokeMethod("contacts", jsonData);
+                    });
+                } catch (Exception e) {
+                    VoiceAppLogger.error(TAG, "contact exception" + e.getMessage());
+                }
+                response.body().close();
+            }
+        });
+    }
+
+
 
 
     private void uploadLogs(Date startDate, Date endDate, String description){

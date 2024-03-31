@@ -34,6 +34,8 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   String? mDestination;
 
+  String? mJsonData;
+
 
   ApplicationUtils._internal();
   static ApplicationUtils? _instance;
@@ -104,7 +106,7 @@ class ApplicationUtils implements ExotelSDKCallback {
     navigatorKey.currentState!.pushNamedAndRemoveUntil(
       '/ringing',
           (Route<dynamic> route) => false,
-      arguments: {'dialTo': mDialTo, 'userId': mUserId, 'password': mPassword, 'displayName': mUserId, 'accountSid': mAccountSid, 'hostname': mHostName }, //Hard-coded
+      arguments: {'state': "Ringing",'dialTo': mDialTo, 'userId': mUserId, 'password': mPassword, 'displayName': mUserId, 'accountSid': mAccountSid, 'hostname': mHostName }, //Hard-coded
     );
   }
   void navigateToStart() {
@@ -177,6 +179,10 @@ class ApplicationUtils implements ExotelSDKCallback {
   void setStatus(String status) {
     mStatus = status;
     print('in setStatus(), mStatus is: $mStatus');
+  }
+  void setjsonData(String jsonData) {
+    mJsonData = jsonData;
+    print('in setVersion(), mJsonData is: $mJsonData');
   }
 
   @override
