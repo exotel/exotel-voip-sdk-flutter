@@ -49,11 +49,12 @@ class _DtmfPageState extends State<DtmfPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SizedBox(height: 10 ),
             GridView.count(
               shrinkWrap: true,
               crossAxisCount: 3,
               childAspectRatio: 2,
-              padding: EdgeInsets.all(20),
+              padding: EdgeInsets.all(50),
               mainAxisSpacing: 10,
               crossAxisSpacing: 10,
               children: <String>[
@@ -63,43 +64,51 @@ class _DtmfPageState extends State<DtmfPage> {
                 '*', '0', '#',
               ].map((key) {
                 return Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(2.0),
                   child: ElevatedButton(
                     onPressed: () => handleKeyTap(key),
-                    child: Text(key, style: TextStyle(fontSize: 24)),
+                    child: Text(key, style: TextStyle(fontSize: 20, color: Colors.black87)),
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, backgroundColor: Colors.grey.shade500, // text color
+                      foregroundColor: Colors.black, backgroundColor: Colors.grey.shade400, // text color
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(0),
                       ), // shape of button
-                      elevation: 10, // elevation of button
+                      elevation: 5, // elevation of button
                     ),
                   ),
                 );
               }).toList(),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 125.0, vertical: 0),
-              child: Text(
-                'DTMF Input: $dtmfInput',
-                style: TextStyle(fontSize: 24.0, color: Colors.grey.shade700), // Change the text color to grey
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 125.0, vertical: 0),
+              padding: const EdgeInsets.symmetric(horizontal: 135.0, vertical: 10),
               child: ElevatedButton(
-              child: Text('HIDE KEYPAD',style: TextStyle(color: Colors.white),),
+              child: Text('HIDE KEYPAD',style: TextStyle(color: Colors.black),),
               onPressed: () {
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey,
+                backgroundColor: Colors.grey.shade400,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(0),
                 ),
               ),
             ),
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 125.0, vertical: 250),
+              child: Container(
+                padding: EdgeInsets.all(16.0), // Add padding to the container
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200, // Set box color to grey
+                  borderRadius: BorderRadius.circular(10.0), // Add border radius
+                ),
+                child: Text(
+                  'DTMF Input: $dtmfInput',
+                  style: TextStyle(fontSize: 20.0, color: Colors.grey.shade700),
+                ),
+              ),
+            ),
+
           ],
         ),
       ),

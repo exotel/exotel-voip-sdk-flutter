@@ -44,7 +44,7 @@ class _IncomingState extends State<Incoming> {
               children: <Widget>[
                 Padding(
                   padding:  EdgeInsets.only(top: 80.0, bottom: 12.0),
-                  child: Text(destination!, style: const TextStyle(fontSize: 20.0)),
+                  child: Text(destination!, style: const TextStyle(fontSize: 25.0)),
                 ),
                  Padding(
                   padding: EdgeInsets.only(top: 80.0, bottom: 12.0),
@@ -57,9 +57,9 @@ class _IncomingState extends State<Incoming> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
                       SizedBox(height: 200),
-                      SizedBox(width: 65), // Add space
-                      ElevatedButton(
-                        onPressed: () {
+                      SizedBox(width: 80), // Add space
+                      GestureDetector(
+                        onTap:() {
                           ExotelSDKClient.getInstance().answer();
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             Navigator.pushReplacementNamed(
@@ -69,23 +69,20 @@ class _IncomingState extends State<Incoming> {
                             );
                           });
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF00C652), // background color
-                          shape: CircleBorder(), // shape of button
-                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12), // padding
-                        ),
                         child: ClipOval(
                           child: Image.asset(
                             'assets/btn_call_normal.png',
-                            width: 44.0,
-                            height: 44.0,
+                            width: 65.0,
+                            height: 65.0,
                             fit: BoxFit.cover,
                           ),
                         ),
                       ),
+
                       SizedBox(width: 20), // Add space
-                      ElevatedButton(
-                        onPressed: () {
+
+                      GestureDetector(
+                        onTap:() {
                           ExotelSDKClient.getInstance().hangup();
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             Navigator.pushReplacementNamed(
@@ -95,16 +92,11 @@ class _IncomingState extends State<Incoming> {
                             );
                           });
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFFFA224B), // background color
-                          shape: CircleBorder(), // shape of button
-                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12), // padding
-                        ),
                         child: ClipOval(
                           child: Image.asset(
                             'assets/btn_hungup_normal.png',
-                            width: 44.0,
-                            height: 44.0,
+                            width: 65.0,
+                            height: 65.0,
                             fit: BoxFit.cover,
                           ),
                         ),
