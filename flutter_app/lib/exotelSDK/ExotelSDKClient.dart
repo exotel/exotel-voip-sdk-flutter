@@ -309,6 +309,11 @@ class ExotelSDKClient {
         print('in FlutterCallHandler(), version is $Version');
         mCallBack?.setVersion(Version);
         break;
+      case "contacts":
+        String? jsonData =  call.arguments.toString();
+        print('in FlutterCallHandler(), jsonData is : $jsonData');
+        mCallBack?.setjsonData(jsonData);
+        break;
       default:
         break;
     }
