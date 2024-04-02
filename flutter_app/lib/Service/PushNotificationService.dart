@@ -1,9 +1,11 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_app/exotelSDK/ExotelSDKClient.dart';
+import '../exotelSDK/ExotelSDKClient.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class PushNotificationService {
-
   static final PushNotificationService _instance = PushNotificationService._internal();
+  final _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   FirebaseMessaging? _fcm;
 
@@ -32,4 +34,32 @@ class PushNotificationService {
     print('Token: $token');
     return token;
   }
+  Future<void> setupLocalNotification() async {
+    const androidInitializationSetting = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const initSettings = InitializationSettings(android: androidInitializationSetting);
+    await _flutterLocalNotificationsPlugin.initialize(initSettings);
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  }
+  void showLocalNotification(String title, String body) {
+    const androidNotificationDetail = AndroidNotificationDetails(
+      '0', // channel Id
+      'general',// channel Name
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+    const notificationDetails = NotificationDetails(
+      android: androidNotificationDetail,
+    );
+    _flutterLocalNotificationsPlugin.show(0, title, body, notificationDetails);
+  }
+}
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Handling a background message");
+  print("RemoteMessage : $message");
+  // Ensure Firebase is initialized
+  await Firebase.initializeApp();
+  PushNotificationService.getInstance().showLocalNotification(
+    'Incoming call!',
+    '',
+  );
 }

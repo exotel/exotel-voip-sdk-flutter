@@ -9,6 +9,9 @@ abstract class ExotelSDKCallback {
 
   void onCallEnded();
 
-  void onCallIncoming(Map<String,String> arguments) {}
+  void onCallIncoming(String callId, String destination) {}
 
+  void setVersion(String version) {}
+
+  void setjsonData(String jsonData) {}
 }

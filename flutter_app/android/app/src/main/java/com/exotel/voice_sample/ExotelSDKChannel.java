@@ -5,9 +5,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 
+import androidx.annotation.NonNull;
+
 
 import com.exotel.voice.Call;
 import com.exotel.voice.CallIssue;
+import com.exotel.voice.CallAudioRoute;
+
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,9 +20,14 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import com.exotel.voice.ExotelVoiceError;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
@@ -28,6 +37,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+
+
 
 //Exotel Channel Class
 // it is a Channel class b/w flutter and native.
@@ -108,6 +119,10 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                             call(username,dialNumber);
                             result.success("calling");
                             break;
+                        case "makeWhatsAppCall":
+                            dialNumber = call.argument("dialTo");
+                            makeWhatsAppCall(dialNumber);
+                            break;
                         case "logout":
                             logout();
                             result.success("logging out");
@@ -131,6 +146,14 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                         case "disableSpeaker":
                             disableSpeaker();
                             result.success("disableSpeaker successful");
+                            break;
+                        case "enableBluetooth":
+                            enableBluetooth();
+                            result.success("enableBluetooth successful");
+                            break;
+                        case "disableBluetooth":
+                            disableBluetooth();
+                            result.success("disableBluetooth successful");
                             break;
                         case "hangup":
                             hangup();
@@ -212,6 +235,9 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                         case "relayNotificationData":
                             Map<String, String> data = call.argument("data");
                             processPushNotification(data);
+                            break;
+                        case "contacts":
+                            fetchContactList();
                             break;
                         default:
                             System.out.println("fail");
@@ -298,6 +324,7 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
 
     }
 
+
     private Callback mCallback = new Callback() {
         @Override
         public void onFailure(okhttp3.Call call, IOException e) {
@@ -369,7 +396,12 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
             }
         }
     };
-    private void logout() {
+
+    private void  makeWhatsAppCall(String destination) {
+        mService.makeWhatsAppCall(destination);
+        }
+
+        private void logout() {
         VoiceAppLogger.debug(TAG, "In logout");
         if (null != mService) {
             VoiceAppLogger.debug(TAG, "Calling reset of service");
@@ -394,7 +426,6 @@ private ApplicationSharedPreferenceData isloggedin(){
              */
             channel.invokeMethod("loggedInStatus",mService.getCurrentStatus().getMessage());
         });
-
     }
 
     @Override
@@ -434,8 +465,12 @@ private ApplicationSharedPreferenceData isloggedin(){
         uiThreadHandler.post(()-> {
             channel.invokeMethod("callStatus", "Connected");
         });
+        VoiceAppLogger.debug(TAG, "Call Established, callId: " + call.getCallDetails().getCallId()
+                + " Destination: " + call.getCallDetails().getRemoteId());
+        if(mService.getCallAudioState() == CallAudioRoute.BLUETOOTH) {
+            mService.enableBluetooth();
+        }
     }
-
     @Override
     public void onCallEnded(Call call) {
         VoiceAppLogger.debug(TAG,"onCallEnded");
@@ -472,6 +507,18 @@ private ApplicationSharedPreferenceData isloggedin(){
         VoiceAppLogger.debug(TAG, "ExotelSDKChannel disableSpeaker() Start.");
         mService.disableSpeaker();
         VoiceAppLogger.debug(TAG, "ExotelSDKChannel disableSpeaker() end.");
+
+    }
+    private void enableBluetooth(){
+        VoiceAppLogger.debug(TAG, "ExotelSDKChannel enableBluetooth() Start.");
+        mService.enableBluetooth();
+        VoiceAppLogger.debug(TAG, "ExotelSDKChannel enableBluetooth() end.");
+
+    }
+    private void disableBluetooth(){
+        VoiceAppLogger.debug(TAG, "ExotelSDKChannel disableBluetooth() Start.");
+        mService.disableBluetooth();
+        VoiceAppLogger.debug(TAG, "ExotelSDKChannel disableBluetooth() end.");
 
     }
     private void hangup(){
@@ -595,6 +642,50 @@ private ApplicationSharedPreferenceData isloggedin(){
             }
         });
     }
+
+
+
+    private void fetchContactList() {
+
+        OkHttpClient okHttpClient = new OkHttpClient();
+        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
+        String url = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.APP_HOSTNAME.toString());
+        String accountSid = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
+        String username = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.USER_NAME.toString());
+
+        url = url + "/accounts/" + accountSid + "/subscribers/" + username + "/contacts";
+        VoiceAppLogger.debug(TAG, "contactApiUrl :" + url);
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        okHttpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
+                VoiceAppLogger.error(TAG, "getContactList: Failed to get response"
+                        + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(@NonNull okhttp3.Call call, @NonNull Response response) throws IOException {
+                VoiceAppLogger.debug(TAG, "response code :" + response.code());
+                String jsonData;
+                jsonData = response.body().string();
+                JSONObject jsonObject;
+                VoiceAppLogger.debug(TAG, "Response body: " + jsonData);
+                try {
+                    uiThreadHandler.post(()->{
+                        channel.invokeMethod("contacts", jsonData);
+                    });
+                } catch (Exception e) {
+                    VoiceAppLogger.error(TAG, "contact exception" + e.getMessage());
+                }
+                response.body().close();
+            }
+        });
+    }
+
+
 
 
     private void uploadLogs(Date startDate, Date endDate, String description){

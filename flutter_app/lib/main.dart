@@ -11,13 +11,18 @@ import 'callStates/incoming.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'Service/PushNotificationService.dart';
+import 'package:provider/provider.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();//TBD
-  runApp(MyApp());
+  await PushNotificationService.getInstance().setupLocalNotification();
+  runApp(    ChangeNotifierProvider(
+    create: (context) => CallList(),
+    child: MyApp(),
+  ),);
 }
 
 class MyApp extends StatelessWidget {
