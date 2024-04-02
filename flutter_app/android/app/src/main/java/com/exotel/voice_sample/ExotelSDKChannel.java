@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 
 import com.exotel.voice.Call;
 import com.exotel.voice.CallIssue;
+import com.exotel.voice.CallAudioRoute;
+
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,6 +25,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import com.exotel.voice.ExotelVoiceError;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
@@ -137,11 +142,18 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                         case "enableSpeaker":
                             enableSpeaker();
                             result.success("enableSpeaker successful");
-                            result.success("enableSpeaker successful");
                             break;
                         case "disableSpeaker":
                             disableSpeaker();
                             result.success("disableSpeaker successful");
+                            break;
+                        case "enableBluetooth":
+                            enableBluetooth();
+                            result.success("enableBluetooth successful");
+                            break;
+                        case "disableBluetooth":
+                            disableBluetooth();
+                            result.success("disableBluetooth successful");
                             break;
                         case "hangup":
                             hangup();
@@ -453,8 +465,12 @@ private ApplicationSharedPreferenceData isloggedin(){
         uiThreadHandler.post(()-> {
             channel.invokeMethod("callStatus", "Connected");
         });
+        VoiceAppLogger.debug(TAG, "Call Established, callId: " + call.getCallDetails().getCallId()
+                + " Destination: " + call.getCallDetails().getRemoteId());
+        if(mService.getCallAudioState() == CallAudioRoute.BLUETOOTH) {
+            mService.enableBluetooth();
+        }
     }
-
     @Override
     public void onCallEnded(Call call) {
         VoiceAppLogger.debug(TAG,"onCallEnded");
@@ -491,6 +507,18 @@ private ApplicationSharedPreferenceData isloggedin(){
         VoiceAppLogger.debug(TAG, "ExotelSDKChannel disableSpeaker() Start.");
         mService.disableSpeaker();
         VoiceAppLogger.debug(TAG, "ExotelSDKChannel disableSpeaker() end.");
+
+    }
+    private void enableBluetooth(){
+        VoiceAppLogger.debug(TAG, "ExotelSDKChannel enableBluetooth() Start.");
+        mService.enableBluetooth();
+        VoiceAppLogger.debug(TAG, "ExotelSDKChannel enableBluetooth() end.");
+
+    }
+    private void disableBluetooth(){
+        VoiceAppLogger.debug(TAG, "ExotelSDKChannel disableBluetooth() Start.");
+        mService.disableBluetooth();
+        VoiceAppLogger.debug(TAG, "ExotelSDKChannel disableBluetooth() end.");
 
     }
     private void hangup(){

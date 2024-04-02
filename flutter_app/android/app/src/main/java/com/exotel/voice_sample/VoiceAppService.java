@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 
 import com.exotel.voice.Call;
 import com.exotel.voice.CallController;
+import com.exotel.voice.CallAudioRoute;
 import com.exotel.voice.CallDetails;
 import com.exotel.voice.CallDirection;
 import com.exotel.voice.CallEndReason;
@@ -356,6 +357,25 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
         if (null != mCall) {
             mCall.disableSpeaker();
         }
+    }
+
+    public void enableBluetooth() {
+        if (null != mCall) {
+            mCall.enableBluetooth();
+        }
+    }
+
+    public void disableBluetooth() {
+        if (null != mCall) {
+            mCall.disableBluetooth();
+        }
+    }
+
+    public CallAudioRoute getCallAudioState() {
+        if (mCall != null) {
+            return mCall.getAudioRoute();
+        }
+        return CallAudioRoute.EARPIECE;
     }
 
     public void mute() {

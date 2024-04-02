@@ -142,6 +142,32 @@ class ExotelSDKClient {
     }
   }
 
+  Future<String> enableBluetooth() async{
+    log("enableBluetooth function start");
+    String response = "";
+    try {
+      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
+      return await androidChannel?.invokeMethod('enableBluetooth');
+      //loading UI
+    } catch (e) {
+      response = "Failed to Invoke: '${e.toString()}'.";
+      rethrow;
+    }
+  }
+
+  Future<String> disableBluetooth() async{
+    log("disableBluetooth function start");
+    String response = "";
+    try {
+      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
+      return await androidChannel?.invokeMethod('disableBluetooth');
+      //loading UI
+    } catch (e) {
+      response = "Failed to Invoke: '${e.toString()}'.";
+      rethrow;
+    }
+  }
+
   Future<String> hangup() async{
     log("hangup function start");
     String response = "";
