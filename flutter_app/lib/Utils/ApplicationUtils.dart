@@ -10,10 +10,10 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_app/main.dart';
 
 import 'package:intl/intl.dart';
-import 'package:timezone/timezone.dart' as tz;
 
 import 'package:provider/provider.dart';
 import 'package:flutter_app/UI/home_page.dart';
+import '../Service/PushNotificationService.dart';
 
 class ApplicationUtils implements ExotelSDKCallback {
   String? mUserId;
@@ -35,7 +35,6 @@ class ApplicationUtils implements ExotelSDKCallback {
   String? mDestination;
 
   String? mJsonData;
-
 
   ApplicationUtils._internal();
   static ApplicationUtils? _instance;
@@ -94,6 +93,10 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
   void navigateToIncoming() {
    print("in navigateToIncoming");
+   PushNotificationService.getInstance().showLocalNotification(
+     'Incoming call!',
+     '$mDestination',
+   );
    WidgetsBinding.instance.addPostFrameCallback((_) {
      Navigator.pushReplacementNamed(
        context!,
