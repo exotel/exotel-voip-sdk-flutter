@@ -18,6 +18,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();//TBD
+  await PushNotificationService.getInstance().setupLocalNotification();
   runApp(    ChangeNotifierProvider(
     create: (context) => CallList(),
     child: MyApp(),
