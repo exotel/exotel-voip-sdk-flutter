@@ -572,13 +572,6 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
                     ExotelSDKClient.getInstance().call(userId, dialTo);
                     print("Calling ${filteredContacts[index].name}");
                   },
-                  onWhatsAppCallPressed: () {
-                    String dialTo = filteredContacts[index].number;
-                    print("DialTo is:  $dialTo");
-                    mApplicationUtil.setDialTo(dialTo);
-                    ExotelSDKClient.getInstance().makeWhatsAppCall(dialTo);
-                    print("WhatsApp calling ${filteredContacts[index].name}");
-                  },
                 );
               },
             ),
@@ -607,12 +600,10 @@ class Contact {
 class ContactItem extends StatelessWidget {
   final Contact contact;
   final VoidCallback onCallPressed;
-  final VoidCallback onWhatsAppCallPressed;
 
   const ContactItem({
     required this.contact,
     required this.onCallPressed,
-    required this.onWhatsAppCallPressed,
   });
 
   @override
@@ -624,7 +615,7 @@ class ContactItem extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           GestureDetector(
-            onTap: onCallPressed, // Add your WhatsApp call functionality here
+            onTap: onCallPressed, // Add your call functionality here
             child: ClipOval(
               child: Image.asset(
                 'assets/call_icon.PNG', // Replace with your icon path
@@ -635,18 +626,6 @@ class ContactItem extends StatelessWidget {
             ),
           ),
           SizedBox(width: 15),
-          GestureDetector(
-            onTap: onWhatsAppCallPressed, // Add your WhatsApp call functionality here
-            child: ClipOval(
-              child: Image.asset(
-                'assets/btn_call_whatsapp.png', // Replace with your icon path
-                width: 35.0, // Set your desired width
-                height: 35.0, // Set your desired height
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-
         ],
       ),
     );

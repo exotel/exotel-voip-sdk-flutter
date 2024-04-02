@@ -62,20 +62,6 @@ class ExotelSDKClient {
 
   }
 
-  Future<String> makeWhatsAppCall(String dialTo) async{
-    log("makeWhatsAppCall button function start");
-    String response = "";
-    try {
-      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-      return await androidChannel?.invokeMethod('makeWhatsAppCall', {'dialTo':dialTo});
-      //loading UI
-    } catch (e) {
-      response = "Failed to Invoke: '${e.toString()}'.";
-      rethrow;
-    }
-
-  }
-
   Future<String> logout() async{
     log("login button function start");
     String response = "";
