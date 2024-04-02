@@ -201,7 +201,7 @@ class ApplicationUtils implements ExotelSDKCallback {
   @override
   void onCallRinging() {
     navigateToRinging();
-    _fetchData(mDialTo!, 'OUTGOING');
+    recentCallsPage(mDialTo!, 'OUTGOING');
   }
 
   @override
@@ -221,10 +221,10 @@ class ApplicationUtils implements ExotelSDKCallback {
     setCallId(callId);
     setDestination(destination);
     navigateToIncoming();
-    _fetchData(mDestination!, 'INCOMING');
+    recentCallsPage(mDestination!, 'INCOMING');
   }
 
-  void _fetchData(String number, String status) {
+  void recentCallsPage(String number, String status) {
     DateTime time = DateTime.now();
     final newCall = Call(
       timeFormatted: '$time',

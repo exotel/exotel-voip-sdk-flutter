@@ -1,5 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_app/exotelSDK/ExotelSDKClient.dart';
+import '../exotelSDK/ExotelSDKClient.dart';
 
 class PushNotificationService {
 
