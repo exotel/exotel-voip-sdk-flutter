@@ -34,6 +34,18 @@ class _ConnectedState extends State<Connected> {
     });
   }
 
+  bool isBluetoothEnabled = false;
+  void toggleBluetooth() {
+    setState(() {
+      isBluetoothEnabled = !isBluetoothEnabled;
+      if (isBluetoothEnabled) {
+        ExotelSDKClient.getInstance().enableBluetooth();
+      } else {
+        ExotelSDKClient.getInstance().disableBluetooth();
+      }
+    });
+  }
+
   Timer? _timer;
   int _callDuration = 0;
 
@@ -90,7 +102,7 @@ class _ConnectedState extends State<Connected> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.only(top: 80.0, bottom: 12.0),
+                  padding: const EdgeInsets.only(top: 80.0, bottom: 0),
                   child: Text(display, style: const TextStyle(fontSize: 25.0)),
                 ),
                 Padding(
@@ -111,40 +123,40 @@ class _ConnectedState extends State<Connected> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
                       SizedBox(height: 200),
-                      SizedBox(width: 15),
-                      GestureDetector(
-                        onTap: () {
-                          toggleSpeaker;
-                        },
-                        child: Icon(isSpeakerEnabled ? Icons.volume_off : Icons.volume_up, size: 42.0),
-                      ),
-                      SizedBox(width: 50),
-                      GestureDetector(
-                        onTap: () {
-                          ExotelSDKClient.getInstance().hangup();
-                        },
-                        child: ClipOval(
-                          child: Image.asset(
-                            'assets/btn_hungup_normal.png',
-                            width: 55.0, // Set your desired width
-                            height: 55.0, // Set your desired height
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 50),
-                      GestureDetector(
-                        onTap: () {
-                          toggleMute;
-                        },
-                        child: Icon(isMuteEnabled ? Icons.mic_off : Icons.mic_sharp, size: 42.0),
-                      ),
+                      SizedBox(width: 5),
+                      ElevatedButton.icon(onPressed: toggleSpeaker, icon: Icon(isSpeakerEnabled ? Icons.volume_off : Icons.volume_up, size: 42.0), label:Text("") ),
+                      SizedBox(width: 5),
+                      ElevatedButton.icon(onPressed: toggleBluetooth, icon: Icon(isBluetoothEnabled ? Icons.bluetooth_disabled : Icons.bluetooth, size: 42.0), label:Text("") ),
+                      SizedBox(width: 0),
+                      ElevatedButton.icon(onPressed: toggleMute, icon: Icon(isMuteEnabled ? Icons.mic_off : Icons.mic_sharp, size: 42.0), label:Text("") ),
                     ],
                   ),
                 ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    SizedBox(width: 110),
+
+                    GestureDetector(
+                      onTap: () {
+                        ExotelSDKClient.getInstance().hangup();
+                      },
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/btn_hungup_normal.png',
+                          width: 55.0, // Set your desired width
+                          height: 55.0, // Set your desired height
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
               ],
             ),
           ),
+          SizedBox(height: 100),
           Container(
             width: 150,
             child: ElevatedButton(
