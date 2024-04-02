@@ -8,6 +8,7 @@ class Ringing extends StatefulWidget {
 }
 
 class _RingingState extends State<Ringing> {
+  String? state; // Define state variable
   @override
   Widget build(BuildContext context) {
     final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
@@ -17,6 +18,8 @@ class _RingingState extends State<Ringing> {
     final String displayName = arguments['displayName'];
     final String accountSid = arguments['accountSid'];
     final String hostname = arguments['hostname'];
+    String? state = arguments['state'];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -30,22 +33,23 @@ class _RingingState extends State<Ringing> {
         crossAxisAlignment: CrossAxisAlignment.center, // This will center the column horizontally
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 140.0, vertical: 25.0),
+            padding: const EdgeInsets.symmetric(horizontal: 130.0, vertical: 25.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 Padding(
                   padding: const EdgeInsets.only(top: 80.0, bottom: 12.0),
-                  child: Text(dialTo, style: const TextStyle(fontSize: 20.0)),
+                  child: Text(dialTo, style: const TextStyle(fontSize: 25.0)),
                 ),
-                const Padding(
+                 Padding(
                   padding: EdgeInsets.only(top: 80.0, bottom: 12.0),
-                  child: Text('Ringing', style: TextStyle(fontSize: 20.0)),
+                  child: Text('$state', style: TextStyle(fontSize: 20.0)),
                 ),
+                SizedBox(height: 200),
                 Padding(
                   padding: const EdgeInsets.only(top: 30.0, bottom: 12.0),
-                  child:ElevatedButton(
-                    onPressed: () {
+                  child: GestureDetector(
+                    onTap:() {
                       ExotelSDKClient.getInstance().hangup();
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         Navigator.pushReplacementNamed(
@@ -54,16 +58,11 @@ class _RingingState extends State<Ringing> {
                           arguments: {'dialTo': dialTo, 'userId': userId, 'password': password, 'displayName': displayName, 'accountSid': accountSid, 'hostname': hostname },
                         );});
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFFA224B), // background color
-                      shape: CircleBorder(), // shape of button
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12), // padding
-                    ),
                     child: ClipOval(
                       child: Image.asset(
                         'assets/btn_hungup_normal.png',
-                        width: 35.0,
-                        height: 35.0,
+                        width: 55.0,
+                        height: 55.0,
                         fit: BoxFit.cover,
                       ),
                     ),
