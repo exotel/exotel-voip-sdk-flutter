@@ -193,6 +193,40 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
         return dialSDK(destination, message);
     }
 
+    public void  makeWhatsAppCall(String destination) {
+        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
+        String exophone = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.EXOPHONE.toString());
+        sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.LAST_DIALLED_NO.toString(),destination);
+        destination = "wa:"+destination;
+        makeCall(exophone,destination);
+    }
+
+    public void makeCall(String phone, String destination) {
+        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
+        String subscriberName = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.USER_NAME.toString());
+        String contextMessage = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.CONTACT_DISPLAY_NAME.toString());
+
+        VoiceAppLogger.debug(TAG,"Initiating outgoing call");
+        Call call = null;
+        try {
+            VoiceAppLogger.debug(TAG,"Making dial API call to sample service");
+            call = dial(phone, contextMessage);
+        } catch (Exception e) {
+            String errorMessage = "Outgoing call Failed:";
+            errorMessage = errorMessage + e.getMessage();
+            VoiceAppLogger.debug(TAG,"Exception is: "+e.getMessage());return;
+        }
+
+        if(null != call){
+            setCallContext(subscriberName,destination,"");
+//            Intent intent = new Intent(context,
+//                    CallActivity.class);
+//            callId = call.getCallDetails().getCallId();
+//            destination = call.getCallDetails().getRemoteId();
+            //finish();
+        }
+    }
+
     /**
      * mediator API to invoke dial of exotel client
      * @param destination exophone number

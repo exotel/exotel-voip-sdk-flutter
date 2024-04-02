@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import '../exotelSDK/ExotelSDKCallback.dart';
 import '../exotelSDK/ExotelSDKClient.dart';
 import 'login_page.dart';
 import '../main.dart';
@@ -300,7 +301,7 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Text(
-                      '1234567890', // Replace with actual user id
+                      '$userId', // Replace with actual user id
                       style: TextStyle(color: Color(0xFFBCBCBE)),
                     ),
                     FutureBuilder<String?>(
@@ -431,11 +432,12 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
   late bool showContacts;
   List<Contact> allContacts = [];
   late ApplicationUtils mApplicationUtil; // Declare but don't initialize here
-
+  late bool _isLoading; // Show loading indicator
   late Future<void> _fetchAndParseJsonData;
 
   @override
   void initState() {
+    ExotelSDKClient.getInstance().contacts();
     super.initState();
     searchController = TextEditingController();
     showContacts = false;
@@ -478,12 +480,18 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
       future: _fetchAndParseJsonData,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
+          // Show circular progress indicator for 2 seconds
+          Future.delayed(Duration(seconds: 2), () {
+            // After 2 seconds, trigger a rebuild
+            setState(() {});
+          });
           return Center(child: CircularProgressIndicator());
         }
         return _buildContent();
       },
     );
   }
+
 
   String groupJson = "All contacts";
   void _displayGroup(String group) {
@@ -565,7 +573,10 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
                     print("Calling ${filteredContacts[index].name}");
                   },
                   onWhatsAppCallPressed: () {
-                    // Implement WhatsApp call functionality
+                    String dialTo = filteredContacts[index].number;
+                    print("DialTo is:  $dialTo");
+                    mApplicationUtil.setDialTo(dialTo);
+                    ExotelSDKClient.getInstance().makeWhatsAppCall(dialTo);
                     print("WhatsApp calling ${filteredContacts[index].name}");
                   },
                 );

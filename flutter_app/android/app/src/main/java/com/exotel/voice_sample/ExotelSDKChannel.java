@@ -114,6 +114,10 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                             call(username,dialNumber);
                             result.success("calling");
                             break;
+                        case "makeWhatsAppCall":
+                            dialNumber = call.argument("dialTo");
+                            makeWhatsAppCall(dialNumber);
+                            break;
                         case "logout":
                             logout();
                             result.success("logging out");
@@ -219,6 +223,9 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                         case "relayNotificationData":
                             Map<String, String> data = call.argument("data");
                             processPushNotification(data);
+                            break;
+                        case "contacts":
+                            fetchContactList();
                             break;
                         default:
                             System.out.println("fail");
@@ -377,7 +384,12 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
             }
         }
     };
-    private void logout() {
+
+    private void  makeWhatsAppCall(String destination) {
+        mService.makeWhatsAppCall(destination);
+        }
+
+        private void logout() {
         VoiceAppLogger.debug(TAG, "In logout");
         if (null != mService) {
             VoiceAppLogger.debug(TAG, "Calling reset of service");
@@ -402,7 +414,6 @@ private ApplicationSharedPreferenceData isloggedin(){
              */
             channel.invokeMethod("loggedInStatus",mService.getCurrentStatus().getMessage());
         });
-        fetchContactList();
     }
 
     @Override

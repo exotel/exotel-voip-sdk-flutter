@@ -71,7 +71,7 @@ class _ConnectedState extends State<Connected> {
     final String hostname = arguments['hostname'];
     final String? callId = arguments['callId'];
     final String? destination = arguments['destination'];
-    final String display = dialTo ?? destination ?? ''; // Use the null-aware operator (??) to handle null values
+    final String display = dialTo ?? destination ?? " "; // Use the null-aware operator (??) to handle null values
     return Scaffold(
       appBar: AppBar(
         title: const Text(

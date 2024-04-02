@@ -1,20 +1,7 @@
-// FlutterChannelHandler.dart (Communication Channels):
-// Create a new file named FlutterChannelHandler.dart.
-// If your app communicates with native code (e.g., platform channels), this file handles those interactions.
-// Explanation:
-// In this file, you can set up communication channels between Flutter and native code (e.g., Android or iOS).
-// Implement platform-specific logic here, such as invoking native APIs.
-// Customization:
-// Customize the channel names and methods based on your app’s integration needs.
-
-
-// FlutterChannelHandler.dart
 
 import 'dart:developer';
-import 'package:flutter_app/Service/PushNotificationService.dart';
-import 'package:flutter_app/Utils/ApplicationUtils.dart';
-import 'package:flutter_app/exotelSDK/ExotelSDKCallback.dart';
-
+import '../Service/PushNotificationService.dart';
+import 'ExotelSDKCallback.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -74,6 +61,21 @@ class ExotelSDKClient {
     }
 
   }
+
+  Future<String> makeWhatsAppCall(String dialTo) async{
+    log("makeWhatsAppCall button function start");
+    String response = "";
+    try {
+      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
+      return await androidChannel?.invokeMethod('makeWhatsAppCall', {'dialTo':dialTo});
+      //loading UI
+    } catch (e) {
+      response = "Failed to Invoke: '${e.toString()}'.";
+      rethrow;
+    }
+
+  }
+
   Future<String> logout() async{
     log("login button function start");
     String response = "";
@@ -240,6 +242,18 @@ class ExotelSDKClient {
     }
   }
 
+  Future<void> contacts() async{
+    log("fetch contacts function start");
+    String response = "";
+    try {
+      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
+       await androidChannel?.invokeMethod('contacts');
+    } catch (e) {
+      response = "Failed to Invoke: '${e.toString()}'.";
+      rethrow;
+    }
+  }
+
   // Future<int> checkCallDuration() async{
   //   log("checkCallDuration function start");
   //   try {
@@ -257,7 +271,7 @@ class ExotelSDKClient {
   //   return duration;
   // }
 
-  static Future<PermissionStatus> requestPermissions() async {
+  static Future<void> requestPermissions() async {
     // You can request multiple permissions at once
     Map<Permission, PermissionStatus> statuses = await [
       Permission.phone,
@@ -265,10 +279,10 @@ class ExotelSDKClient {
       Permission.notification,
       Permission.nearbyWifiDevices,
       Permission.accessMediaLocation,
-      Permission.location,
+      Permission.location,  Permission.bluetoothScan,
+      Permission.bluetoothConnect,
       // Add other permissions you want to request
     ].request();
-    return await Permission.location.status;
     // Check permission status and handle accordingly
   }
 
