@@ -4,7 +4,7 @@ import 'package:flutter_app/exotelSDK/ExotelSDKClient.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/UI/home_page.dart';
-
+import '../Utils/ApplicationUtils.dart';
 class Incoming extends StatefulWidget {
   @override
   _IncomingState createState() => _IncomingState();
@@ -14,94 +14,79 @@ class _IncomingState extends State<Incoming> {
 
   @override
   Widget build(BuildContext context) {
-    final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
-    final String? dialTo = arguments['dialTo'];
-    final String userId = arguments['userId'];
-    final String password = arguments['password'];
-    final String displayName = arguments['displayName'];
-    final String accountSid = arguments['accountSid'];
-    final String hostname = arguments['hostname'];
-    final String callId = arguments['callId'];
-    final String destination = arguments['destination'];
+    var mApplicationUtil = ApplicationUtils.getInstance(context);
+    final String? dialTo = mApplicationUtil.mDialTo;
+    final String? destination = mApplicationUtil.mDestination;
 
 
     return Scaffold(
       appBar: AppBar(
-        title:  Text(
+        title: Text(
           'Exotel Voice Application',
           style: TextStyle(color: Colors.white), // Set text color to white
         ),
         backgroundColor: const Color(0xFF0800AF), // Set the app bar color to deep blue
       ),
       body: Column(
-        // mainAxisAlignment: MainAxisAlignment.center, // This will center the column vertically
         crossAxisAlignment: CrossAxisAlignment.center, // This will center the column horizontally
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 50.0, vertical: 25.0),
+            padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.1, vertical: MediaQuery.of(context).size.height * 0.05),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 Padding(
-                  padding:  EdgeInsets.only(top: 80.0, bottom: 12.0),
-                  child: Text(destination!, style: const TextStyle(fontSize: 25.0)),
+                  padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.2, bottom: MediaQuery.of(context).size.height * 0.02),
+                  child: Text(destination!, style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.08)),
                 ),
-                 Padding(
-                  padding: EdgeInsets.only(top: 80.0, bottom: 12.0),
-                  child: Text('Incoming', style: TextStyle(fontSize: 20.0)),
-                ),
-
                 Padding(
-                  padding: const EdgeInsets.only(top: 30.0, bottom: 12.0),
+                  padding: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.02),
+                  child: Text('Incoming', style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.06)),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05, bottom: MediaQuery.of(context).size.height * 0.02),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      SizedBox(height: 200),
-                      SizedBox(width: 80), // Add space
                       GestureDetector(
-                        onTap:() {
+                        onTap: () {
                           ExotelSDKClient.getInstance().answer();
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             Navigator.pushReplacementNamed(
                               context,
                               '/connected',
-                              arguments: {'destination': destination, 'userId': userId, 'password': password, 'displayName': displayName, 'accountSid': accountSid, 'hostname': hostname },
                             );
                           });
                         },
                         child: ClipOval(
                           child: Image.asset(
                             'assets/btn_call_normal.png',
-                            width: 65.0,
-                            height: 65.0,
+                            width: MediaQuery.of(context).size.width * 0.13,
+                            height: MediaQuery.of(context).size.width * 0.13,
                             fit: BoxFit.cover,
                           ),
                         ),
                       ),
-
-                      SizedBox(width: 20), // Add space
-
+                      SizedBox(width: MediaQuery.of(context).size.width * 0.1), // Add space
                       GestureDetector(
-                        onTap:() {
+                        onTap: () {
                           ExotelSDKClient.getInstance().hangup();
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             Navigator.pushReplacementNamed(
                               context,
                               '/home',
-                              arguments: {'userId': userId, 'password': password, 'displayName': displayName, 'accountSid': accountSid, 'hostname': hostname },
                             );
                           });
                         },
                         child: ClipOval(
                           child: Image.asset(
                             'assets/btn_hungup_normal.png',
-                            width: 65.0,
-                            height: 65.0,
+                            width: MediaQuery.of(context).size.width * 0.13,
+                            height: MediaQuery.of(context).size.width * 0.13,
                             fit: BoxFit.cover,
                           ),
                         ),
                       ),
-
                     ],
                   ),
                 ),
@@ -109,21 +94,19 @@ class _IncomingState extends State<Incoming> {
             ),
           ),
           Container(
-            width: 150,
+            width: MediaQuery.of(context).size.width * 0.4,
             child: ElevatedButton(
-              //Raised Button
-              onPressed: ()  {
+              onPressed: () {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   Navigator.pushNamed(
                     context,
                     '/dtmf',
-                    arguments: {'dialTo': dialTo, 'userId': userId, 'password': password, 'displayName': displayName, 'accountSid': accountSid, 'hostname': hostname },
                   );
                 });
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF969698), // Set the button color to blue
-                shape: RoundedRectangleBorder( // Make the button rectangular
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(0),
                 ),
               ),
@@ -136,5 +119,6 @@ class _IncomingState extends State<Incoming> {
         ],
       ),
     );
+
   }
 }

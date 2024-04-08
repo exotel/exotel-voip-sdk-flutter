@@ -36,6 +36,8 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   String? mJsonData;
 
+  String? mdisplayName;
+
   ApplicationUtils._internal();
   static ApplicationUtils? _instance;
   BuildContext? context;
@@ -80,7 +82,6 @@ class ApplicationUtils implements ExotelSDKCallback {
     navigatorKey.currentState!.pushNamedAndRemoveUntil(
       '/home',
           (Route<dynamic> route) => false,
-      arguments: {'userId': mUserId, 'password': mPassword, 'displayName': mUserId, 'accountSid': mAccountSid, 'hostname': mHostName }, //Hard-coded
     );
   }
   void navigateToConnected() {
@@ -88,11 +89,12 @@ class ApplicationUtils implements ExotelSDKCallback {
     navigatorKey.currentState!.pushNamedAndRemoveUntil(
       '/connected',
           (Route<dynamic> route) => false,
-      arguments: {'dialTo': mDialTo, 'userId': mUserId, 'password': mPassword, 'displayName': mUserId, 'accountSid': mAccountSid, 'hostname': mHostName }, //Hard-coded
+      arguments: {'dialTo': mDialTo },
     );
   }
   void navigateToIncoming() {
    print("in navigateToIncoming");
+   recentCallsPage(mDestination!, 'INCOMING');
    PushNotificationService.getInstance().showLocalNotification(
      'Incoming call!',
      '$mDestination',
@@ -101,15 +103,15 @@ class ApplicationUtils implements ExotelSDKCallback {
      Navigator.pushReplacementNamed(
        context!,
        '/incoming',
-       arguments: {'dialTo': mDialTo, 'userId': mUserId, 'password': mPassword, 'displayName': mUserId, 'accountSid': mAccountSid, 'hostname': mHostName, 'callId': mCallId, 'destination':mDestination }, //Hard-coded
      );
    });
   }
   void navigateToRinging() {
+    recentCallsPage(mDialTo!, 'OUTGOING');
     navigatorKey.currentState!.pushNamedAndRemoveUntil(
       '/ringing',
           (Route<dynamic> route) => false,
-      arguments: {'state': "Ringing",'dialTo': mDialTo, 'userId': mUserId, 'password': mPassword, 'displayName': mUserId, 'accountSid': mAccountSid, 'hostname': mHostName }, //Hard-coded
+      arguments: {'state': "Ringing"}, //Hard-coded
     );
   }
   void navigateToStart() {
@@ -174,7 +176,9 @@ class ApplicationUtils implements ExotelSDKCallback {
   void setCallId(String callId) {
     mCallId = callId;
   }
-
+  void displayName(String displayName) {
+    mdisplayName = displayName;
+  }
   void setVersion(String version) {
     mVersion = version;
     print('in setVersion(), version is: $mVersion');
@@ -204,7 +208,6 @@ class ApplicationUtils implements ExotelSDKCallback {
   @override
   void onCallRinging() {
     navigateToRinging();
-    recentCallsPage(mDialTo!, 'OUTGOING');
   }
 
   @override
@@ -224,7 +227,6 @@ class ApplicationUtils implements ExotelSDKCallback {
     setCallId(callId);
     setDestination(destination);
     navigateToIncoming();
-    recentCallsPage(mDestination!, 'INCOMING');
   }
 
   void recentCallsPage(String number, String status) {

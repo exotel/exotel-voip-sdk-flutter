@@ -234,6 +234,7 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                             break;
                         case "relayNotificationData":
                             Map<String, String> data = call.argument("data");
+                            VoiceAppLogger.debug(TAG, "in java relayNotificationData data = " + data);
                             processPushNotification(data);
                             break;
                         case "contacts":
@@ -424,8 +425,15 @@ private ApplicationSharedPreferenceData isloggedin(){
             /**
              * [sdk-initialization-flow] sending message to flutter about the sdk inialization status
              */
-            channel.invokeMethod("loggedInStatus",mService.getCurrentStatus().getMessage());
+            try {
+                channel.invokeMethod("loggedInStatus", mService.getCurrentStatus().getMessage());
+            }
+            catch(Exception exception){
+                VoiceAppLogger.debug(TAG, "Exception in onStatusChange: " + exception.getMessage());
+
+            }
         });
+        fetchContactList();
     }
 
     @Override
