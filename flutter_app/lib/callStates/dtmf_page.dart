@@ -29,14 +29,6 @@ class _DtmfPageState extends State<DtmfPage> {
 
   @override
   Widget build(BuildContext context) {
-    final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
-    final String? dialTo = arguments['dialTo'];
-    final String userId = arguments['userId'];
-    final String password = arguments['password'];
-    final String displayName = arguments['displayName'];
-    final String accountSid = arguments['accountSid'];
-    final String hostname = arguments['hostname'];
-
     return Scaffold(
       appBar: AppBar(
         title: const Text(

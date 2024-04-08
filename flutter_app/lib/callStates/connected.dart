@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/main.dart';
 import 'package:flutter_app/exotelSDK/ExotelSDKClient.dart';
 import 'dart:async';
-
+import '../Utils/ApplicationUtils.dart';
 class Connected extends StatefulWidget {
   @override
   _ConnectedState createState() => _ConnectedState();
@@ -74,15 +74,9 @@ class _ConnectedState extends State<Connected> {
 
   @override
   Widget build(BuildContext context) {
-    final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
-    final String? dialTo = arguments['dialTo'];
-    final String userId = arguments['userId'];
-    final String password = arguments['password'];
-    final String displayName = arguments['displayName'];
-    final String accountSid = arguments['accountSid'];
-    final String hostname = arguments['hostname'];
-    final String? callId = arguments['callId'];
-    final String? destination = arguments['destination'];
+    var mApplicationUtil = ApplicationUtils.getInstance(context);
+    final String? dialTo = mApplicationUtil.mDialTo;
+    final String? destination = mApplicationUtil.mDestination;
     final String display = dialTo ?? destination ?? " "; // Use the null-aware operator (??) to handle null values
     return Scaffold(
       appBar: AppBar(
@@ -166,7 +160,6 @@ class _ConnectedState extends State<Connected> {
                   Navigator.pushNamed(
                     context,
                     '/dtmf',
-                    arguments: {'dialTo': dialTo, 'userId': userId, 'password': password, 'displayName': displayName, 'accountSid': accountSid, 'hostname': hostname },
                   );
                 });
                    },

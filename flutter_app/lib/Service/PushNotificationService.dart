@@ -2,6 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import '../exotelSDK/ExotelSDKClient.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 
 class PushNotificationService {
   static final PushNotificationService _instance = PushNotificationService._internal();
@@ -38,6 +39,7 @@ class PushNotificationService {
     const androidInitializationSetting = AndroidInitializationSettings('@mipmap/ic_launcher');
     const initSettings = InitializationSettings(android: androidInitializationSetting);
     await _flutterLocalNotificationsPlugin.initialize(initSettings);
+    var service = FlutterBackgroundService();
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   }
   void showLocalNotification(String title, String body) {
@@ -58,6 +60,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("RemoteMessage : $message");
   // Ensure Firebase is initialized
   await Firebase.initializeApp();
+  ExotelSDKClient.getInstance().relayFirebaseMessagingData(message.data);
   PushNotificationService.getInstance().showLocalNotification(
     'Incoming call!',
     '',
