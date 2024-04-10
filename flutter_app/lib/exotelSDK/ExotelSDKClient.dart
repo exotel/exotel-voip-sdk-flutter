@@ -33,7 +33,7 @@ class ExotelSDKClient {
   //     print('Error invoking native API: ${e.message}');
   //   }
   // }
-  Future<String> logIn(String userId,String password,String accountSid,String hostname) async{
+  Future<String> initialize(String subscriberName,String password,String accountSid,String hostname) async{
     log("login button function start");
     try {
       String? fcmToken = "";
@@ -41,7 +41,9 @@ class ExotelSDKClient {
         fcmToken = value;
       });
       // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-      String res = await androidChannel?.invokeMethod('login', {'appHostname': hostname ,'username': userId , 'account_sid': accountSid , 'password':password,'fcm_token':fcmToken});
+      String res = await androidChannel?.invokeMethod('initialize', {'appHostname': hostname ,'subscriber_name': subscriberName , 'account_sid': accountSid , 'password':password,'fcm_token':fcmToken});
+
+
       return res;
     }
     catch (e) {
@@ -49,12 +51,12 @@ class ExotelSDKClient {
     }
   }
 
-  Future<String> call(String userId, String dialTo) async{
+  Future<String> dial(String dialTo, String message) async{
     log("call button function start");
     String response = "";
     try {
       // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-      return await androidChannel?.invokeMethod('call', {'username': userId ,  'dialTo':dialTo});
+      return await androidChannel?.invokeMethod('dial', {'dialTo':dialTo,'message':message});
       //loading UI
     } catch (e) {
       response = "Failed to Invoke: '${e.toString()}'.";

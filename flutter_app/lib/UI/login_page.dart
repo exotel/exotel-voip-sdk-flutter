@@ -292,7 +292,7 @@ class _LoginPageState extends State<LoginPage> {
                       String hostname = hostnameController.text;
                       String response = "";
                       try {
-                        response = await ExotelSDKClient.getInstance().logIn(userId, password, accountSid, hostname);
+                        response = await ExotelSDKClient.getInstance().initialize(userId, password, accountSid, hostname);
                         mApplicationUtil.setUserId(userId);
                         mApplicationUtil.setPassword(password);
                         mApplicationUtil.displayName(displayName);
