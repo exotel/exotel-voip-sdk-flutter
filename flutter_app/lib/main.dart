@@ -12,33 +12,31 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'Service/PushNotificationService.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();//TBD
-  await PushNotificationService.getInstance().setupLocalNotification();
-  runApp(    ChangeNotifierProvider(
+  await Firebase.initializeApp();
+  PushNotificationService.getInstance().setupLocalNotification();
+  runApp(ChangeNotifierProvider(
     create: (context) => CallList(),
     child: MyApp(),
-  ),);
+  ));
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-
   @override
   Widget build(BuildContext context) {
-    var mApplicationUtil =  ApplicationUtils.getInstance(context);
+    var mApplicationUtil = ApplicationUtils.getInstance(context);
     ExotelSDKClient exotelSDKClient = ExotelSDKClient.getInstance();
     exotelSDKClient.setExotelSDKCallback(mApplicationUtil);
     exotelSDKClient.registerMethodHandler();
-    //TBD
     PushNotificationService pushNotificationService = PushNotificationService.getInstance();
     pushNotificationService.initialize();
-    //
+
     return MaterialApp(
       navigatorKey: navigatorKey,
       initialRoute: '/',
@@ -56,7 +54,7 @@ class MyApp extends StatelessWidget {
         // Your theme data
       ),
       home: FutureBuilder<bool>(
-        future: ExotelSDKClient.getInstance().loginstatus(),
+        future: checkIfUserIsLoggedIn(),
         builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return CircularProgressIndicator(); // Show loading spinner while waiting for future to complete
@@ -70,7 +68,6 @@ class MyApp extends StatelessWidget {
                   Navigator.pushReplacementNamed(
                     context,
                     '/home',
-                    arguments: {'userId': userId, 'password': password, 'accountSid': accountSid, 'hostname': hostname },
                   );
                 },
               );
@@ -79,5 +76,10 @@ class MyApp extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<bool> checkIfUserIsLoggedIn() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isLoggedIn') ?? false;
   }
 }
