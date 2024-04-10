@@ -65,7 +65,7 @@ class _HomePageState extends State<HomePage> {
               String? status = await mApplicationUtil.mStatus;
               if (status == null) {
                 // If mStatus is not ready, invoke the initialization method
-                await ExotelSDKClient.getInstance().logIn(userId!, password!, accountSid!, hostname!);
+                await ExotelSDKClient.getInstance().initialize(userId!, password!, accountSid!, hostname!);
                 // After initialization, get the status again
                 status = await mApplicationUtil.mStatus;
               }
@@ -440,7 +440,7 @@ class _DialTabContentState extends State<DialTabContent> {
               arguments: {'state': "Connecting...."},
             );
             mApplicationUtil.setDialTo(dialTo);
-            ExotelSDKClient.getInstance().call(userId!,dialTo);
+            ExotelSDKClient.getInstance().dial(dialTo,"test:1234");
             },
               child: ClipOval(
                 child: Image.asset(
@@ -602,10 +602,8 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
                           onTap: () {
                             String dialTo = contact.number;
                             print("DialTo is:  $dialTo");
-                            String? userId = mApplicationUtil.mUserId as String;
-                            print("userId is:  $userId");
                             mApplicationUtil.setDialTo(dialTo);
-                            ExotelSDKClient.getInstance().call(userId, dialTo);
+                            ExotelSDKClient.getInstance().dial(dialTo,"");
                             print("Calling ${contact.name}");
                           },
                           child: ClipOval(

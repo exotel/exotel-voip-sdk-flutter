@@ -18,15 +18,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import com.exotel.voice.ExotelVoiceError;
 import io.flutter.embedding.engine.FlutterEngine;
@@ -91,32 +85,32 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                 (call, result) -> {
                     System.out.println("Entered in Native Android");
                     switch (call.method) {
-                        case "login":
+                        case "initialize":
                             /**
                              * [sdk-initialization-flow] flutter invoking SDK initialization
                              */
-                            VoiceAppLogger.debug(TAG, "ExotelSDKChannel Login Start.");
+                            VoiceAppLogger.debug(TAG, "ExotelSDKChannel init Start.");
                             String appHostname = call.argument("appHostname");
                             VoiceAppLogger.debug(TAG, "appHostname = " + appHostname);
                             String accountSid = call.argument("account_sid");
                             VoiceAppLogger.debug(TAG, "accountSid = " + accountSid);
-                            String username = call.argument("username");
-                            VoiceAppLogger.debug(TAG, "username = " + username);
+                            mUserName = call.argument("subscriber_name");
+                            VoiceAppLogger.debug(TAG, "subscriber_name = " + mUserName);
                             String password = call.argument("password");
                             VoiceAppLogger.debug(TAG, "password = " + password);
                             String token = call.argument("fcm_token");
                             VoiceAppLogger.debug(TAG,"token = " + token);
-                            login(appHostname, accountSid, username, password,token);
+                            init(appHostname, accountSid, mUserName, password,token);
 
-                            VoiceAppLogger.debug(TAG, "ExotelSDKChannel Login end.");
-                            result.success("logging in");
+                            VoiceAppLogger.debug(TAG, "ExotelSDKChannel init end.");
+                            result.success("Inializing");
                             break;
-                        case "call":
-                            username = call.argument("username");
-                            VoiceAppLogger.debug(TAG, "username = " + username);
+                        case "dial":
                             String dialNumber = call.argument("dialTo");
                             VoiceAppLogger.debug(TAG, "Dial number = " + dialNumber);
-                            call(username,dialNumber);
+                            String contextMessage = call.argument("message");
+                            VoiceAppLogger.debug(TAG, "Dial message = " + contextMessage);
+                            call(dialNumber,contextMessage);
                             result.success("calling");
                             break;
                         case "makeWhatsAppCall":
@@ -254,9 +248,8 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
     /**
      * calling the dial number
      */
-    private void call(String username, String dialNumber) {
+    private void call(String dialNumber, String contextMessage) {
         SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-        String contextMessage = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.CONTACT_DISPLAY_NAME.toString());
         String updatedDestination = mService.getUpdatedNumberToDial(dialNumber);
         try {
             /**
@@ -271,14 +264,14 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
             /**
              * [sdk-calling-flow] setting dialNumber in call context
              */
-            mService.setCallContext(username,dialNumber,"");
+            mService.setCallContext(mUserName,dialNumber,"");
         }
     }
 
     /**
      * will initialize the exotel client SDK
      */
-    private void login(String appHostname, String accountSid, String username, String password, String token) {
+    private void init(String appHostname, String accountSid, String username, String password, String token) {
 
         SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
         sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.USER_NAME.toString(),username);
