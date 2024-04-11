@@ -11,9 +11,5 @@ abstract class ExotelSDKCallback {
 
   void onCallIncoming(String callId, String destination) {}
 
-  void setVersion(String version) {}
-
-  void setjsonData(String jsonData) {}
-
   void setStatus(String loginStatus) {}
 }

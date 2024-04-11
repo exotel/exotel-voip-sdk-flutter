@@ -51,11 +51,6 @@ class _HomePageState extends State<HomePage> {
             final String? password = prefs?.getString('password');
             TextEditingController dialNumberController = TextEditingController(text: "9899028650");
 
-    Future<String> getVersion() async {
-      String ver;
-      ver = await mApplicationUtil.mVersion;
-      return ver;
-    }
 
     // Future<String?> getStatus() async{
     //   String? status;
@@ -78,7 +73,7 @@ class _HomePageState extends State<HomePage> {
         context: context,
         builder: (BuildContext context) {
           return FutureBuilder<String>(
-            future: getVersion(),
+            future: ExotelSDKClient.getInstance().getVersionDetails(),
             builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return AlertDialog(
@@ -177,7 +172,7 @@ class _HomePageState extends State<HomePage> {
                   TextButton(
                     child: Text('OK'),
                     onPressed: () {
-                      ExotelSDKClient.getInstance().lastCallFeedback(dropdownValue1, dropdownValue2);
+                      ExotelSDKClient.getInstance().postFeedback(dropdownValue1, dropdownValue2);
                       Navigator.of(context).pop();
                     },
                   ),
@@ -236,7 +231,11 @@ class _HomePageState extends State<HomePage> {
                   final DateTime endDate = DateTime.now();
                   final DateTime startDate = endDate.subtract(day * uploadLogNumDays);
                   print('User input: $description, startDate: $startDate, endDate: $endDate');
-                  ExotelSDKClient.getInstance().uploadLogs(startDate, endDate, description);
+                  try {
+                    ExotelSDKClient.getInstance().uploadLogs(startDate, endDate, description);
+                  } catch (e) {
+                    mApplicationUtil.showToast("Upload Error");
+                  }
                   Navigator.of(context).pop();
                 },
               ),
@@ -270,7 +269,7 @@ class _HomePageState extends State<HomePage> {
                           switch (result) {
                             case 'Button 1':
                             // Handle Button 1 press
-                              ExotelSDKClient.getInstance().logout();
+                              ExotelSDKClient.getInstance().reset();
                               SharedPreferences prefs = await SharedPreferences.getInstance();
                               await prefs.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), false);
                               mApplicationUtil.navigateToStart();
@@ -282,7 +281,6 @@ class _HomePageState extends State<HomePage> {
                               print('Button 2 pressed');
                               break;
                             case 'Button 3':
-                              ExotelSDKClient.getInstance().checkVersionDetails();
                               showVersionDialog();
                               print('Button 3 pressed');
                               break;
@@ -402,10 +400,6 @@ class _DialTabContentState extends State<DialTabContent> {
             return Text('Error: ${snapshot.error}');
           } else {
             final prefs = snapshot.data;
-            final String? userId = prefs?.getString('userId');
-            final String? displayName = prefs?.getString('displayName');
-            final String? accountSid = prefs?.getString('accountSid');
-            final String? hostname = prefs?.getString('hostname');
     TextEditingController dialNumberController = TextEditingController(text: "9899028650");
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 0), // Added horizontal and vertical padding
@@ -441,7 +435,7 @@ class _DialTabContentState extends State<DialTabContent> {
               arguments: {'state': "Connecting...."},
             );
             mApplicationUtil.setDialTo(dialTo);
-            ExotelSDKClient.getInstance().dial(dialTo,"test:1234");
+            mApplicationUtil.dial(dialTo,"test:1234");
             },
               child: ClipOval(
                 child: Image.asset(
@@ -481,12 +475,12 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
   late Future<void> _fetchAndParseJsonData;
 
   @override
-  @override
   void initState() {
     super.initState();
     searchController = TextEditingController();
     showContacts = false;
     mApplicationUtil = ApplicationUtils.getInstance(context); // Initialize here
+    mApplicationUtil.fetchContactList();
     _fetchAndParseJsonData = _fetchAndParseData(); // Assign a value here
     _loadContacts();
   }
@@ -604,7 +598,7 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
                             String dialTo = contact.number;
                             print("DialTo is:  $dialTo");
                             mApplicationUtil.setDialTo(dialTo);
-                            ExotelSDKClient.getInstance().dial(dialTo,"");
+                            mApplicationUtil.dial(dialTo,"");
                             print("Calling ${contact.name}");
                           },
                           child: ClipOval(

@@ -13,10 +13,10 @@ import com.exotel.voice.CallIssue;
 import com.exotel.voice.CallAudioRoute;
 
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.security.InvalidParameterException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,7 +30,6 @@ import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 
@@ -51,7 +50,7 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
 
     private Context context;
     private MethodChannel channel;
-    private Call call;
+    private Call mCall;
     private Handler uiThreadHandler = new Handler(Looper.getMainLooper());
     private String deviceTokenMessage;
     private static DeviceTokenState deviceTokenState = DeviceTokenState.DEVICE_TOKEN_SEND_SUCCESS;
@@ -105,77 +104,83 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                                 result.error(ErrorType.INTERNAL_ERROR.name(),e.getMessage(),e );
                             }
                             break;
+                        case "reset":
+                            reset();
                         case "dial":
                             String dialNumber = call.argument("dialTo");
                             VoiceAppLogger.debug(TAG, "Dial number = " + dialNumber);
                             String contextMessage = call.argument("message");
                             VoiceAppLogger.debug(TAG, "Dial message = " + contextMessage);
-                            call(dialNumber,contextMessage);
+                            try {
+                                mCall = mService.dial(dialNumber, contextMessage);
+                            } catch (Exception e) {
+                                result.error(ErrorType.INTERNAL_ERROR.name(),"Outgoing call Failed",e );
+                            }
+                            if(mCall != null){
+                                result.success(true);
+                            } else {
+                                result.error(ErrorType.INTERNAL_ERROR.name(), "Outgoing call not initiated","call instance is null");
+                            }
                             break;
                         case "makeWhatsAppCall":
                             dialNumber = call.argument("dialTo");
                             makeWhatsAppCall(dialNumber);
                             break;
-                        case "logout":
-                            logout();
-                            result.success("logging out");
-                            break;
-                        case "isloggedin":
-                            isloggedin();
-                            result.success("set isloggedin");
-                            break;
                         case "mute":
                             mute();
-                            result.success("mute successful");
                             break;
                         case "unmute":
                             unmute();
-                            result.success("unmute successful" );
                             break;
-                        case "enableSpeaker":
+                        case "enable-speaker":
                             enableSpeaker();
-                            result.success("enableSpeaker successful");
                             break;
-                        case "disableSpeaker":
+                        case "disable-speaker":
                             disableSpeaker();
-                            result.success("disableSpeaker successful");
                             break;
-                        case "enableBluetooth":
+                        case "enable-bluetooth":
                             enableBluetooth();
-                            result.success("enableBluetooth successful");
                             break;
-                        case "disableBluetooth":
+                        case "disable-bluetooth":
                             disableBluetooth();
-                            result.success("disableBluetooth successful");
                             break;
                         case "hangup":
                             hangup();
-                            result.success("hangup successful");
                             break;
                         case "answer":
-                            answer();
-                            result.success("answer() successful");
+                            try {
+                                answer();
+                            } catch (Exception e) {
+                                result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(),e);
+                            }
                             break;
-                        case "getCallDuration":
-                            getCallDuration();
-                            result.success("getCallDuration successful");
-                            break;
-                        case "version":
-                            getVersionDetails();
-                            break;
-                        case "sendDtmf":
+                        case "send-dtmf":
                             String digit = call.argument("digit");
                             VoiceAppLogger.debug(TAG, "digit = " + digit);
-                            if (digit != null && digit.length() == 1) {
+                            try {
+                                if (digit == null || digit.length()<1) {
+                                    throw new InvalidParameterException("digit is not valid");
+                                }
                                 char digitChar = digit.charAt(0);
-                                VoiceAppLogger.debug(TAG, "digitChar = " + digitChar);
-                                sendDtmf(digitChar);                            }
-                            else {
-                                // Handle the case where digit is null or contains more than one character
+                                mService.sendDtmf(digitChar);
+                            } catch (Exception e) {
+                                result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(),e);
                             }
-                            result.success("getCallDuration successful");
                             break;
-                        case "uploadLogs":
+                        case "post-feedback":
+                            int rating = call.argument("rating");
+                            String issue = call.argument("issue");
+                            postFeedback(rating , issue);
+                            break;
+                        case "get-call-duration":
+                            int duration = getCallDuration();
+                            result.success(duration);
+                            break;
+                        case "get-version-details":
+                            String version = getVersionDetails();
+                            result.success(version);
+                            break;
+                        case "upload-logs":
                             VoiceAppLogger.debug(TAG, "ExotelSDKChannel uploadLogs Start.");
                             String startDateString = call.argument("startDateString");
                             String endDateString = call.argument("endDateString"); // Corrected line
@@ -193,37 +198,8 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
 
                                 uploadLogs(startDate, endDate, description);
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(),e);
                             }
-                            break;
-
-
-                        case "lastCallFeedback":
-                            int rating = call.argument("rating");
-                            String issue = call.argument("issue");
-                            CallIssue callIssue;
-                            if (issue == "ECHO"){
-                                 callIssue = CallIssue.ECHO;
-                            }
-                            else if (issue == "NO_AUDIO"){
-                                 callIssue = CallIssue.NO_AUDIO;
-                            }
-                            else if (issue == "HIGH_LATENCY"){
-                                 callIssue = CallIssue.HIGH_LATENCY;
-                            }
-                            else if (issue == "CHOPPY_AUDIO"){
-                                 callIssue = CallIssue.CHOPPY_AUDIO;
-                            }
-                            else if (issue == "BACKGROUND_NOISE"){
-                                 callIssue = CallIssue.BACKGROUND_NOISE;
-                            }
-                            else {
-                                 callIssue = CallIssue.NO_ISSUE;
-                            }
-                            VoiceAppLogger.debug(TAG, "callIssue = " + callIssue);
-                            VoiceAppLogger.debug(TAG, "rating = " + rating);
-
-                            postFeedback(rating , callIssue);
                             break;
                         case "relayNotificationData":
                             Map<String, String> data = call.argument("data");
@@ -244,29 +220,6 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
 
     }
 
-    /**
-     * calling the dial number
-     */
-    private void call(String dialNumber, String contextMessage) {
-        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-        String updatedDestination = mService.getUpdatedNumberToDial(dialNumber);
-        try {
-            /**
-             * [sdk-calling-flow] calling mediator dial api
-             * with exphone number as updatedDestination
-             */
-            call = mService.dial(updatedDestination, contextMessage);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        if(null != call){
-            /**
-             * [sdk-calling-flow] setting dialNumber in call context
-             */
-            mService.setCallContext(mUserName,dialNumber,"");
-        }
-    }
-
     Map<String, String> createResponse(String code, String status, String data){
         Map<String,String> result = new HashMap<>();
         result.put("code",code);
@@ -279,21 +232,17 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
     mService.makeWhatsAppCall(destination);
     }
 
-    private void logout() {
-    VoiceAppLogger.debug(TAG, "In logout");
-    if (null != mService) {
-        VoiceAppLogger.debug(TAG, "Calling reset of service");
-        mService.reset();
-    }
-    SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-    sharedPreferencesHelper.putBoolean(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(),false);
+    private void reset() {
+        VoiceAppLogger.debug(TAG, "going to reset sdk");
+        if (null != mService) {
+            VoiceAppLogger.debug(TAG, "Calling reset of service");
+            mService.reset();
+        }
+        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
+        sharedPreferencesHelper.putBoolean(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(),false);
 
-    VoiceAppLogger.debug(TAG, "Return from logout in HomeActivity");
+        VoiceAppLogger.debug(TAG, "Reset Done");
     }
-    private ApplicationSharedPreferenceData isloggedin(){
-            return ApplicationSharedPreferenceData.IS_LOGGED_IN;
-    }
-
     @Override
     public void onInitializationSuccess() {
         uiThreadHandler.post(()->{
@@ -408,13 +357,9 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
         VoiceAppLogger.debug(TAG, "ExotelSDKChannel hangup() end.");
     }
 
-    private void answer(){
+    private void answer() throws Exception {
         VoiceAppLogger.debug(TAG, "ExotelSDKChannel answer() Start.");
-        try {
-            mService.answer();
-        } catch (Exception e) {
-            VoiceAppLogger.debug(TAG, "Exception in answer: " + e.getMessage());
-        }
+        mService.answer();
         VoiceAppLogger.debug(TAG, "ExotelSDKChannel answer() end.");
     }
 
@@ -426,25 +371,34 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
         return time;
     }
 
-    private void getVersionDetails(){
+    private String getVersionDetails(){
         VoiceAppLogger.debug(TAG, "ExotelSDKChannel getVersionDetails() Start.");
         String version = mService.getVersionDetails();
         VoiceAppLogger.debug(TAG, "ExotelSDKChannel getVersionDetails() version = " + version);
-        channel.invokeMethod("version", version);
+        return version;
     }
 
     private void processPushNotification(Map<String, String> remoteData) {
         mService.processPushNotification(remoteData);
     }
 
-    private void sendDtmf(char digitChar) {
-        mService.sendDtmf(digitChar);
-    }
 
-    private void postFeedback(int rating, CallIssue issue) {
+    private void postFeedback(int rating, String issue) {
         VoiceAppLogger.debug(TAG, "postFeedback() rating = " + rating);
         VoiceAppLogger.debug(TAG, "postFeedback() issue = " + issue);
-        mService.postFeedback(rating , issue);
+        CallIssue callIssue = getCallIssueEnum(issue);
+        mService.postFeedback(rating , callIssue);
+    }
+
+    private CallIssue getCallIssueEnum(String issue) {
+        switch (issue){
+            case "ECHO": return CallIssue.ECHO;
+            case "NO_AUDIO":return CallIssue.NO_AUDIO;
+            case "HIGH_LATENCY":return CallIssue.HIGH_LATENCY;
+            case "CHOPPY_AUDIO":return CallIssue.CHOPPY_AUDIO;
+            case "BACKGROUND_NOISE":return CallIssue.BACKGROUND_NOISE;
+            default:return CallIssue.NO_ISSUE;
+        }
     }
 
     private void fetchContactList() {
@@ -490,13 +444,9 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
 
 
 
-    private void uploadLogs(Date startDate, Date endDate, String description){
+    private void uploadLogs(Date startDate, Date endDate, String description) throws Exception {
         VoiceAppLogger.debug(TAG, "ExotelSDKChannel uploadLogs() Start.");
-        try {
-            mService.uploadLogs( startDate,  endDate,  description);
-        } catch (Exception e) {
-            VoiceAppLogger.debug(TAG, "Exception in uploadLogs: " + e.getMessage());
-        }
+        mService.uploadLogs( startDate,  endDate,  description);
         VoiceAppLogger.debug(TAG, "ExotelSDKChannel uploadLogs() end.");
     }
 

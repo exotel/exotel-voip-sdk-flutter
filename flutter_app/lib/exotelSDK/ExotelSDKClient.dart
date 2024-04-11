@@ -1,5 +1,6 @@
 
 import 'dart:developer';
+import 'dart:ffi';
 import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
 import 'package:flutter_app/exotelSDK/MethodChannelInvokeMethod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -37,7 +38,7 @@ class ExotelSDKClient {
     }
   }
 
-  void initialize(String hostname, String subsriberName, String displayName, String accountSid,String subscriberToken){
+  Future<void> initialize(String hostname, String subsriberName, String displayName, String accountSid,String subscriberToken) async {
      var arg = {
        'host_name':hostname,
        'subscriber_name':subsriberName,
@@ -45,211 +46,135 @@ class ExotelSDKClient {
        'subscriber_token':subscriberToken,
        'display_name':displayName
      };
-     try{
-       androidChannel?.invokeMethod(MethodChannelInvokeMethod.INITIALIZE,arg);
-     } catch(e){
-       rethrow;
-     }
+
+     androidChannel?.invokeMethod(MethodChannelInvokeMethod.INITIALIZE,arg)
+         .catchError((e) {
+         print("Failed to Invoke ${MethodChannelInvokeMethod.INITIALIZE}: ${e.toString()}");
+         throw e;
+     });
 
   }
 
-  Future<String> dial(String dialTo, String message) async{
-    log("call button function start");
-    String response = "";
-    try {
-      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-      return await androidChannel?.invokeMethod('dial', {'dialTo':dialTo,'message':message});
-      //loading UI
-    } catch (e) {
-      response = "Failed to Invoke: '${e.toString()}'.";
-      rethrow;
-    }
-
-  }
-
-  Future<String> logout() async{
+  Future<void> reset() async{
     log("login button function start");
-    String response = "";
+      androidChannel?.invokeMethod(MethodChannelInvokeMethod.RESET);
+  }
+
+  Future<void> dial(String dialTo, String message) async{
+    log("call button function start");
     try {
-      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-      return await androidChannel?.invokeMethod('logout');
-      //loading UI
+      await androidChannel?.invokeMethod(MethodChannelInvokeMethod.DIAL, {'dialTo':dialTo,'message':message});
     } catch (e) {
-      response = "Failed to Invoke: '${e.toString()}'.";
+      print("Failed to Invoke ${MethodChannelInvokeMethod.DIAL}: ${e.toString()}");
       rethrow;
     }
 
   }
 
-  Future<String> mute() async{
+  Future<void> mute() async{
     log("mute function start");
-    String response = "";
-    try {
-      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-      return await androidChannel?.invokeMethod('mute');
-      //loading UI
-    } catch (e) {
-      response = "Failed to Invoke: '${e.toString()}'.";
-      rethrow;
-    }
+      androidChannel?.invokeMethod(MethodChannelInvokeMethod.MUTE)
+          .catchError((e){
+        print("Failed to Invoke ${MethodChannelInvokeMethod.MUTE}: ${e.toString()}");
+      });
   }
 
-  Future<String> unmute() async{
+  Future<void> unmute() async{
     log("unmute function start");
-    String response = "";
-    try {
-      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-      return await androidChannel?.invokeMethod('unmute');
-      //loading UI
-    } catch (e) {
-      response = "Failed to Invoke: '${e.toString()}'.";
-      rethrow;
-    }
+    androidChannel?.invokeMethod(MethodChannelInvokeMethod.UNMUTE)
+    .catchError((e){
+      print("Failed to Invoke ${MethodChannelInvokeMethod.UNMUTE}: ${e.toString()}");
+    });
   }
 
-  Future<String> enableSpeaker() async{
+  Future<void> enableSpeaker() async{
     log("enableSpeaker function start");
-    String response = "";
-    try {
-      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-      return await androidChannel?.invokeMethod('enableSpeaker');
-      //loading UI
-    } catch (e) {
-      response = "Failed to Invoke: '${e.toString()}'.";
-      rethrow;
-    }
+    androidChannel?.invokeMethod(MethodChannelInvokeMethod.ENABLE_SPEAKER)
+    .catchError((e){
+      print("Failed to Invoke ${MethodChannelInvokeMethod.ENABLE_SPEAKER}: ${e.toString()}");
+    });
   }
 
-  Future<String> disableSpeaker() async{
+  Future<void> disableSpeaker() async{
     log("disableSpeaker function start");
-    String response = "";
-    try {
-      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-      return await androidChannel?.invokeMethod('disableSpeaker');
-      //loading UI
-    } catch (e) {
-      response = "Failed to Invoke: '${e.toString()}'.";
-      rethrow;
-    }
+    androidChannel?.invokeMethod(MethodChannelInvokeMethod.DISABLE_SPEAKER)
+    .catchError((e){
+      print("Failed to Invoke ${MethodChannelInvokeMethod.DISABLE_SPEAKER}: ${e.toString()}");
+    });
   }
 
-  Future<String> enableBluetooth() async{
+  Future<void> enableBluetooth() async{
     log("enableBluetooth function start");
-    String response = "";
-    try {
-      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-      return await androidChannel?.invokeMethod('enableBluetooth');
-      //loading UI
-    } catch (e) {
-      response = "Failed to Invoke: '${e.toString()}'.";
-      rethrow;
-    }
+    androidChannel?.invokeMethod(MethodChannelInvokeMethod.ENABLE_BLUETOOTH)
+        .catchError((e){
+      print("Failed to Invoke ${MethodChannelInvokeMethod.ENABLE_BLUETOOTH}: ${e.toString()}");
+    });
+
   }
 
-  Future<String> disableBluetooth() async{
+  Future<void> disableBluetooth() async{
     log("disableBluetooth function start");
-    String response = "";
-    try {
-      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-      return await androidChannel?.invokeMethod('disableBluetooth');
-      //loading UI
-    } catch (e) {
-      response = "Failed to Invoke: '${e.toString()}'.";
-      rethrow;
-    }
+    androidChannel?.invokeMethod(MethodChannelInvokeMethod.DISABLE_BLUETOOTH)
+        .catchError((e){
+      print("Failed to Invoke ${MethodChannelInvokeMethod.DISABLE_BLUETOOTH.toString()}");
+    });
   }
 
-  Future<String> hangup() async{
+  Future<void> hangup() async{
     log("hangup function start");
-    String response = "";
-    try {
-      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-      return await androidChannel?.invokeMethod('hangup');
-      //loading UI
-    } catch (e) {
-      response = "Failed to Invoke: '${e.toString()}'.";
-      rethrow;
-    }
+      androidChannel?.invokeMethod(MethodChannelInvokeMethod.HANGUP)
+          .catchError((e){
+        print("Failed to Invoke ${MethodChannelInvokeMethod.HANGUP}: ${e.toString()}");
+      });
   }
 
-  Future<String> answer() async{
+  Future<void> answer() async{
     log("answer function start");
-    String response = "";
-    try {
-      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-      return await androidChannel?.invokeMethod('answer');
-      //loading UI
-    } catch (e) {
-      response = "Failed to Invoke: '${e.toString()}'.";
-      rethrow;
-    }
+    await androidChannel?.invokeMethod(MethodChannelInvokeMethod.ANSWER)
+        .catchError((e){
+      print("Failed to Invoke ${MethodChannelInvokeMethod.ANSWER}: ${e.toString()}");
+      throw e;
+    });
   }
 
-  Future<String> sendDtmf(String digit) async{
+  Future<void> sendDtmf(String digit) async{
     log("sendDtmf function start");
-    String response = "";
-    try {
-      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-      return await androidChannel?.invokeMethod('sendDtmf',{'digit': digit});
-    } catch (e) {
-      response = "Failed to Invoke: '${e.toString()}'.";
-      rethrow;
-    }
+    androidChannel?.invokeMethod(MethodChannelInvokeMethod.SEND_DTMF,{'digit': digit})
+        .catchError((e){
+      print("Failed to Invoke ${MethodChannelInvokeMethod.SEND_DTMF}: ${e.toString()}");
+    });
+
   }
 
-  Future<String> lastCallFeedback(int? rating, String? issue) async{
+  Future<void> postFeedback(int? rating, String? issue) async{
     log("lastCallFeedback function start");
     log(" rating : $rating issue: $issue");
-    String response = "";
     try {
-      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-      return await androidChannel?.invokeMethod('lastCallFeedback',{'rating': rating, 'issue':issue });
-      //loading UI
+      androidChannel?.invokeMethod(MethodChannelInvokeMethod.POST_FEEDBACK,{'rating': rating, 'issue':issue });
     } catch (e) {
-      response = "Failed to Invoke: '${e.toString()}'.";
+      print("Failed to Invoke ${MethodChannelInvokeMethod.POST_FEEDBACK}: ${e.toString()}");
       rethrow;
     }
   }
 
-
-  Future<bool> checkLoginStatus() async{
-    log("login button function start");
+  Future<String> getVersionDetails() async{
+    log("getVersionDetails function start");
     try {
-      String response = await androidChannel?.invokeMethod('isloggedin');
-      return response.toLowerCase() == 'true';
+     return await androidChannel?.invokeMethod(MethodChannelInvokeMethod.GET_VERSION_DETAILS);
     } catch (e) {
-      print("Failed to Invoke: '${e.toString()}'.");
+      print("Failed to Invoke ${MethodChannelInvokeMethod.GET_VERSION_DETAILS}: ${e.toString()}");
       rethrow;
     }
   }
 
-
-  Future<bool> loginstatus() async {
-    bool isLoggedIn = await checkLoginStatus();
-    print('Is logged in: $isLoggedIn');
-    return isLoggedIn;
-  }
-
-  Future<String> checkVersionDetails() async{
-    log("checkVersionDetails function start");
-    try {
-      String response = await androidChannel?.invokeMethod('version');
-      return response;
-    } catch (e) {
-      print("Failed to Invoke: '${e.toString()}'.");
-      rethrow;
-    }
-  }
-
-  Future<String> uploadLogs(DateTime startDate, DateTime endDate, String description) async{
+  Future<void> uploadLogs(DateTime startDate, DateTime endDate, String description) async{
     log("uploadLogs function start");
 
     try {
-      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
       String startDateString = startDate.toIso8601String();
       String endDateString = endDate.toIso8601String();
       log("startDateString: $startDateString, endDateString: $endDateString");
-      return await androidChannel?.invokeMethod('uploadLogs', {
+      androidChannel?.invokeMethod(MethodChannelInvokeMethod.UPLOAD_LOGS, {
         'startDateString': startDateString,
         'endDateString': endDateString,
         'description': description,
@@ -348,17 +273,6 @@ class ExotelSDKClient {
         String destination = call.arguments['destination'];
         print('in FlutterCallHandler(), callId is $callId, destination is $destination ');
         mCallBack?.onCallIncoming(callId, destination);
-        break;
-      case "version":
-        String? Version =  call.arguments.toString();
-        print('in FlutterCallHandler(), version is $Version');
-        mCallBack?.setVersion(Version);
-        break;
-      case "contacts":
-        String? jsonData =  call.arguments.toString();
-        print('in FlutterCallHandler(), jsonData is : $jsonData');
-        mCallBack?.setjsonData(jsonData);
-        await prefs.setString('jsonData', jsonData);
         break;
       default:
         break;

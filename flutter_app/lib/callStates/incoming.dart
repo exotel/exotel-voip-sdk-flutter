@@ -50,7 +50,11 @@ class _IncomingState extends State<Incoming> {
                     children: <Widget>[
                       GestureDetector(
                         onTap: () {
-                          ExotelSDKClient.getInstance().answer();
+                          try {
+                            ExotelSDKClient.getInstance().answer();
+                          } catch (e) {
+                            return;
+                          }
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             Navigator.pushReplacementNamed(
                               context,
