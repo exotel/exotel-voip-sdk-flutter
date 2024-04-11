@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
 import 'dart:convert';
 import '../exotelSDK/ExotelSDKCallback.dart';
 import '../exotelSDK/ExotelSDKClient.dart';
@@ -48,7 +49,7 @@ class _HomePageState extends State<HomePage> {
             final String? accountSid = prefs?.getString('accountSid');
             final String? hostname = prefs?.getString('hostname');
             final String? password = prefs?.getString('password');
-            TextEditingController dialNumberController = TextEditingController(text: "8123674275");
+            TextEditingController dialNumberController = TextEditingController(text: "9899028650");
 
     Future<String> getVersion() async {
       String ver;
@@ -65,7 +66,7 @@ class _HomePageState extends State<HomePage> {
               String? status = await mApplicationUtil.mStatus;
               if (status == null) {
                 // If mStatus is not ready, invoke the initialization method
-                await ExotelSDKClient.getInstance().initialize(userId!, password!, accountSid!, hostname!);
+                mApplicationUtil.login(userId!, password!, accountSid!, hostname!);
                 // After initialization, get the status again
                 status = await mApplicationUtil.mStatus;
               }
@@ -271,7 +272,7 @@ class _HomePageState extends State<HomePage> {
                             // Handle Button 1 press
                               ExotelSDKClient.getInstance().logout();
                               SharedPreferences prefs = await SharedPreferences.getInstance();
-                              await prefs.setBool('isLoggedIn', false);
+                              await prefs.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), false);
                               mApplicationUtil.navigateToStart();
                               print('Button 1 pressed');
                               break;
@@ -405,7 +406,7 @@ class _DialTabContentState extends State<DialTabContent> {
             final String? displayName = prefs?.getString('displayName');
             final String? accountSid = prefs?.getString('accountSid');
             final String? hostname = prefs?.getString('hostname');
-    TextEditingController dialNumberController = TextEditingController(text: "8123674275");
+    TextEditingController dialNumberController = TextEditingController(text: "9899028650");
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 0), // Added horizontal and vertical padding
       child: Column(

@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.exotel.voice.ErrorType;
 import com.exotel.voice.ExotelVoiceError;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
@@ -31,7 +32,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
 
 
 //Exotel Channel Class
@@ -52,10 +52,14 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
     private Context context;
     private MethodChannel channel;
     private Call call;
-    boolean isLoggedIn;
     private Handler uiThreadHandler = new Handler(Looper.getMainLooper());
     private String deviceTokenMessage;
     private static DeviceTokenState deviceTokenState = DeviceTokenState.DEVICE_TOKEN_SEND_SUCCESS;
+    private String mAppHostname;
+    private String mAccountSid;
+    private String mSubsriberToken;
+    private String mDisplayName;
+    private String mSDKHostName;
 
     /**
      * Constructor
@@ -85,25 +89,21 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                 (call, result) -> {
                     System.out.println("Entered in Native Android");
                     switch (call.method) {
+                        case "get-device-id":
+                            String androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+                            result.success(androidId);
+                            break;
                         case "initialize":
-                            /**
-                             * [sdk-initialization-flow] flutter invoking SDK initialization
-                             */
-                            VoiceAppLogger.debug(TAG, "ExotelSDKChannel init Start.");
-                            String appHostname = call.argument("appHostname");
-                            VoiceAppLogger.debug(TAG, "appHostname = " + appHostname);
-                            String accountSid = call.argument("account_sid");
-                            VoiceAppLogger.debug(TAG, "accountSid = " + accountSid);
+                            mSDKHostName = call.argument("host_name");
+                            mAccountSid = call.argument("account_sid");
                             mUserName = call.argument("subscriber_name");
-                            VoiceAppLogger.debug(TAG, "subscriber_name = " + mUserName);
-                            String password = call.argument("password");
-                            VoiceAppLogger.debug(TAG, "password = " + password);
-                            String token = call.argument("fcm_token");
-                            VoiceAppLogger.debug(TAG,"token = " + token);
-                            init(appHostname, accountSid, mUserName, password,token);
-
-                            VoiceAppLogger.debug(TAG, "ExotelSDKChannel init end.");
-                            result.success("Inializing");
+                            mSubsriberToken = call.argument("subscriber_token");
+                            mDisplayName = call.argument("display_name");
+                            try {
+                                mService.initialize(mSDKHostName,mUserName,mAccountSid,mSubsriberToken,mDisplayName);
+                            } catch (Exception e) {
+                                result.error(ErrorType.INTERNAL_ERROR.name(),e.getMessage(),e );
+                            }
                             break;
                         case "dial":
                             String dialNumber = call.argument("dialTo");
@@ -111,7 +111,6 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                             String contextMessage = call.argument("message");
                             VoiceAppLogger.debug(TAG, "Dial message = " + contextMessage);
                             call(dialNumber,contextMessage);
-                            result.success("calling");
                             break;
                         case "makeWhatsAppCall":
                             dialNumber = call.argument("dialTo");
@@ -235,7 +234,7 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                             fetchContactList();
                             break;
                         default:
-                            System.out.println("fail");
+                            System.out.println("FAIL");
                             result.notImplemented();
                             break;
 
@@ -268,176 +267,53 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
         }
     }
 
-    /**
-     * will initialize the exotel client SDK
-     */
-    private void init(String appHostname, String accountSid, String username, String password, String token) {
-
-        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-        sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.USER_NAME.toString(),username);
-        sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.DISPLAY_NAME.toString(),username);
-        sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.APP_HOSTNAME.toString(),appHostname);
-        sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString(),accountSid);
-        sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.PASSWORD.toString(),password);
-        sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.DEVICE_TOKEN.toString(),token);
-
-        /**
-         * [sdk-initialization-flow] calling mediator login API to get subscriber token
-         */
-        JSONObject jsonObject = new JSONObject();
-
-        VoiceAppLogger.debug(TAG, "Calling login API");
-        String androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-        VoiceAppLogger.debug(TAG, "Android ID is: " + androidId);
-        String url = appHostname + "/login";
-        try {
-            jsonObject.put("user_name", username);
-            jsonObject.put("password", password);
-            jsonObject.put("account_sid", accountSid);
-            jsonObject.put("device_id", androidId);
-        } catch (JSONException e) {
-            VoiceAppLogger.error(TAG, "Error in create login request body");
-            return;
-
-        }
-
-        OkHttpClient client = new OkHttpClient();
-        RequestBody body = RequestBody.create(JSON, jsonObject.toString());
-        /**
-         * [sdk-initialization-flow] hitting bellatrix http endpoint to get the subscriber token
-         * result will be handle by callback
-         */
-        Request request = new Request.Builder()
-                .url(url)
-                .post(body)
-                .build();
-        client.newCall(request).enqueue(this.mCallback);
-//        mService.login(appHostname, accountSid, username, password);
-//        isLoggedIn = true;
-//        VoiceAppLogger.debug(TAG, "isLoggedIn(t) = " + isLoggedIn);
-
+    Map<String, String> createResponse(String code, String status, String data){
+        Map<String,String> result = new HashMap<>();
+        result.put("code",code);
+        result.put("status",status);
+        result.put("data",data);
+        return result;
     }
-
-
-    private Callback mCallback = new Callback() {
-        @Override
-        public void onFailure(okhttp3.Call call, IOException e) {
-            VoiceAppLogger.error(TAG, "Failed to get response for login");
-            uiThreadHandler.post(()->{
-                channel.invokeMethod("loggedInStatus","Login Failed due to no response from server");
-            });
-        }
-
-        @Override
-        public void onResponse(okhttp3.Call call, Response response) throws IOException {
-            VoiceAppLogger.debug(TAG, "login: Got response for Login: " + response.code());
-            String jsonData;
-            jsonData = response.body().string();
-            JSONObject jObject;
-            String exophone;
-            VoiceAppLogger.debug(TAG, "Get regAuth Token response is: " + jsonData);
-            if (200 == response.code() || 201 == response.code()) {
-                String subscriberToken;
-                String sdkHostname;
-                String contactDisplayName;
-                try {
-                    jObject = new JSONObject(jsonData);
-                    subscriberToken = jObject.getString("subscriber_token");
-                    sdkHostname = jObject.getString("host_name");
-                    accountSid = jObject.getString("account_sid");
-                    exophone = jObject.getString("exophone");
-                    contactDisplayName = jObject.getString("contact_display_name");
-                    SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-                    sharedPreferencesHelper.putBoolean(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), true);
-                    boolean res = sharedPreferencesHelper.getBoolean(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString());
-                    VoiceAppLogger.debug(TAG, "set IS_LOGGED_IN:" + res);
-                } catch (Exception e) {
-                    response.body().close();
-                    return;
-                }
-
-                SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-                sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString(), subscriberToken);
-                sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString(), sdkHostname);
-                sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString(), accountSid);
-                sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.EXOPHONE.toString(), exophone);
-                sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.CONTACT_DISPLAY_NAME.toString(), contactDisplayName);
-                String token = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.DEVICE_TOKEN.toString());
-                String appHostname = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.APP_HOSTNAME.toString());
-                String username = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.USER_NAME.toString());
-                String accountSid = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
-                uiThreadHandler.post(()-> {
-                    try {
-                        sendDeviceToken(token, appHostname, username, accountSid);
-                    }catch (Exception e){
-                        String message = "Exception in send Device Token";
-                        VoiceAppLogger.warn(TAG, message);
-                        channel.invokeMethod("loggedInStatus","Login Failed : "+e.getMessage());
-                    }
-                });
-
-            } else if (403 == response.code()) {
-                VoiceAppLogger.error(TAG, "Failed to login, wrong credentials");
-                uiThreadHandler.post(()->{
-                    channel.invokeMethod("loggedInStatus","Login Failed: wrong credentials");
-                });
-            } else {
-                VoiceAppLogger.error(TAG, "Failed to login");
-                uiThreadHandler.post(()->{
-                    channel.invokeMethod("loggedInStatus","Login Failed");
-                });
-
-            }
-        }
-    };
 
     private void  makeWhatsAppCall(String destination) {
-        mService.makeWhatsAppCall(destination);
-        }
-
-        private void logout() {
-        VoiceAppLogger.debug(TAG, "In logout");
-        if (null != mService) {
-            VoiceAppLogger.debug(TAG, "Calling reset of service");
-            mService.reset();
-        }
-        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-        sharedPreferencesHelper.getBoolean(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString());
-        isLoggedIn = false;
-        VoiceAppLogger.debug(TAG, "isLoggedIn(f) = " + isLoggedIn);
-
-        VoiceAppLogger.debug(TAG, "Return from logout in HomeActivity");
+    mService.makeWhatsAppCall(destination);
     }
-private ApplicationSharedPreferenceData isloggedin(){
-        return ApplicationSharedPreferenceData.IS_LOGGED_IN;
-}
-    @Override
-    public void onStatusChange() {
-        uiThreadHandler.post(()->{
-            VoiceAppLogger.debug(TAG, "Received On Status Change in LoginActivty");
-            /**
-             * [sdk-initialization-flow] sending message to flutter about the sdk inialization status
-             */
-            try {
-                channel.invokeMethod("loggedInStatus", mService.getCurrentStatus().getMessage());
-            }
-            catch(Exception exception){
-                VoiceAppLogger.debug(TAG, "Exception in onStatusChange: " + exception.getMessage());
 
-            }
+    private void logout() {
+    VoiceAppLogger.debug(TAG, "In logout");
+    if (null != mService) {
+        VoiceAppLogger.debug(TAG, "Calling reset of service");
+        mService.reset();
+    }
+    SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
+    sharedPreferencesHelper.putBoolean(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(),false);
+
+    VoiceAppLogger.debug(TAG, "Return from logout in HomeActivity");
+    }
+    private ApplicationSharedPreferenceData isloggedin(){
+            return ApplicationSharedPreferenceData.IS_LOGGED_IN;
+    }
+
+    @Override
+    public void onInitializationSuccess() {
+        uiThreadHandler.post(()->{
+            channel.invokeMethod(MethodChannelInvokeMethod.INIALIZE_RESULT,createResponse("401","OK","Ready"));
         });
-        fetchContactList();
+    }
+
+    @Override
+    public void onInitializationFailure(ExotelVoiceError err) {
+        VoiceAppLogger.debug(TAG, "onInitializationFailure");
+        uiThreadHandler.post(()->{
+            channel.invokeMethod(MethodChannelInvokeMethod.INIALIZE_RESULT,createResponse("401","FAIL",err.getErrorMessage()));
+        });
     }
 
     @Override
     public void onAuthFailure() {
+        VoiceAppLogger.debug(TAG, "On Authentication failure");
         uiThreadHandler.post(()->{
-            VoiceAppLogger.debug(TAG, "On Authentication failure");
-            /**
-             * [sdk-initialization-flow] sending message to flutter about the sdk inialization status
-             * when authentication failed
-             */
-            channel.invokeMethod("loggedInStatus","Authentication Failed");
+            channel.invokeMethod(MethodChannelInvokeMethod.INIALIZE_RESULT,createResponse("401","FAIL","Authentication failure"));
         });
     }
 
@@ -570,81 +446,6 @@ private ApplicationSharedPreferenceData isloggedin(){
         VoiceAppLogger.debug(TAG, "postFeedback() issue = " + issue);
         mService.postFeedback(rating , issue);
     }
-
-    public void sendDeviceToken(String deviceToken, String hostname, String userId, String accountSid) throws Exception {
-
-        if (hostname.equals("") || userId.equals("")) {
-            VoiceAppLogger.debug(TAG, "Returning from sendDeviceToken since userId or hostname are not set");
-            return;
-        }
-        JSONObject jsonObject = new JSONObject();
-        OkHttpClient client = new OkHttpClient();
-
-        deviceTokenMessage = "Device Token not yet sent";
-        deviceTokenState = DeviceTokenState.DEVICE_TOKEN_NOT_SENT;
-        VoiceAppLogger.debug(TAG, "sendDeviceToken, token: " + deviceToken + " hostname: " + hostname + " userId: " + userId);
-        String url = hostname + "/accounts/" + accountSid + "/subscribers/" + userId + "/devicetoken";
-        VoiceAppLogger.debug(TAG, "Device token request is: " + url);
-
-        try {
-            jsonObject.put("deviceToken", deviceToken);
-        } catch (JSONException e) {
-            VoiceAppLogger.error(TAG, "Error in creating device token body");
-            deviceTokenState = DeviceTokenState.DEVICE_TOKEN_SEND_FAILURE;
-            deviceTokenMessage = "Failed to create request Body";
-            throw new Exception(e.getMessage());
-        }
-
-        RequestBody body = RequestBody.create(JSON, jsonObject.toString());
-
-        Request request = new Request.Builder()
-                .url(url)
-                .post(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(okhttp3.Call call, IOException e) {
-                VoiceAppLogger.error(TAG, "sendDeviceTokenAysnc: Failed to get response for send device token: "
-                        + e.getMessage());
-                deviceTokenMessage = "Device Token send failed";
-                deviceTokenState = DeviceTokenState.DEVICE_TOKEN_SEND_FAILURE;
-                uiThreadHandler.post(()->{
-                    channel.invokeMethod("loggedInStatus","Login Failed : "+deviceTokenMessage);
-                });
-            }
-
-            @Override
-            public void onResponse(okhttp3.Call call, Response response) throws IOException {
-                VoiceAppLogger.debug(TAG, "sendDeviceTokenAysnc: Got response for send device token: " + response.code());
-                if (200 != response.code() && 201 != response.code()) {
-                    deviceTokenMessage = "Device Token send received: " + String.valueOf(response.code());
-                    deviceTokenState = DeviceTokenState.DEVICE_TOKEN_SEND_FAILURE;
-                    uiThreadHandler.post(()->{
-                        channel.invokeMethod("loggedInStatus","Login Failed : "+deviceTokenMessage);
-                    });
-                } else {
-                    deviceTokenMessage = null;
-                    deviceTokenState = DeviceTokenState.DEVICE_TOKEN_SEND_SUCCESS;
-                    uiThreadHandler.post(()->{
-                        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-                        String sdkHostname = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString());
-                        String username = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.USER_NAME.toString());
-                        String subscriberToken = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString());
-                        String displayName = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.DISPLAY_NAME.toString());
-                        try {
-                            mService.initialize(sdkHostname, username, accountSid, subscriberToken, displayName);
-                        } catch (Exception e) {
-                            channel.invokeMethod("loggedInStatus","Login Failed : "+e.getMessage());
-                        }
-                    });
-                }
-
-            }
-        });
-    }
-
-
 
     private void fetchContactList() {
 

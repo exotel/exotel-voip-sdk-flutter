@@ -490,7 +490,7 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
          */
         synchronized (statusListenerListMutex) {
             for (VoiceAppStatusEvents statusEvents : voiceAppStatusListenerList) {
-                statusEvents.onStatusChange();
+                statusEvents.onInitializationSuccess();
             }
         }
 
@@ -519,7 +519,7 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
          */
         synchronized (statusListenerListMutex) {
             for (VoiceAppStatusEvents statusEvents : voiceAppStatusListenerList) {
-                statusEvents.onStatusChange();
+                statusEvents.onInitializationFailure(error);
             }
         }
 
@@ -757,68 +757,6 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
         }
         mCall = call;
     }
-
-    /**
-     * callback API to handle the http response
-     */
-    Callback mCallback = new Callback() {
-        @Override
-        public void onFailure(okhttp3.Call call, IOException e) {
-            VoiceAppLogger.error(TAG, "Failed to get response for login");
-            /* TODO: Exception on UI thread */
-            onInitializationFailure(new ExotelVoiceError() {
-                @Override
-                public ErrorType getErrorType() {
-                    return ErrorType.INTERNAL_ERROR;
-                }
-
-                @Override
-                public String getErrorMessage() {
-                    return e.getMessage();
-                }
-            });
-        }
-
-        @Override
-        public void onResponse(okhttp3.Call call, Response response) throws IOException {
-            VoiceAppLogger.debug(TAG, "Got response for login: " + response.code());
-            if (200 == response.code()) {
-                String jsonData;
-                jsonData = response.body().string();
-                JSONObject jObject;
-                VoiceAppLogger.debug(TAG, "Get regAuth Token response is: " + jsonData);
-                try {
-                    jObject = new JSONObject(jsonData);
-                    String regAuthToken = jObject.getString("subscriber_token");
-                    String sdkHostname = jObject.getString("host_name");
-                    String accountSid = jObject.getString("account_sid");
-                    String exophone = jObject.getString("exophone");
-                    String contactDisplayName = jObject.getString("contact_display_name");
-
-                    SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-                    sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString(), regAuthToken);
-                    sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString(), sdkHostname);
-                    sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.EXOPHONE.toString(), exophone);
-                    sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.CONTACT_DISPLAY_NAME.toString(), contactDisplayName);
-
-                    String username = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.USER_NAME.toString());
-                    String displayName = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.DISPLAY_NAME.toString());
-                    /**
-                     * [sdk-initialization-flow] calling mediator initialize API for sdk initialization
-                     * passing the hostanme , username , tenant ,subscriber token and displayName
-                     */
-                    initialize(sdkHostname, username, accountSid, regAuthToken, displayName);
-
-
-                } catch (Exception exp) {
-                    VoiceAppLogger.error(TAG, "Exception in service initialization: " + exp.getMessage());
-                    /* TODO: Exception on UI thread */
-                }
-            } else {
-                onAuthenticationFailure(null);
-            }
-        }
-    };
 
     /**
      * get the exophone number
