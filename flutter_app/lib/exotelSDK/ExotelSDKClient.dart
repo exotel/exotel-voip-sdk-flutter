@@ -1,5 +1,7 @@
 
 import 'dart:developer';
+import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
+import 'package:flutter_app/exotelSDK/MethodChannelInvokeMethod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Service/PushNotificationService.dart';
 import 'ExotelSDKCallback.dart';
@@ -25,30 +27,30 @@ class ExotelSDKClient {
     // handle messages from android to flutter
     androidChannel!.setMethodCallHandler(flutterCallHandler);
   }
-  // Example: A method to invoke a native API
-  // static Future<void> invokeNativeApi() async {
-  //   try {
-  //     await platform.invokeMethod('your_native_method_name');
-  //   } on PlatformException catch (e) {
-  //     print('Error invoking native API: ${e.message}');
-  //   }
-  // }
-  Future<String> initialize(String subscriberName,String password,String accountSid,String hostname) async{
-    log("login button function start");
+  
+  Future<String> getDeviceId() async {
     try {
-      String? fcmToken = "";
-      await PushNotificationService.getInstance().getToken().then((value) {
-        fcmToken = value;
-      });
-      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-      String res = await androidChannel?.invokeMethod('initialize', {'appHostname': hostname ,'subscriber_name': subscriberName , 'account_sid': accountSid , 'password':password,'fcm_token':fcmToken});
-
-
-      return res;
-    }
-    catch (e) {
+      return await androidChannel?.invokeMethod(
+          MethodChannelInvokeMethod.GET_DEVICE_ID);
+    } catch(e){
       rethrow;
     }
+  }
+
+  void initialize(String hostname, String subsriberName, String displayName, String accountSid,String subscriberToken){
+     var arg = {
+       'host_name':hostname,
+       'subscriber_name':subsriberName,
+       'account_sid':accountSid,
+       'subscriber_token':subscriberToken,
+       'display_name':displayName
+     };
+     try{
+       androidChannel?.invokeMethod(MethodChannelInvokeMethod.INITIALIZE,arg);
+     } catch(e){
+       rethrow;
+     }
+
   }
 
   Future<String> dial(String dialTo, String message) async{
@@ -305,14 +307,25 @@ class ExotelSDKClient {
     String loginStatus = "not ready";
     String callingStatus = "blank";
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    print("flutter method handler got call.method : ${call.method} , arguments : ${call.arguments.toString()}");
     switch (call.method) {
+      case "inialize-result":
+        var status = call.arguments['status'];
+        if(status == "OK"){
+          mCallBack?.onLoggedInSucess();
+          prefs.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), true);
+        } else{
+          var message = call.arguments['data'];
+          mCallBack?.onLoggedInFailure(message);
+        }
+        break;
       case "loggedInStatus":
         loginStatus =  call.arguments.toString();
         mCallBack?.setStatus(loginStatus);
         log("loginStatus = $loginStatus");
         if(loginStatus == "Ready"){
           mCallBack?.onLoggedInSucess();
-          await prefs.setBool('isLoggedIn', true);
+          await prefs.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), true);
         } else {
           mCallBack?.onLoggedInFailure(loginStatus);
         }

@@ -1,8 +1,10 @@
 package com.exotel.voice_sample;
 
-public interface VoiceAppStatusEvents {
+import com.exotel.voice.ExotelVoiceError;
 
-    void onStatusChange();
+public interface VoiceAppStatusEvents {
+    void onInitializationSuccess();
+    void onInitializationFailure(ExotelVoiceError var1);
 
     void onAuthFailure();
 

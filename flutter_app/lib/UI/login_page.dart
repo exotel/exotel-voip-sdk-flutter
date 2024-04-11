@@ -290,15 +290,9 @@ class _LoginPageState extends State<LoginPage> {
                       }
                       String accountSid = accountSidController.text;
                       String hostname = hostnameController.text;
-                      String response = "";
                       try {
-                        response = await ExotelSDKClient.getInstance().initialize(userId, password, accountSid, hostname);
-                        mApplicationUtil.setUserId(userId);
-                        mApplicationUtil.setPassword(password);
-                        mApplicationUtil.displayName(displayName);
-                        mApplicationUtil.setAccountSid(accountSid);
-                        mApplicationUtil.setHostName(hostname);
-                        mApplicationUtil.showLoadingDialog(response);
+                        mApplicationUtil.login(userId, password, accountSid, hostname);
+                        mApplicationUtil.showLoadingDialog("Logging In");
                         SharedPreferences prefs = await SharedPreferences.getInstance();
                         await prefs.setString('userId', userId);
                         await prefs.setString('password', password);

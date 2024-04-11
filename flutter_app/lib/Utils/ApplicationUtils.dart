@@ -1,10 +1,18 @@
 
+import 'dart:async';
+import 'dart:convert';
 import 'dart:ffi';
+import 'dart:io';
 import 'dart:math';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
 import 'package:flutter_app/exotelSDK/ExotelSDKCallback.dart';
+import 'package:flutter_app/exotelSDK/ExotelSDKClient.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:flutter_app/main.dart';
@@ -13,16 +21,18 @@ import 'package:intl/intl.dart';
 
 import 'package:provider/provider.dart';
 import 'package:flutter_app/UI/home_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../Service/PushNotificationService.dart';
+import 'package:http/http.dart' as http;
 
 class ApplicationUtils implements ExotelSDKCallback {
-  String? mUserId;
+  String? mSubscriberName;
 
   String? mPassword;
 
   String? mAccountSid;
 
-  String? mHostName;
+  String? mAppHostName;
 
   String? mDialTo;
 
@@ -36,7 +46,7 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   String? mJsonData;
 
-  String? mdisplayName;
+  String? mDisplayName;
 
   ApplicationUtils._internal();
   static ApplicationUtils? _instance;
@@ -72,6 +82,92 @@ class ApplicationUtils implements ExotelSDKCallback {
     );
   }
 
+  Future<String?> _getId() async {
+    var deviceInfo = DeviceInfoPlugin();
+    if (Platform.isIOS) { // import 'dart:io'
+      var iosDeviceInfo = await deviceInfo.iosInfo;
+      return iosDeviceInfo.identifierForVendor; // unique ID on iOS
+    } else if(Platform.isAndroid) {
+      var androidDeviceInfo = await deviceInfo.androidInfo;
+      return androidDeviceInfo.id; // unique ID on Android
+    }
+  }
+
+  Future<void> login(String subscriberName,String password,String accountSid,String appHostname) async {
+    mSubscriberName = subscriberName;
+    mPassword = password;
+    mAccountSid = accountSid;
+    mAppHostName = appHostname;
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    sharedPreferences.setString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString(), accountSid);
+    sharedPreferences.setString(ApplicationSharedPreferenceData.USER_NAME.toString(), subscriberName);
+    sharedPreferences.setString(ApplicationSharedPreferenceData.PASSWORD.toString(), password);
+    sharedPreferences.setString(ApplicationSharedPreferenceData.APP_HOSTNAME.toString() , appHostname);
+    print("Calling login API");
+    // var deviceInfo = DeviceInfoPlugin();
+    // var deviceId = await _getId();
+    var deviceId ="";
+    try {
+      deviceId = await ExotelSDKClient.getInstance().getDeviceId();
+    } catch (e) {
+      print("Error while getting device id : ${e}");
+      onLoggedInFailure(e.toString());
+      return;
+    }
+    sharedPreferences.setString(ApplicationSharedPreferenceData.DEVICE_ID.toString(), deviceId.toString());
+    String url = appHostname+"/login";
+
+    var jsonData = {
+      'user_name':subscriberName,
+      'password':password,
+      'account_sid':accountSid,
+      'device_id':deviceId
+    };
+    print("login request body : ${jsonData.toString()}");
+    try{
+       final response = await http.post(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(jsonData),
+      ).timeout(Duration(seconds: 15))
+           .catchError((error){
+         print("Error while sending post request for login ${error.toString()}");
+         throw error;
+       });
+
+      print("Got response for login: ${response.statusCode}");
+      if (response.statusCode == 200) {
+        // Successful POST request, handle the response here
+        final responseData = jsonDecode(response.body);
+        print("Got response body for login : ${responseData}");
+        String subscriberToken = responseData['subscriber_token'].toString();
+        String sdkHostName = responseData['host_name'];
+        String exophone = responseData['exophone'];
+        mDisplayName = responseData['contact_display_name'];
+        SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+        sharedPreferences.setString(ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString(), subscriberToken);
+        sharedPreferences.setString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString(),sdkHostName);
+        sharedPreferences.setString(ApplicationSharedPreferenceData.EXOPHONE.toString(),exophone);
+        sharedPreferences.setString(ApplicationSharedPreferenceData.CONTACT_DISPLAY_NAME.toString(), mDisplayName!);
+
+
+        String? devicetoken = await PushNotificationService.getInstance().getToken();
+        sendDeviceToken(devicetoken, appHostname, subscriberName, accountSid);
+      } else {
+        // If the server returns an error response, throw an exception
+        print(response.body);
+      }
+    }catch(e){
+      onLoggedInFailure(e.toString());
+    }
+
+  }
+
+   var mCallback = (http.Response response) async {
+
+   };
   void stopLoadingDialog(){
     if(isLoading){
       Navigator.pop(context!); // Close the loading dialog
@@ -151,22 +247,6 @@ class ApplicationUtils implements ExotelSDKCallback {
     Fluttertoast.showToast(msg: message);
   }
 
-  void setUserId(String userId) {
-    mUserId = userId;
-  }
-
-  void setPassword(String password) {
-    mPassword = password;
-  }
-
-  void setAccountSid(String accountSid) {
-    mAccountSid = accountSid;
-  }
-
-  void setHostName(String hostname) {
-    mHostName = hostname;
-  }
-
   void setDialTo(String dialTo) {
     mDialTo = dialTo;
   }
@@ -175,9 +255,6 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
   void setCallId(String callId) {
     mCallId = callId;
-  }
-  void displayName(String displayName) {
-    mdisplayName = displayName;
   }
   void setVersion(String version) {
     mVersion = version;
@@ -247,5 +324,45 @@ class ApplicationUtils implements ExotelSDKCallback {
     Provider.of<CallList>(context!, listen: false).addCall(newCall);
   }
 
+  Future<void> sendDeviceToken(String? devicetoken, String? appHostname, String? subscriberName, String? accountSid) async {
+    print("Device token ${devicetoken}, subscriberName ${subscriberName}");
+    String url = appHostname! + "/accounts/" + accountSid! + "/subscribers/" + subscriberName! + "/devicetoken";
+    print("Device token request is: ${url}");
 
+    var jsonData = {
+      'deviceToken': ""
+    };
+    try{
+      final response = await http.post(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(jsonData),
+      ).timeout(Duration(seconds: 15))
+      .catchError((error){
+        print("Error while sending post request for device token ${error.toString()}");
+        throw error;
+      });
+
+      print("Got response for devicetoken: ${response.statusCode}");
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Successful POST request, handle the response here
+        SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+        String? sdkHostName = sharedPreferences.getString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString());
+        String? subscriberToken = sharedPreferences.getString(ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString());
+        ExotelSDKClient.getInstance().initialize(sdkHostName!, mSubscriberName!, mDisplayName!, mAccountSid!, subscriberToken!);
+      } else {
+        // If the server returns an error response, throw an exception
+        print(response.body);
+      }
+    } on PlatformException catch(e){
+      print("Error while intialize ${e.toString()} ");
+      onLoggedInFailure("Error while Inializing SDK");
+    } on Exception catch(e){
+      print("Error ${e.toString()}");
+      onLoggedInFailure("Error while sending token");
+    }
+
+  }
 }
