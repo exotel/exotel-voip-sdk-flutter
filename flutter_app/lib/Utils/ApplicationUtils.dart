@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi';
@@ -49,9 +48,11 @@ class ApplicationUtils implements ExotelSDKCallback {
   String? mDisplayName;
 
   ApplicationUtils._internal();
+
   static ApplicationUtils? _instance;
   BuildContext? context;
   bool isLoading = false;
+
   // Factory constructor with argument
   static ApplicationUtils getInstance(BuildContext buildContext) {
     // Create instance only if it's not already created
@@ -60,9 +61,8 @@ class ApplicationUtils implements ExotelSDKCallback {
     return _instance!;
   }
 
-  void showLoadingDialog(String message){
-    if(isLoading)
-      return;
+  void showLoadingDialog(String message) {
+    if (isLoading) return;
 
     showDialog(
       context: context!,
@@ -84,29 +84,35 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   Future<String?> _getId() async {
     var deviceInfo = DeviceInfoPlugin();
-    if (Platform.isIOS) { // import 'dart:io'
+    if (Platform.isIOS) {
+      // import 'dart:io'
       var iosDeviceInfo = await deviceInfo.iosInfo;
       return iosDeviceInfo.identifierForVendor; // unique ID on iOS
-    } else if(Platform.isAndroid) {
+    } else if (Platform.isAndroid) {
       var androidDeviceInfo = await deviceInfo.androidInfo;
       return androidDeviceInfo.id; // unique ID on Android
     }
   }
 
-  Future<void> login(String subscriberName,String password,String accountSid,String appHostname) async {
+  Future<void> login(String subscriberName, String password, String accountSid,
+      String appHostname) async {
     mSubscriberName = subscriberName;
     mPassword = password;
     mAccountSid = accountSid;
     mAppHostName = appHostname;
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString(), accountSid);
-    sharedPreferences.setString(ApplicationSharedPreferenceData.USER_NAME.toString(), subscriberName);
-    sharedPreferences.setString(ApplicationSharedPreferenceData.PASSWORD.toString(), password);
-    sharedPreferences.setString(ApplicationSharedPreferenceData.APP_HOSTNAME.toString() , appHostname);
+    sharedPreferences.setString(
+        ApplicationSharedPreferenceData.ACCOUNT_SID.toString(), accountSid);
+    sharedPreferences.setString(
+        ApplicationSharedPreferenceData.USER_NAME.toString(), subscriberName);
+    sharedPreferences.setString(
+        ApplicationSharedPreferenceData.PASSWORD.toString(), password);
+    sharedPreferences.setString(
+        ApplicationSharedPreferenceData.APP_HOSTNAME.toString(), appHostname);
     print("Calling login API");
     // var deviceInfo = DeviceInfoPlugin();
     // var deviceId = await _getId();
-    var deviceId ="";
+    var deviceId = "";
     try {
       deviceId = await ExotelSDKClient.getInstance().getDeviceId();
     } catch (e) {
@@ -114,28 +120,32 @@ class ApplicationUtils implements ExotelSDKCallback {
       onLoggedInFailure(e.toString());
       return;
     }
-    sharedPreferences.setString(ApplicationSharedPreferenceData.DEVICE_ID.toString(), deviceId.toString());
-    String url = appHostname+"/login";
+    sharedPreferences.setString(
+        ApplicationSharedPreferenceData.DEVICE_ID.toString(),
+        deviceId.toString());
+    String url = appHostname + "/login";
 
     var jsonData = {
-      'user_name':subscriberName,
-      'password':password,
-      'account_sid':accountSid,
-      'device_id':deviceId
+      'user_name': subscriberName,
+      'password': password,
+      'account_sid': accountSid,
+      'device_id': deviceId
     };
     print("login request body : ${jsonData.toString()}");
-    try{
-       final response = await http.post(
-        Uri.parse(url),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(jsonData),
-      ).timeout(Duration(seconds: 15))
-           .catchError((error){
-         print("Error while sending post request for login ${error.toString()}");
-         throw error;
-       });
+    try {
+      final response = await http
+          .post(
+            Uri.parse(url),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+            },
+            body: jsonEncode(jsonData),
+          )
+          .timeout(Duration(seconds: 15))
+          .catchError((error) {
+        print("Error while sending post request for login ${error.toString()}");
+        throw error;
+      });
 
       print("Got response for login: ${response.statusCode}");
       if (response.statusCode == 200) {
@@ -146,76 +156,86 @@ class ApplicationUtils implements ExotelSDKCallback {
         String sdkHostName = responseData['host_name'];
         String exophone = responseData['exophone'];
         mDisplayName = responseData['contact_display_name'];
-        SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-        sharedPreferences.setString(ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString(), subscriberToken);
-        sharedPreferences.setString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString(),sdkHostName);
-        sharedPreferences.setString(ApplicationSharedPreferenceData.EXOPHONE.toString(),exophone);
-        sharedPreferences.setString(ApplicationSharedPreferenceData.CONTACT_DISPLAY_NAME.toString(), mDisplayName!);
+        SharedPreferences sharedPreferences =
+            await SharedPreferences.getInstance();
+        sharedPreferences.setString(
+            ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString(),
+            subscriberToken);
+        sharedPreferences.setString(
+            ApplicationSharedPreferenceData.SDK_HOSTNAME.toString(),
+            sdkHostName);
+        sharedPreferences.setString(
+            ApplicationSharedPreferenceData.EXOPHONE.toString(), exophone);
+        sharedPreferences.setString(
+            ApplicationSharedPreferenceData.CONTACT_DISPLAY_NAME.toString(),
+            mDisplayName!);
 
-
-        String? devicetoken = await PushNotificationService.getInstance().getToken();
-        sendDeviceToken(devicetoken, appHostname, subscriberName, accountSid);
+        String? devicetoken =
+            await PushNotificationService.getInstance().getToken();
+        sendDeviceToken(devicetoken, mAppHostName, subscriberName, accountSid);
       } else {
         // If the server returns an error response, throw an exception
         print(response.body);
       }
-    }catch(e){
+    } catch (e) {
       onLoggedInFailure(e.toString());
     }
-
   }
 
-   var mCallback = (http.Response response) async {
-
-   };
-  void stopLoadingDialog(){
-    if(isLoading){
+  void stopLoadingDialog() {
+    if (isLoading) {
       Navigator.pop(context!); // Close the loading dialog
       isLoading = false;
     }
   }
+
   void navigateToHome() {
     navigatorKey.currentState!.pushNamedAndRemoveUntil(
       '/home',
-          (Route<dynamic> route) => false,
+      (Route<dynamic> route) => false,
     );
   }
+
   void navigateToConnected() {
     print("in navigateToConnected()");
     navigatorKey.currentState!.pushNamedAndRemoveUntil(
       '/connected',
-          (Route<dynamic> route) => false,
-      arguments: {'dialTo': mDialTo },
+      (Route<dynamic> route) => false,
+      arguments: {'dialTo': mDialTo},
     );
   }
+
   void navigateToIncoming() {
-   print("in navigateToIncoming");
-   recentCallsPage(mDestination!, 'INCOMING');
-   PushNotificationService.getInstance().showLocalNotification(
-     'Incoming call!',
-     '$mDestination',
-   );
-   WidgetsBinding.instance.addPostFrameCallback((_) {
-     Navigator.pushReplacementNamed(
-       context!,
-       '/incoming',
-     );
-   });
+    print("in navigateToIncoming");
+    recentCallsPage(mDestination!, 'INCOMING');
+    PushNotificationService.getInstance().showLocalNotification(
+      'Incoming call!',
+      '$mDestination',
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.pushReplacementNamed(
+        context!,
+        '/incoming',
+      );
+    });
   }
+
   void navigateToRinging() {
     recentCallsPage(mDialTo!, 'OUTGOING');
     navigatorKey.currentState!.pushNamedAndRemoveUntil(
       '/ringing',
-          (Route<dynamic> route) => false,
+      (Route<dynamic> route) => false,
       arguments: {'state': "Ringing"}, //Hard-coded
     );
   }
+
   void navigateToStart() {
     navigatorKey.currentState!.pushNamedAndRemoveUntil(
       '/',
-          (Route<dynamic> route) => false,
+      (Route<dynamic> route) => false,
     );
   }
+
   // void navigateToHome(){
   //     stopLoadingDialog();
   //     Navigator.pushReplacementNamed(
@@ -243,30 +263,25 @@ class ApplicationUtils implements ExotelSDKCallback {
   //   );
   // }
 
-  void showToast(String message){
+  void showToast(String message) {
     Fluttertoast.showToast(msg: message);
   }
 
   void setDialTo(String dialTo) {
     mDialTo = dialTo;
   }
+
   void setDestination(String destination) {
     mDestination = destination;
   }
+
   void setCallId(String callId) {
     mCallId = callId;
   }
-  void setVersion(String version) {
-    mVersion = version;
-    print('in setVersion(), version is: $mVersion');
-  }
+
   void setStatus(String status) {
     mStatus = status;
     print('in setStatus(), mStatus is: $mStatus');
-  }
-  void setjsonData(String jsonData) {
-    mJsonData = jsonData;
-    print('in setVersion(), mJsonData is: $mJsonData');
   }
 
   @override
@@ -324,45 +339,132 @@ class ApplicationUtils implements ExotelSDKCallback {
     Provider.of<CallList>(context!, listen: false).addCall(newCall);
   }
 
-  Future<void> sendDeviceToken(String? devicetoken, String? appHostname, String? subscriberName, String? accountSid) async {
+  Future<void> sendDeviceToken(String? devicetoken, String? appHostname,
+      String? subscriberName, String? accountSid) async {
     print("Device token ${devicetoken}, subscriberName ${subscriberName}");
-    String url = appHostname! + "/accounts/" + accountSid! + "/subscribers/" + subscriberName! + "/devicetoken";
+    String url = appHostname! +
+        "/accounts/" +
+        accountSid! +
+        "/subscribers/" +
+        subscriberName! +
+        "/devicetoken";
     print("Device token request is: ${url}");
 
-    var jsonData = {
-      'deviceToken': ""
-    };
-    try{
-      final response = await http.post(
-        Uri.parse(url),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(jsonData),
-      ).timeout(Duration(seconds: 15))
-      .catchError((error){
-        print("Error while sending post request for device token ${error.toString()}");
+    var requestBody = {'deviceToken': ""};
+    try {
+      final response = await http
+          .post(
+            Uri.parse(url),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+            },
+            body: jsonEncode(requestBody),
+          )
+          .timeout(Duration(seconds: 15))
+          .catchError((error) {
+        print("Failed to get response for device token ${error.toString()}");
         throw error;
       });
 
       print("Got response for devicetoken: ${response.statusCode}");
       if (response.statusCode == 200 || response.statusCode == 201) {
         // Successful POST request, handle the response here
-        SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-        String? sdkHostName = sharedPreferences.getString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString());
-        String? subscriberToken = sharedPreferences.getString(ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString());
-        ExotelSDKClient.getInstance().initialize(sdkHostName!, mSubscriberName!, mDisplayName!, mAccountSid!, subscriberToken!);
+        SharedPreferences sharedPreferences =
+            await SharedPreferences.getInstance();
+        String? sdkHostName = sharedPreferences
+            .getString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString());
+        String? subscriberToken = sharedPreferences.getString(
+            ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString());
+        ExotelSDKClient.getInstance()
+            .initialize(sdkHostName!, mSubscriberName!, mDisplayName!,
+                mAccountSid!, subscriberToken!)
+            .catchError((e) {
+          onLoggedInFailure("Error while Inializing SDK");
+        });
       } else {
         // If the server returns an error response, throw an exception
         print(response.body);
       }
-    } on PlatformException catch(e){
+    } on PlatformException catch (e) {
       print("Error while intialize ${e.toString()} ");
       onLoggedInFailure("Error while Inializing SDK");
-    } on Exception catch(e){
+    } on Exception catch (e) {
       print("Error ${e.toString()}");
       onLoggedInFailure("Error while sending token");
     }
+  }
 
+  Future<void> dial(String dialTo, String message) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    String? exophone = sharedPreferences
+        .getString(ApplicationSharedPreferenceData.EXOPHONE.toString());
+    try {
+      await ExotelSDKClient.getInstance().dial(exophone!, message);
+    } catch (e) {
+      print("Error while dialing out : ${e.toString()}");
+      onCallEnded();
+      return;
+    }
+    setCallContext(dialTo, "");
+  }
+
+  Future<void> setCallContext(String dialTo, String message) async {
+    String url = mAppHostName! +
+        "/accounts/" +
+        mAccountSid! +
+        "/subscribers/" +
+        mSubscriberName! +
+        "/context";
+    var requestBody = {'dialToNumber': dialTo, 'message': message};
+    try {
+      final response = await http
+          .post(
+            Uri.parse(url),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+            },
+            body: jsonEncode(requestBody),
+          )
+          .timeout(Duration(seconds: 15))
+          .catchError((error) {
+        print(
+            "Failed to get response for set call context ${error.toString()}");
+        throw error;
+      });
+
+      print("Got response for setting call context: ${response.statusCode}");
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("set call context success");
+      } else {
+        print("set call context fail");
+        showToast("fail setting call context");
+      }
+    } on Exception catch (e) {
+      print("Error ${e.toString()}");
+      showToast("fail setting call context");
+    }
+  }
+
+  Future<void> fetchContactList() async {
+    String url = mAppHostName! +
+        "/accounts/" +
+        mAccountSid! +
+        "/subscribers/" +
+        mSubscriberName! +
+        "/contacts";
+
+    await http
+        .get(Uri.parse(url))
+        .timeout(Duration(seconds: 15))
+        .then((response) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        mJsonData = response.body.toString();
+      } else {
+        showToast("failed to fetch contact list");
+      }
+    }).catchError((e) {
+      print("Failed to get response for contact list ${e.toString()}");
+      showToast("failed to get contact list");
+    });
   }
 }

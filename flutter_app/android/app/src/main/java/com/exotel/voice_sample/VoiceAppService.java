@@ -424,13 +424,10 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
     }
 
     public int getCallDuration() {
-
         if (null == mCall) {
             return -1;
         }
-        int duration = mCall.getCallDetails().getCallDuration();
-        //VoiceAppLogger.debug(TAG,"Get Call Duration is VoiceApp Service, duration: "+duration);
-        return duration;
+        return mCall.getCallDetails().getCallDuration();
     }
 
     public CallStatistics getStatistics() {
