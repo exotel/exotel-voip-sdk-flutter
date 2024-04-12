@@ -435,7 +435,7 @@ class _DialTabContentState extends State<DialTabContent> {
               arguments: {'state': "Connecting...."},
             );
             mApplicationUtil.setDialTo(dialTo);
-            mApplicationUtil.dial(dialTo,"test:1234");
+            mApplicationUtil.makeIPCall(dialTo,"test:1234");
             },
               child: ClipOval(
                 child: Image.asset(
@@ -598,7 +598,7 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
                             String dialTo = contact.number;
                             print("DialTo is:  $dialTo");
                             mApplicationUtil.setDialTo(dialTo);
-                            mApplicationUtil.dial(dialTo,"");
+                            mApplicationUtil.makeIPCall(dialTo,"");
                             print("Calling ${contact.name}");
                           },
                           child: ClipOval(
