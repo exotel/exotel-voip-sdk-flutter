@@ -1,15 +1,29 @@
 abstract class ExotelSDKCallback {
-  void onLoggedInSucess();
+  void onInitializationSuccess();
 
-  void onLoggedInFailure(String loginStatus);
+  void onInitializationFailure(String errorMessage);
+
+  void onAuthenticationFailure(String errorMessage);
+
+  void onCallInitiated();
 
   void onCallRinging();
 
-  void onCallConnected();
+  void onCallEstablished();
 
   void onCallEnded();
 
-  void onCallIncoming(String callId, String destination) {}
+  void onMissedCall();
 
-  void setStatus(String loginStatus) {}
+  void onMediaDisrupted();
+
+  void onRenewingMedia();
+
+  void onCallIncoming(String callId, String destination);
+
+  void onUploadLogSuccess();
+
+  void onUploadLogFailure(String errorMessage);
+
+  void setStatus(String loginStatus);
 }
