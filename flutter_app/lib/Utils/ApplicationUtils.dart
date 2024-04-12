@@ -402,7 +402,11 @@ class ApplicationUtils implements ExotelSDKCallback {
     }
   }
 
-  Future<void> dial(String dialTo, String message) async {
+  void makeIPCall(String dialTo, String message) {
+    makeCall("sip:${dialTo}", message);
+  }
+
+  Future<void> makeCall(String dialTo, String message) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? exophone = sharedPreferences
         .getString(ApplicationSharedPreferenceData.EXOPHONE.toString());
