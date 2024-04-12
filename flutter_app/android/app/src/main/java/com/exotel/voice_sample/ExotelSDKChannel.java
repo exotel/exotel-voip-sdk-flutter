@@ -201,6 +201,12 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                             Map<String, String> data = call.argument("data");
                             VoiceAppLogger.debug(TAG, "in java relayNotificationData data = " + data);
                             processPushNotification(data);
+                            try {
+                                Boolean relaySucces = mService.relaySessionData(data);
+                                result.success(relaySucces);
+                            } catch (Exception e) {
+                                result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(),e);
+                            }
                             break;
                         default:
                             System.out.println("FAIL");

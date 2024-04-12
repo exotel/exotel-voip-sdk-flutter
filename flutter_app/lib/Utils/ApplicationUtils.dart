@@ -357,7 +357,8 @@ class ApplicationUtils implements ExotelSDKCallback {
         "/devicetoken";
     print("Device token request is: ${url}");
 
-    var requestBody = {'deviceToken': ""};
+    var requestBody = {'deviceToken': devicetoken};
+    print("Device token request body is: ${requestBody}");
     try {
       final response = await http
           .post(
@@ -459,12 +460,13 @@ class ApplicationUtils implements ExotelSDKCallback {
         "/subscribers/" +
         mSubscriberName! +
         "/contacts";
-
+  print("fetch contact list");
     await http
         .get(Uri.parse(url))
         .timeout(Duration(seconds: 15))
         .then((response) {
       if (response.statusCode == 200 || response.statusCode == 201) {
+        print("fetched list : ${response.body.toString()}");
         mJsonData = response.body.toString();
       } else {
         showToast("failed to fetch contact list");

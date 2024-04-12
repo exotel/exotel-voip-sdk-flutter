@@ -1,20 +1,8 @@
 package com.exotel.voice_sample;
 
-import static android.app.Service.START_NOT_STICKY;
-
-import android.app.Notification;
-import android.app.Service;
 import android.content.Context;
-import android.content.Intent;
-import android.os.Binder;
-import android.os.Build;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.Looper;
-import android.provider.Settings;
 import android.util.Base64;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import androidx.annotation.NonNull;
 
 import com.exotel.voice.Call;
 import com.exotel.voice.CallController;
@@ -24,9 +12,7 @@ import com.exotel.voice.CallDirection;
 import com.exotel.voice.CallEndReason;
 import com.exotel.voice.CallIssue;
 import com.exotel.voice.CallListener;
-import com.exotel.voice.CallState;
 import com.exotel.voice.CallStatistics;
-import com.exotel.voice.ErrorType;
 import com.exotel.voice.ExotelVoiceClient;
 import com.exotel.voice.ExotelVoiceClientEventListener;
 import com.exotel.voice.ExotelVoiceClientSDK;
@@ -44,14 +30,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.flutter.embedding.engine.plugins.FlutterPlugin;
-import io.flutter.embedding.engine.FlutterEngine;
-
 import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
@@ -801,6 +783,10 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
             VoiceAppLogger.error(TAG, "Initialize has not been called before relaySessionData");
 
         }
+    }
+
+    public Boolean relaySessionData(Map<String, String> pushNotificationData) throws Exception {
+        return exotelVoiceClient.relaySessionData(pushNotificationData);
     }
 
     public void makeServiceBackground() {
