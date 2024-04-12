@@ -28,6 +28,62 @@ class ExotelSDKClient {
     // handle messages from android to flutter
     androidChannel!.setMethodCallHandler(flutterCallHandler);
   }
+
+  void setExotelSDKCallback(ExotelSDKCallback callback) {
+    mCallBack = callback;
+  }
+
+  Future<String> flutterCallHandler(MethodCall call) async {
+    String loginStatus = "not ready";
+    String callingStatus = "blank";
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    print("flutter method handler got call.method : ${call.method} , arguments : ${call.arguments.toString()}");
+    switch (call.method) {
+      case "inialize-result":
+        var status = call.arguments['status'];
+        if(status == "OK"){
+          mCallBack?.onLoggedInSucess();
+          prefs.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), true);
+        } else{
+          var message = call.arguments['data'];
+          mCallBack?.onLoggedInFailure(message);
+        }
+        break;
+      case "loggedInStatus":
+        loginStatus =  call.arguments.toString();
+        mCallBack?.setStatus(loginStatus);
+        log("loginStatus = $loginStatus");
+        if(loginStatus == "Ready"){
+          mCallBack?.onLoggedInSucess();
+          await prefs.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), true);
+        } else {
+          mCallBack?.onLoggedInFailure(loginStatus);
+        }
+        break;
+      case "callStatus":
+        callingStatus =  call.arguments.toString();
+        log("callingStatus = $callingStatus");
+        if(callingStatus == "Ringing"){
+          mCallBack?.onCallRinging();
+        } else if(callingStatus == "Connected"){
+          mCallBack?.onCallConnected();
+        }
+        else if(callingStatus == "Ended"){
+          mCallBack?.onCallEnded();
+        }
+        break;
+      case "incoming"://to-do: need to refactor, need code optimization
+        log("in case incoming in exotelsdkclient.dart");
+        String callId = call.arguments['callId'];
+        String destination = call.arguments['destination'];
+        print('in FlutterCallHandler(), callId is $callId, destination is $destination ');
+        mCallBack?.onCallIncoming(callId, destination);
+        break;
+      default:
+        break;
+    }
+    return "";
+  }
   
   Future<String> getDeviceId() async {
     try {
@@ -184,18 +240,6 @@ class ExotelSDKClient {
     }
   }
 
-  Future<void> contacts() async{
-    log("fetch contacts function start");
-    String response = "";
-    try {
-      // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-       await androidChannel?.invokeMethod('contacts');
-    } catch (e) {
-      response = "Failed to Invoke: '${e.toString()}'.";
-      rethrow;
-    }
-  }
-
   // Future<int> checkCallDuration() async{
   //   log("checkCallDuration function start");
   //   try {
@@ -228,65 +272,9 @@ class ExotelSDKClient {
     // Check permission status and handle accordingly
   }
 
-  Future<String> flutterCallHandler(MethodCall call) async {
-    String loginStatus = "not ready";
-    String callingStatus = "blank";
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    print("flutter method handler got call.method : ${call.method} , arguments : ${call.arguments.toString()}");
-    switch (call.method) {
-      case "inialize-result":
-        var status = call.arguments['status'];
-        if(status == "OK"){
-          mCallBack?.onLoggedInSucess();
-          prefs.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), true);
-        } else{
-          var message = call.arguments['data'];
-          mCallBack?.onLoggedInFailure(message);
-        }
-        break;
-      case "loggedInStatus":
-        loginStatus =  call.arguments.toString();
-        mCallBack?.setStatus(loginStatus);
-        log("loginStatus = $loginStatus");
-        if(loginStatus == "Ready"){
-          mCallBack?.onLoggedInSucess();
-          await prefs.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), true);
-        } else {
-          mCallBack?.onLoggedInFailure(loginStatus);
-        }
-        break;
-      case "callStatus":
-        callingStatus =  call.arguments.toString();
-        log("callingStatus = $callingStatus");
-        if(callingStatus == "Ringing"){
-          mCallBack?.onCallRinging();
-        } else if(callingStatus == "Connected"){
-          mCallBack?.onCallConnected();
-        }
-        else if(callingStatus == "Ended"){
-          mCallBack?.onCallEnded();
-        }
-        break;
-      case "incoming"://to-do: need to refactor, need code optimization
-        log("in case incoming in exotelsdkclient.dart");
-        String callId = call.arguments['callId'];
-        String destination = call.arguments['destination'];
-        print('in FlutterCallHandler(), callId is $callId, destination is $destination ');
-        mCallBack?.onCallIncoming(callId, destination);
-        break;
-      default:
-        break;
-    }
-    return "";
-  }
-
-  void relayFirebaseMessagingData(Map<String, dynamic> data) {
+  void relaySessionData(Map<String, dynamic> data) {
     print("in relayFirebaseMessagingData");
-    androidChannel?.invokeMethod('relayNotificationData',{'data':data});
-  }
-
-  void setExotelSDKCallback(ExotelSDKCallback callback) {
-    mCallBack = callback;
+    androidChannel?.invokeMethod(MethodChannelInvokeMethod.RELAY_SESSION_DATA,{'data':data});
   }
 
 
