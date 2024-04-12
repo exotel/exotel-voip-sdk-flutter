@@ -5,16 +5,19 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
 import 'package:flutter_app/exotelSDK/ExotelSDKCallback.dart';
-import 'package:flutter_app/exotelSDK/ExotelSDKClient.dart';
 import 'package:flutter_app/exotelSDK/ExotelVoiceClient.dart';
 import 'package:flutter_app/exotelSDK/ExotelVoiceClientFactory.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'package:flutter_app/main.dart';
 
@@ -52,8 +55,11 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   ExotelVoiceClient? _exotelVoiceClient;
 
+  var _flutterLocalNotificationsPlugin;
+
   ApplicationUtils._internal(){
     _exotelVoiceClient = ExotelVoiceClientFactory.getExotelVoiceClient();
+    _flutterLocalNotificationsPlugin =  FlutterLocalNotificationsPlugin();
   }
 
   static ApplicationUtils? _instance;
@@ -215,7 +221,7 @@ class ApplicationUtils implements ExotelSDKCallback {
   void navigateToIncoming() {
     print("in navigateToIncoming");
     recentCallsPage(mDestination!, 'INCOMING');
-    PushNotificationService.getInstance().showLocalNotification(
+    showLocalNotification(
       'Incoming call!',
       '$mDestination',
     );
@@ -291,6 +297,10 @@ class ApplicationUtils implements ExotelSDKCallback {
   void onInitializationSuccess() {
     mStatus = "Ready";
     navigateToHome();
+    SharedPreferences.getInstance().then((pref) {
+      pref.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), true);
+    });
+
   }
 
   @override
@@ -580,5 +590,31 @@ class ApplicationUtils implements ExotelSDKCallback {
     _exotelVoiceClient?.answer();
   }
 
+  Future<void> setupLocalNotification() async {
+    const androidInitializationSetting = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const initSettings = InitializationSettings(android: androidInitializationSetting);
+    await _flutterLocalNotificationsPlugin.initialize(initSettings);
+    var service = FlutterBackgroundService();
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  }
 
+  void showLocalNotification(String title, String body) {
+    const androidNotificationDetail = AndroidNotificationDetails(
+      '0', // channel Id
+      'general',// channel Name
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+    const notificationDetails = NotificationDetails(
+      android: androidNotificationDetail,
+    );
+    _flutterLocalNotificationsPlugin.show(0, title, body, notificationDetails);
+  }
+}
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Handling a background message");
+  print("RemoteMessage : $message");
+  // Ensure Firebase is initialized
+  await Firebase.initializeApp();
+  ExotelVoiceClientFactory.getExotelVoiceClient().relaySessionData(message.data);
 }

@@ -1,13 +1,9 @@
 
 import 'dart:developer';
-import 'dart:ffi';
-import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
 import 'package:flutter_app/exotelSDK/MethodChannelInvokeMethod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../Service/PushNotificationService.dart';
 import 'ExotelSDKCallback.dart';
 import 'package:flutter/services.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import 'ExotelVoiceClient.dart';
 
@@ -46,7 +42,6 @@ class ExotelSDKClient implements ExotelVoiceClient {
     switch (call.method) {
       case "on-inialization-success":
         mCallBack?.onInitializationSuccess();
-        prefs.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), true);
         break;
       case "on-inialization-failure":
         var message = call.arguments['data'];
