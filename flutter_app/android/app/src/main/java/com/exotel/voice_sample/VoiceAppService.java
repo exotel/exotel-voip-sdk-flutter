@@ -64,34 +64,21 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
     private ExotelVoiceClient exotelVoiceClient;
     private CallController callController;
     private List<CallEvents> callEventListenerList = new ArrayList<>();
-    private Handler handler = new Handler(Looper.getMainLooper());
     private Call mCall;
     private Call mPreviousCall;
     private List<VoiceAppStatusEvents> voiceAppStatusListenerList = new ArrayList<>();
-    private LogUploadEvents logUploadEventListener;
     private List<LogUploadEvents> logUploadEventsList = new ArrayList<>();
-
     private long ringingStartTime = 0;
     private DatabaseHelper databaseHelper;
-
     private boolean initializationInProgress = false;
     private String initializationErrorMessage;
     private RingTonePlayback tonePlayback;
-    private static final int NOTIFICATION_ID = 7;
     private final Object statusListenerListMutex = new Object();
-
     private VoiceAppStatus voiceAppStatus = new VoiceAppStatus();
     private Context context;
-    private CallContextEvents callContextListener;
-
-
     String pushNotificationPayloadVersion;
     String pushNotificationPayload;
     boolean relayPushNotification;
-    String subscriberName;
-    String hostname;
-    String subscriberToken;
-    String accountSid;
     String displayName;
 
 //    private ExotelSDKChannel mChannel;
@@ -192,40 +179,6 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
     public Call dial(String destination, String message) throws Exception {
 
         return dialSDK(destination, message);
-    }
-
-    public void  makeWhatsAppCall(String destination) {
-        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-        String exophone = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.EXOPHONE.toString());
-        sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.LAST_DIALLED_NO.toString(),destination);
-        destination = "wa:"+destination;
-        makeCall(exophone,destination);
-    }
-
-    public void makeCall(String phone, String destination) {
-        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-        String subscriberName = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.USER_NAME.toString());
-        String contextMessage = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.CONTACT_DISPLAY_NAME.toString());
-
-        VoiceAppLogger.debug(TAG,"Initiating outgoing call");
-        Call call = null;
-        try {
-            VoiceAppLogger.debug(TAG,"Making dial API call to sample service");
-            call = dial(phone, contextMessage);
-        } catch (Exception e) {
-            String errorMessage = "Outgoing call Failed:";
-            errorMessage = errorMessage + e.getMessage();
-            VoiceAppLogger.debug(TAG,"Exception is: "+e.getMessage());return;
-        }
-
-        if(null != call){
-            setCallContext(subscriberName,destination,"");
-//            Intent intent = new Intent(context,
-//                    CallActivity.class);
-//            callId = call.getCallDetails().getCallId();
-//            destination = call.getCallDetails().getRemoteId();
-            //finish();
-        }
     }
 
     /**
@@ -753,76 +706,6 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
             callEvents.onRenewingMedia(call);
         }
         mCall = call;
-    }
-
-    /**
-     * get the exophone number
-     * @param destination
-     * @return
-     */
-    public String getUpdatedNumberToDial(String destination) {
-        if (null == destination) {
-            VoiceAppLogger.error(TAG, "getUpdatedNumberToDial: Invalid number passed");
-            return null;
-        }
-        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-        return sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.EXOPHONE.toString());
-    }
-
-
-    public void setCallContextListener(CallContextEvents callContextListener) {
-        this.callContextListener = callContextListener;
-    }
-
-    /**
-     * call conext will be set in bellatrix endpoint.
-     * @param userId
-     * @param destination
-     * @param message
-     */
-    public void setCallContext(String userId, String destination, String message) {
-        JSONObject jsonObject = new JSONObject();
-        OkHttpClient client = new OkHttpClient();
-
-        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-        String url = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.APP_HOSTNAME.toString());
-        String accountSid = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
-        url = url + "/accounts/" + accountSid + "/subscribers/" + userId + "/context";
-        destination = "sip:" + destination;
-
-        VoiceAppLogger.debug(TAG, "setCallContext URL is: " + url);
-        VoiceAppLogger.debug(TAG, "setCallContext Destination is: " + destination);
-        VoiceAppLogger.debug(TAG, "setCallContext userID is: " + userId);
-        VoiceAppLogger.debug(TAG, "setCallContext message is: " + message);
-        try {
-            jsonObject.put("dialToNumber", destination);
-            jsonObject.put("message", message);
-        } catch (JSONException e) {
-            VoiceAppLogger.error(TAG, "Error in creating device token body");
-            return;
-        }
-
-        RequestBody body = RequestBody.create(JSON, jsonObject.toString());
-
-        Request request = new Request.Builder()
-                .url(url)
-                .post(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(okhttp3.Call call, IOException e) {
-                VoiceAppLogger.error(TAG, "setCallContext: Failed to get response"
-                        + e.getMessage());
-            }
-
-            @Override
-            public void onResponse(okhttp3.Call call, Response response) throws IOException {
-                VoiceAppLogger.debug(TAG, "setCallContext: Got response for setCallContext: " + response.code());
-
-
-            }
-        });
     }
 
     void processPushNotification(Map<String, String> remoteData) {

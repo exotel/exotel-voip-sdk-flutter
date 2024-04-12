@@ -117,7 +117,7 @@ class ApplicationUtils implements ExotelSDKCallback {
       deviceId = await ExotelSDKClient.getInstance().getDeviceId();
     } catch (e) {
       print("Error while getting device id : ${e}");
-      onLoggedInFailure(e.toString());
+      onInitializationFailure(e.toString());
       return;
     }
     sharedPreferences.setString(
@@ -178,7 +178,7 @@ class ApplicationUtils implements ExotelSDKCallback {
         print(response.body);
       }
     } catch (e) {
-      onLoggedInFailure(e.toString());
+      onInitializationFailure(e.toString());
     }
   }
 
@@ -285,15 +285,22 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   @override
-  void onLoggedInSucess() {
+  void onInitializationSuccess() {
     setStatus("Ready");
     navigateToHome();
   }
 
   @override
-  void onLoggedInFailure(String loginStatus) {
+  void onInitializationFailure(String message) {
     stopLoadingDialog();
-    showToast(loginStatus);
+    showToast(message);
+    navigateToStart();
+  }
+
+  @override
+  void onAuthenticationFailure(String message) {
+    stopLoadingDialog();
+    showToast("Authentication fail");
     navigateToStart();
   }
 
@@ -303,7 +310,7 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   @override
-  void onCallConnected() {
+  void onCallEstablished() {
     navigateToConnected();
   }
 
@@ -379,7 +386,7 @@ class ApplicationUtils implements ExotelSDKCallback {
             .initialize(sdkHostName!, mSubscriberName!, mDisplayName!,
                 mAccountSid!, subscriberToken!)
             .catchError((e) {
-          onLoggedInFailure("Error while Inializing SDK");
+          onInitializationFailure("Error while Inializing SDK");
         });
       } else {
         // If the server returns an error response, throw an exception
@@ -387,10 +394,10 @@ class ApplicationUtils implements ExotelSDKCallback {
       }
     } on PlatformException catch (e) {
       print("Error while intialize ${e.toString()} ");
-      onLoggedInFailure("Error while Inializing SDK");
+      onInitializationFailure("Error while Inializing SDK");
     } on Exception catch (e) {
       print("Error ${e.toString()}");
-      onLoggedInFailure("Error while sending token");
+      onInitializationFailure("Error while sending token");
     }
   }
 
@@ -467,4 +474,36 @@ class ApplicationUtils implements ExotelSDKCallback {
       showToast("failed to get contact list");
     });
   }
+
+  @override
+  void onCallInitiated() {
+    // TODO: implement onCallInitiated
+  }
+
+  @override
+  void onMediaDisrupted() {
+    // TODO: implement onMediaDisrupted
+  }
+
+  @override
+  void onMissedCall() {
+    // TODO: implement onMissedCall
+  }
+
+  @override
+  void onRenewingMedia() {
+    // TODO: implement onRenewingMedia
+  }
+
+  @override
+  void onUploadLogFailure(String errorMessage) {
+    // TODO: implement onUploadLogFailure
+  }
+
+  @override
+  void onUploadLogSuccess() {
+    // TODO: implement onUploadLogSuccess
+  }
+
+
 }
