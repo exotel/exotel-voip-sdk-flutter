@@ -22,7 +22,4 @@ abstract class ExotelVoiceClient {
   Future<String> getVersionDetails();
   Future<void> uploadLogs(DateTime startDate, DateTime endDate, String description);
   void relaySessionData(Map<String, dynamic> data) {}
-
-
-
 }
