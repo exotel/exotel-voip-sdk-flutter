@@ -1,20 +1,8 @@
 package com.exotel.voice_sample;
 
-import static android.app.Service.START_NOT_STICKY;
-
-import android.app.Notification;
-import android.app.Service;
 import android.content.Context;
-import android.content.Intent;
-import android.os.Binder;
-import android.os.Build;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.Looper;
-import android.provider.Settings;
 import android.util.Base64;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import androidx.annotation.NonNull;
 
 import com.exotel.voice.Call;
 import com.exotel.voice.CallController;
@@ -24,9 +12,7 @@ import com.exotel.voice.CallDirection;
 import com.exotel.voice.CallEndReason;
 import com.exotel.voice.CallIssue;
 import com.exotel.voice.CallListener;
-import com.exotel.voice.CallState;
 import com.exotel.voice.CallStatistics;
-import com.exotel.voice.ErrorType;
 import com.exotel.voice.ExotelVoiceClient;
 import com.exotel.voice.ExotelVoiceClientEventListener;
 import com.exotel.voice.ExotelVoiceClientSDK;
@@ -44,14 +30,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.flutter.embedding.engine.plugins.FlutterPlugin;
-import io.flutter.embedding.engine.FlutterEngine;
-
 import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
@@ -64,34 +46,21 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
     private ExotelVoiceClient exotelVoiceClient;
     private CallController callController;
     private List<CallEvents> callEventListenerList = new ArrayList<>();
-    private Handler handler = new Handler(Looper.getMainLooper());
     private Call mCall;
     private Call mPreviousCall;
     private List<VoiceAppStatusEvents> voiceAppStatusListenerList = new ArrayList<>();
-    private LogUploadEvents logUploadEventListener;
     private List<LogUploadEvents> logUploadEventsList = new ArrayList<>();
-
     private long ringingStartTime = 0;
     private DatabaseHelper databaseHelper;
-
     private boolean initializationInProgress = false;
     private String initializationErrorMessage;
     private RingTonePlayback tonePlayback;
-    private static final int NOTIFICATION_ID = 7;
     private final Object statusListenerListMutex = new Object();
-
     private VoiceAppStatus voiceAppStatus = new VoiceAppStatus();
     private Context context;
-    private CallContextEvents callContextListener;
-
-
     String pushNotificationPayloadVersion;
     String pushNotificationPayload;
     boolean relayPushNotification;
-    String subscriberName;
-    String hostname;
-    String subscriberToken;
-    String accountSid;
     String displayName;
 
 //    private ExotelSDKChannel mChannel;
@@ -192,40 +161,6 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
     public Call dial(String destination, String message) throws Exception {
 
         return dialSDK(destination, message);
-    }
-
-    public void  makeWhatsAppCall(String destination) {
-        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-        String exophone = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.EXOPHONE.toString());
-        sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.LAST_DIALLED_NO.toString(),destination);
-        destination = "wa:"+destination;
-        makeCall(exophone,destination);
-    }
-
-    public void makeCall(String phone, String destination) {
-        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-        String subscriberName = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.USER_NAME.toString());
-        String contextMessage = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.CONTACT_DISPLAY_NAME.toString());
-
-        VoiceAppLogger.debug(TAG,"Initiating outgoing call");
-        Call call = null;
-        try {
-            VoiceAppLogger.debug(TAG,"Making dial API call to sample service");
-            call = dial(phone, contextMessage);
-        } catch (Exception e) {
-            String errorMessage = "Outgoing call Failed:";
-            errorMessage = errorMessage + e.getMessage();
-            VoiceAppLogger.debug(TAG,"Exception is: "+e.getMessage());return;
-        }
-
-        if(null != call){
-            setCallContext(subscriberName,destination,"");
-//            Intent intent = new Intent(context,
-//                    CallActivity.class);
-//            callId = call.getCallDetails().getCallId();
-//            destination = call.getCallDetails().getRemoteId();
-            //finish();
-        }
     }
 
     /**
@@ -424,13 +359,10 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
     }
 
     public int getCallDuration() {
-
         if (null == mCall) {
             return -1;
         }
-        int duration = mCall.getCallDetails().getCallDuration();
-        //VoiceAppLogger.debug(TAG,"Get Call Duration is VoiceApp Service, duration: "+duration);
-        return duration;
+        return mCall.getCallDetails().getCallDuration();
     }
 
     public CallStatistics getStatistics() {
@@ -490,7 +422,7 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
          */
         synchronized (statusListenerListMutex) {
             for (VoiceAppStatusEvents statusEvents : voiceAppStatusListenerList) {
-                statusEvents.onStatusChange();
+                statusEvents.onInitializationSuccess();
             }
         }
 
@@ -519,7 +451,7 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
          */
         synchronized (statusListenerListMutex) {
             for (VoiceAppStatusEvents statusEvents : voiceAppStatusListenerList) {
-                statusEvents.onStatusChange();
+                statusEvents.onInitializationFailure(error);
             }
         }
 
@@ -758,138 +690,6 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
         mCall = call;
     }
 
-    /**
-     * callback API to handle the http response
-     */
-    Callback mCallback = new Callback() {
-        @Override
-        public void onFailure(okhttp3.Call call, IOException e) {
-            VoiceAppLogger.error(TAG, "Failed to get response for login");
-            /* TODO: Exception on UI thread */
-            onInitializationFailure(new ExotelVoiceError() {
-                @Override
-                public ErrorType getErrorType() {
-                    return ErrorType.INTERNAL_ERROR;
-                }
-
-                @Override
-                public String getErrorMessage() {
-                    return e.getMessage();
-                }
-            });
-        }
-
-        @Override
-        public void onResponse(okhttp3.Call call, Response response) throws IOException {
-            VoiceAppLogger.debug(TAG, "Got response for login: " + response.code());
-            if (200 == response.code()) {
-                String jsonData;
-                jsonData = response.body().string();
-                JSONObject jObject;
-                VoiceAppLogger.debug(TAG, "Get regAuth Token response is: " + jsonData);
-                try {
-                    jObject = new JSONObject(jsonData);
-                    String regAuthToken = jObject.getString("subscriber_token");
-                    String sdkHostname = jObject.getString("host_name");
-                    String accountSid = jObject.getString("account_sid");
-                    String exophone = jObject.getString("exophone");
-                    String contactDisplayName = jObject.getString("contact_display_name");
-
-                    SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-                    sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString(), regAuthToken);
-                    sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString(), sdkHostname);
-                    sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.EXOPHONE.toString(), exophone);
-                    sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.CONTACT_DISPLAY_NAME.toString(), contactDisplayName);
-
-                    String username = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.USER_NAME.toString());
-                    String displayName = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.DISPLAY_NAME.toString());
-                    /**
-                     * [sdk-initialization-flow] calling mediator initialize API for sdk initialization
-                     * passing the hostanme , username , tenant ,subscriber token and displayName
-                     */
-                    initialize(sdkHostname, username, accountSid, regAuthToken, displayName);
-
-
-                } catch (Exception exp) {
-                    VoiceAppLogger.error(TAG, "Exception in service initialization: " + exp.getMessage());
-                    /* TODO: Exception on UI thread */
-                }
-            } else {
-                onAuthenticationFailure(null);
-            }
-        }
-    };
-
-    /**
-     * get the exophone number
-     * @param destination
-     * @return
-     */
-    public String getUpdatedNumberToDial(String destination) {
-        if (null == destination) {
-            VoiceAppLogger.error(TAG, "getUpdatedNumberToDial: Invalid number passed");
-            return null;
-        }
-        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-        return sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.EXOPHONE.toString());
-    }
-
-
-    public void setCallContextListener(CallContextEvents callContextListener) {
-        this.callContextListener = callContextListener;
-    }
-
-    /**
-     * call conext will be set in bellatrix endpoint.
-     * @param userId
-     * @param destination
-     * @param message
-     */
-    public void setCallContext(String userId, String destination, String message) {
-        JSONObject jsonObject = new JSONObject();
-        OkHttpClient client = new OkHttpClient();
-
-        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-        String url = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.APP_HOSTNAME.toString());
-        String accountSid = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
-        url = url + "/accounts/" + accountSid + "/subscribers/" + userId + "/context";
-        destination = "sip:" + destination;
-
-        VoiceAppLogger.debug(TAG, "setCallContext URL is: " + url);
-        VoiceAppLogger.debug(TAG, "setCallContext Destination is: " + destination);
-        VoiceAppLogger.debug(TAG, "setCallContext userID is: " + userId);
-        VoiceAppLogger.debug(TAG, "setCallContext message is: " + message);
-        try {
-            jsonObject.put("dialToNumber", destination);
-            jsonObject.put("message", message);
-        } catch (JSONException e) {
-            VoiceAppLogger.error(TAG, "Error in creating device token body");
-            return;
-        }
-
-        RequestBody body = RequestBody.create(JSON, jsonObject.toString());
-
-        Request request = new Request.Builder()
-                .url(url)
-                .post(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(okhttp3.Call call, IOException e) {
-                VoiceAppLogger.error(TAG, "setCallContext: Failed to get response"
-                        + e.getMessage());
-            }
-
-            @Override
-            public void onResponse(okhttp3.Call call, Response response) throws IOException {
-                VoiceAppLogger.debug(TAG, "setCallContext: Got response for setCallContext: " + response.code());
-
-
-            }
-        });
-    }
-
     void processPushNotification(Map<String, String> remoteData) {
 
         VoiceAppLogger.debug(TAG,"Got a push notification!!");
@@ -983,6 +783,10 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
             VoiceAppLogger.error(TAG, "Initialize has not been called before relaySessionData");
 
         }
+    }
+
+    public Boolean relaySessionData(Map<String, String> pushNotificationData) throws Exception {
+        return exotelVoiceClient.relaySessionData(pushNotificationData);
     }
 
     public void makeServiceBackground() {
