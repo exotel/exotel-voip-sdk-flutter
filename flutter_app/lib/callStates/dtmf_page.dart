@@ -15,7 +15,8 @@ class _DtmfPageState extends State<DtmfPage> {
     setState(() {
       dtmfInput = key; // store only the last pressed key
     });
-    ExotelSDKClient.getInstance().sendDtmf(dtmfInput);
+      ExotelSDKClient.getInstance().sendDtmf(dtmfInput);
+
   }
 
   // Widget buildKey(String key) {
