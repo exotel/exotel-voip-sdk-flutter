@@ -18,6 +18,7 @@ class PushNotificationService {
   }
 
   Future initialize() async {
+    print("PushNotificationService initialize");
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Got a message whilst in the foreground!');
       print('Message data: ${message.data}');
