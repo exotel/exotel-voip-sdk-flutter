@@ -21,7 +21,6 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  PushNotificationService.getInstance().setupLocalNotification();
   runApp(ChangeNotifierProvider(
     create: (context) => CallList(),
     child: MyApp(),
@@ -35,6 +34,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     ExotelVoiceClient exotelVoiceClient = ExotelVoiceClientFactory.getExotelVoiceClient();
     var mApplicationUtil = ApplicationUtils.getInstance(context);
+    mApplicationUtil.setupLocalNotification();
     exotelVoiceClient.setExotelSDKCallback(mApplicationUtil);
     exotelVoiceClient.registerPlatformChannel();
     PushNotificationService pushNotificationService = PushNotificationService.getInstance();
