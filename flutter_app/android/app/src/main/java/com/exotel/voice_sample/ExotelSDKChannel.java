@@ -5,17 +5,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 
-import androidx.annotation.NonNull;
-
 
 import com.exotel.voice.Call;
 import com.exotel.voice.CallIssue;
 import com.exotel.voice.CallAudioRoute;
 
 
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -26,11 +21,7 @@ import com.exotel.voice.ErrorType;
 import com.exotel.voice.ExotelVoiceError;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
-import okhttp3.Callback;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 
 //Exotel Channel Class
@@ -80,7 +71,7 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
     /**
      * register channel for communication b/w flutter and android
      */
-    void registerMethodChannel() {
+    void registerPlatformChannel() {
         // Channel is created for communication b/w flutter and native
         channel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(),CHANNEL);
         // handle messages from flutter to android native

@@ -73,7 +73,7 @@ class _HomePageState extends State<HomePage> {
         context: context,
         builder: (BuildContext context) {
           return FutureBuilder<String>(
-            future: ExotelSDKClient.getInstance().getVersionDetails(),
+            future: mApplicationUtil.getVersionDetails(),
             builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return AlertDialog(
@@ -172,7 +172,7 @@ class _HomePageState extends State<HomePage> {
                   TextButton(
                     child: Text('OK'),
                     onPressed: () {
-                      ExotelSDKClient.getInstance().postFeedback(dropdownValue1, dropdownValue2);
+                      mApplicationUtil.postFeedback(dropdownValue1, dropdownValue2);
                       Navigator.of(context).pop();
                     },
                   ),
@@ -232,7 +232,7 @@ class _HomePageState extends State<HomePage> {
                   final DateTime startDate = endDate.subtract(day * uploadLogNumDays);
                   print('User input: $description, startDate: $startDate, endDate: $endDate');
                   try {
-                    ExotelSDKClient.getInstance().uploadLogs(startDate, endDate, description);
+                    mApplicationUtil.uploadLogs(startDate, endDate, description);
                   } catch (e) {
                     mApplicationUtil.showToast("Upload Error");
                   }
@@ -269,7 +269,7 @@ class _HomePageState extends State<HomePage> {
                           switch (result) {
                             case 'Button 1':
                             // Handle Button 1 press
-                              ExotelSDKClient.getInstance().reset();
+                              mApplicationUtil.reset();
                               SharedPreferences prefs = await SharedPreferences.getInstance();
                               await prefs.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), false);
                               mApplicationUtil.navigateToStart();
