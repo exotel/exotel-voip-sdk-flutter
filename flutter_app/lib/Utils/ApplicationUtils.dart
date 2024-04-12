@@ -12,11 +12,14 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
 import 'package:flutter_app/exotelSDK/ExotelSDKCallback.dart';
 import 'package:flutter_app/exotelSDK/ExotelSDKClient.dart';
+import 'package:flutter_app/exotelSDK/ExotelVoiceClient.dart';
+import 'package:flutter_app/exotelSDK/ExotelVoiceClientFactory.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:flutter_app/main.dart';
 
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:provider/provider.dart';
 import 'package:flutter_app/UI/home_page.dart';
@@ -47,7 +50,11 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   String? mDisplayName;
 
-  ApplicationUtils._internal();
+  ExotelVoiceClient? _exotelVoiceClient;
+
+  ApplicationUtils._internal(){
+    _exotelVoiceClient = ExotelVoiceClientFactory.getExotelVoiceClient();
+  }
 
   static ApplicationUtils? _instance;
   BuildContext? context;
@@ -112,9 +119,9 @@ class ApplicationUtils implements ExotelSDKCallback {
     print("Calling login API");
     // var deviceInfo = DeviceInfoPlugin();
     // var deviceId = await _getId();
-    var deviceId = "";
+    String? deviceId = "";
     try {
-      deviceId = await ExotelSDKClient.getInstance().getDeviceId();
+      deviceId = await _exotelVoiceClient?.getDeviceId();
     } catch (e) {
       print("Error while getting device id : ${e}");
       onInitializationFailure(e.toString());
@@ -218,6 +225,7 @@ class ApplicationUtils implements ExotelSDKCallback {
         '/incoming',
       );
     });
+
   }
 
   void navigateToRinging() {
@@ -279,14 +287,9 @@ class ApplicationUtils implements ExotelSDKCallback {
     mCallId = callId;
   }
 
-  void setStatus(String status) {
-    mStatus = status;
-    print('in setStatus(), mStatus is: $mStatus');
-  }
-
   @override
   void onInitializationSuccess() {
-    setStatus("Ready");
+    mStatus = "Ready";
     navigateToHome();
   }
 
@@ -383,8 +386,8 @@ class ApplicationUtils implements ExotelSDKCallback {
             .getString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString());
         String? subscriberToken = sharedPreferences.getString(
             ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString());
-        ExotelSDKClient.getInstance()
-            .initialize(sdkHostName!, mSubscriberName!, mDisplayName!,
+
+            _exotelVoiceClient?.initialize(sdkHostName!, mSubscriberName!, mDisplayName!,
                 mAccountSid!, subscriberToken!)
             .catchError((e) {
           onInitializationFailure("Error while Inializing SDK");
@@ -411,7 +414,7 @@ class ApplicationUtils implements ExotelSDKCallback {
     String? exophone = sharedPreferences
         .getString(ApplicationSharedPreferenceData.EXOPHONE.toString());
     try {
-      await ExotelSDKClient.getInstance().dial(exophone!, message);
+      await _exotelVoiceClient?.dial(exophone!, message);
     } catch (e) {
       print("Error while dialing out : ${e.toString()}");
       onCallEnded();
@@ -509,6 +512,72 @@ class ApplicationUtils implements ExotelSDKCallback {
   @override
   void onUploadLogSuccess() {
     // TODO: implement onUploadLogSuccess
+  }
+
+  void reset() {
+    _exotelVoiceClient?.hangup();
+    _exotelVoiceClient?.reset();
+  }
+
+  Future<void> requestPermissions() async {
+    Map<Permission, PermissionStatus> statuses = await [
+    Permission.phone,
+        Permission.microphone,
+    Permission.notification,
+    Permission.nearbyWifiDevices,
+    Permission.accessMediaLocation,
+    Permission.location,  Permission.bluetoothScan,
+    Permission.bluetoothConnect,
+    // Add other permissions you want to request
+    ].request();
+  }
+
+  getVersionDetails() {
+    _exotelVoiceClient?.getVersionDetails();
+  }
+
+  void postFeedback(int? rating, String? issue) {
+    _exotelVoiceClient?.postFeedback(rating, issue);
+  }
+
+  void uploadLogs(DateTime startDate, DateTime endDate, String description) {
+    _exotelVoiceClient?.uploadLogs(startDate, endDate, description);
+  }
+
+  void enableSpeaker() {
+    _exotelVoiceClient?.enableSpeaker();
+  }
+
+  void disableSpeaker() {
+    _exotelVoiceClient?.enableSpeaker();
+  }
+
+  void mute() {
+    _exotelVoiceClient?.mute();
+  }
+
+  void unmute() {
+    _exotelVoiceClient?.unmute();
+  }
+
+  void enableBluetooth() {
+    _exotelVoiceClient?.enableBluetooth();
+  }
+
+  void disableBluetooth() {
+    _exotelVoiceClient?.disableBluetooth();
+  }
+
+  void hangup() {
+    _exotelVoiceClient?.hangup();
+  }
+
+  void sendDtmf(String digit) {
+    _exotelVoiceClient?.sendDtmf(digit);
+  }
+
+  void answer() {
+    _exotelVoiceClient?.answer();
   }
 
 

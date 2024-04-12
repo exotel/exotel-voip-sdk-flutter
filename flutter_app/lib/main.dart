@@ -1,3 +1,5 @@
+import 'package:flutter_app/exotelSDK/ExotelVoiceClient.dart';
+
 import 'Utils/ApplicationUtils.dart';
 import 'package:flutter/material.dart';
 import 'UI/login_page.dart';
@@ -9,6 +11,7 @@ import 'callStates/ringing.dart';
 import 'callStates/dtmf_page.dart';
 import 'callStates/incoming.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'exotelSDK/ExotelVoiceClientFactory.dart';
 import 'firebase_options.dart';
 import 'Service/PushNotificationService.dart';
 import 'package:provider/provider.dart';
@@ -30,10 +33,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ExotelVoiceClient exotelVoiceClient = ExotelVoiceClientFactory.getExotelVoiceClient();
     var mApplicationUtil = ApplicationUtils.getInstance(context);
-    ExotelSDKClient exotelSDKClient = ExotelSDKClient.getInstance();
-    exotelSDKClient.setExotelSDKCallback(mApplicationUtil);
-    exotelSDKClient.registerMethodHandler();
+    exotelVoiceClient.setExotelSDKCallback(mApplicationUtil);
+    exotelVoiceClient.registerPlatformChannel();
     PushNotificationService pushNotificationService = PushNotificationService.getInstance();
     pushNotificationService.initialize();
 
@@ -62,7 +65,7 @@ class MyApp extends StatelessWidget {
             if (snapshot.hasError) {
               return Text('Error: ${snapshot.error}');
             } else {
-              ExotelSDKClient.requestPermissions(); // Request permissions at app launch
+              mApplicationUtil.requestPermissions(); // Request permissions at app launch
               return (snapshot.data ?? false) ? const HomePage() : LoginPage(
                 onLoggedin: (userId, password, accountSid, hostname) {
                   Navigator.pushReplacementNamed(

@@ -9,31 +9,36 @@ import 'ExotelSDKCallback.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class ExotelSDKClient {
+import 'ExotelVoiceClient.dart';
+
+class ExotelSDKClient implements ExotelVoiceClient {
   // static const platform = MethodChannel('your_channel_name');
 
-  static final ExotelSDKClient _instance = ExotelSDKClient._internal();
+  // static final ExotelSDKClient _instance = ExotelSDKClient._internal();
 
   MethodChannel? androidChannel;
 
   ExotelSDKCallback? mCallBack;
-  static ExotelSDKClient getInstance() {
-    return _instance;
-  }
 
-  ExotelSDKClient._internal();
+  // ExotelSDKClient._internal();
 
-  void registerMethodHandler() {
+  // static ExotelSDKClient getInstance() {
+  //   return _instance;
+  // }
+
+  @override
+  void registerPlatformChannel() {
     androidChannel = MethodChannel('android/exotel_sdk');
     // handle messages from android to flutter
-    androidChannel!.setMethodCallHandler(flutterCallHandler);
+    androidChannel!.setMethodCallHandler(_flutterCallHandler);
   }
 
+  @override
   void setExotelSDKCallback(ExotelSDKCallback callback) {
     mCallBack = callback;
   }
 
-  Future<String> flutterCallHandler(MethodCall call) async {
+  Future<void> _flutterCallHandler(MethodCall call) async {
     String loginStatus = "not ready";
     String callingStatus = "blank";
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -89,9 +94,9 @@ class ExotelSDKClient {
       default:
         break;
     }
-    return "";
   }
-  
+
+  @override
   Future<String> getDeviceId() async {
     try {
       return await androidChannel?.invokeMethod(
@@ -101,6 +106,7 @@ class ExotelSDKClient {
     }
   }
 
+  @override
   Future<void> initialize(String hostname, String subsriberName, String displayName, String accountSid,String subscriberToken) async {
      var arg = {
        'host_name':hostname,
@@ -118,11 +124,13 @@ class ExotelSDKClient {
 
   }
 
+  @override
   Future<void> reset() async{
     log("login button function start");
       androidChannel?.invokeMethod(MethodChannelInvokeMethod.RESET);
   }
 
+  @override
   Future<void> dial(String dialTo, String message) async{
     log("call button function start");
     try {
@@ -134,6 +142,7 @@ class ExotelSDKClient {
 
   }
 
+  @override
   Future<void> mute() async{
     log("mute function start");
       androidChannel?.invokeMethod(MethodChannelInvokeMethod.MUTE)
@@ -142,6 +151,7 @@ class ExotelSDKClient {
       });
   }
 
+  @override
   Future<void> unmute() async{
     log("unmute function start");
     androidChannel?.invokeMethod(MethodChannelInvokeMethod.UNMUTE)
@@ -150,6 +160,7 @@ class ExotelSDKClient {
     });
   }
 
+  @override
   Future<void> enableSpeaker() async{
     log("enableSpeaker function start");
     androidChannel?.invokeMethod(MethodChannelInvokeMethod.ENABLE_SPEAKER)
@@ -158,6 +169,7 @@ class ExotelSDKClient {
     });
   }
 
+  @override
   Future<void> disableSpeaker() async{
     log("disableSpeaker function start");
     androidChannel?.invokeMethod(MethodChannelInvokeMethod.DISABLE_SPEAKER)
@@ -166,6 +178,7 @@ class ExotelSDKClient {
     });
   }
 
+  @override
   Future<void> enableBluetooth() async{
     log("enableBluetooth function start");
     androidChannel?.invokeMethod(MethodChannelInvokeMethod.ENABLE_BLUETOOTH)
@@ -175,6 +188,7 @@ class ExotelSDKClient {
 
   }
 
+  @override
   Future<void> disableBluetooth() async{
     log("disableBluetooth function start");
     androidChannel?.invokeMethod(MethodChannelInvokeMethod.DISABLE_BLUETOOTH)
@@ -183,6 +197,7 @@ class ExotelSDKClient {
     });
   }
 
+  @override
   Future<void> hangup() async{
     log("hangup function start");
       androidChannel?.invokeMethod(MethodChannelInvokeMethod.HANGUP)
@@ -191,6 +206,7 @@ class ExotelSDKClient {
       });
   }
 
+  @override
   Future<void> answer() async{
     log("answer function start");
     await androidChannel?.invokeMethod(MethodChannelInvokeMethod.ANSWER)
@@ -200,6 +216,7 @@ class ExotelSDKClient {
     });
   }
 
+  @override
   Future<void> sendDtmf(String digit) async{
     log("sendDtmf function start");
     androidChannel?.invokeMethod(MethodChannelInvokeMethod.SEND_DTMF,{'digit': digit})
@@ -209,6 +226,7 @@ class ExotelSDKClient {
 
   }
 
+  @override
   Future<void> postFeedback(int? rating, String? issue) async{
     log("lastCallFeedback function start");
     log(" rating : $rating issue: $issue");
@@ -220,6 +238,7 @@ class ExotelSDKClient {
     }
   }
 
+  @override
   Future<String> getVersionDetails() async{
     log("getVersionDetails function start");
     try {
@@ -230,6 +249,7 @@ class ExotelSDKClient {
     }
   }
 
+  @override
   Future<void> uploadLogs(DateTime startDate, DateTime endDate, String description) async{
     log("uploadLogs function start");
 
@@ -247,38 +267,7 @@ class ExotelSDKClient {
     }
   }
 
-  // Future<int> checkCallDuration() async{
-  //   log("checkCallDuration function start");
-  //   try {
-  //     int response = await androidChannel?.invokeMethod('getCallDuration');
-  //     return response;
-  //   } catch (e) {
-  //     print("Failed to Invoke: '${e.toString()}'.");
-  //     rethrow;
-  //   }
-  // }
-  //
-  // Future<int> CallDuration() async {
-  //   int duration = await checkCallDuration();
-  //   print('CallDuration is: $duration');
-  //   return duration;
-  // }
-
-  static Future<void> requestPermissions() async {
-    // You can request multiple permissions at once
-    Map<Permission, PermissionStatus> statuses = await [
-      Permission.phone,
-      Permission.microphone,
-      Permission.notification,
-      Permission.nearbyWifiDevices,
-      Permission.accessMediaLocation,
-      Permission.location,  Permission.bluetoothScan,
-      Permission.bluetoothConnect,
-      // Add other permissions you want to request
-    ].request();
-    // Check permission status and handle accordingly
-  }
-
+  @override
   void relaySessionData(Map<String, dynamic> data) {
     print('relaySessionData : ${data}');
     Map<String,String> sessionData = {
