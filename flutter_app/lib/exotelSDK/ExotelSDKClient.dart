@@ -280,8 +280,13 @@ class ExotelSDKClient {
   }
 
   void relaySessionData(Map<String, dynamic> data) {
+    print('relaySessionData : ${data}');
+    Map<String,String> sessionData = {
+      "payload":data['payload'].toString(),
+      "payloadVersion":data['payloadVersion'].toString()
+    };
     print("in relayFirebaseMessagingData");
-    androidChannel?.invokeMethod(MethodChannelInvokeMethod.RELAY_SESSION_DATA,{'data':data});
+    androidChannel?.invokeMethod(MethodChannelInvokeMethod.RELAY_SESSION_DATA,{'data':sessionData});
   }
 
 
