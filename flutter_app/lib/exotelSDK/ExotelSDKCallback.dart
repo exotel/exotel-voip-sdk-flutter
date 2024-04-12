@@ -24,6 +24,4 @@ abstract class ExotelSDKCallback {
   void onUploadLogSuccess();
 
   void onUploadLogFailure(String errorMessage);
-
-  void setStatus(String loginStatus);
 }

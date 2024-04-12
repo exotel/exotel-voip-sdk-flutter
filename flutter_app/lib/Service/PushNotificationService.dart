@@ -1,4 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_app/exotelSDK/ExotelVoiceClient.dart';
+import 'package:flutter_app/exotelSDK/ExotelVoiceClientFactory.dart';
 import '../exotelSDK/ExotelSDKClient.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -9,12 +11,13 @@ class PushNotificationService {
   final _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   FirebaseMessaging? _fcm;
-
+  ExotelVoiceClient? _exotelVoiceClient;
   static PushNotificationService getInstance() {
     return _instance;
   }
   PushNotificationService._internal(){
     _fcm = FirebaseMessaging.instance;
+    _exotelVoiceClient = ExotelVoiceClientFactory.getExotelVoiceClient();
   }
 
   Future initialize() async {
@@ -26,7 +29,7 @@ class PushNotificationService {
       if (message.notification != null) {
         print('Message also contained a notification: ${message.notification}');
       }
-      ExotelSDKClient.getInstance().relaySessionData(message.data);
+      _exotelVoiceClient?.relaySessionData(message.data);
     }
     );
   }
@@ -61,7 +64,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("RemoteMessage : $message");
   // Ensure Firebase is initialized
   await Firebase.initializeApp();
-  ExotelSDKClient.getInstance().relaySessionData(message.data);
+  ExotelVoiceClientFactory.getExotelVoiceClient().relaySessionData(message.data);
   PushNotificationService.getInstance().showLocalNotification(
     'Incoming call!',
     '',
