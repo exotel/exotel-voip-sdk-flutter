@@ -17,7 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   PushNotificationService.getInstance().setupLocalNotification();
   runApp(ChangeNotifierProvider(
     create: (context) => CallList(),
