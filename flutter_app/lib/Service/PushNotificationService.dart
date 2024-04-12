@@ -25,7 +25,7 @@ class PushNotificationService {
       if (message.notification != null) {
         print('Message also contained a notification: ${message.notification}');
       }
-      ExotelSDKClient.getInstance().relayFirebaseMessagingData(message.data);
+      ExotelSDKClient.getInstance().relaySessionData(message.data);
     }
     );
   }
@@ -60,7 +60,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("RemoteMessage : $message");
   // Ensure Firebase is initialized
   await Firebase.initializeApp();
-  ExotelSDKClient.getInstance().relayFirebaseMessagingData(message.data);
+  ExotelSDKClient.getInstance().relaySessionData(message.data);
   PushNotificationService.getInstance().showLocalNotification(
     'Incoming call!',
     '',

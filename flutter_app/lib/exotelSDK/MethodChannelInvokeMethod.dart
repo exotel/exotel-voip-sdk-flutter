@@ -16,6 +16,7 @@ class MethodChannelInvokeMethod {
   static String GET_CALL_DURATION = "get-call-duration";
   static String GET_VERSION_DETAILS = "get-version-details";
   static String UPLOAD_LOGS = "upload-logs";
+  static String RELAY_SESSION_DATA = "relay-session-data";
 
 
 }

@@ -201,7 +201,7 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                                 result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(),e);
                             }
                             break;
-                        case "relayNotificationData":
+                        case "relay-session-data":
                             Map<String, String> data = call.argument("data");
                             VoiceAppLogger.debug(TAG, "in java relayNotificationData data = " + data);
                             processPushNotification(data);
