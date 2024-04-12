@@ -39,45 +39,52 @@ class ExotelSDKClient {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     print("flutter method handler got call.method : ${call.method} , arguments : ${call.arguments.toString()}");
     switch (call.method) {
-      case "inialize-result":
-        var status = call.arguments['status'];
-        if(status == "OK"){
-          mCallBack?.onLoggedInSucess();
-          prefs.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), true);
-        } else{
-          var message = call.arguments['data'];
-          mCallBack?.onLoggedInFailure(message);
-        }
+      case "on-inialization-success":
+        mCallBack?.onInitializationSuccess();
+        prefs.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), true);
         break;
-      case "loggedInStatus":
-        loginStatus =  call.arguments.toString();
-        mCallBack?.setStatus(loginStatus);
-        log("loginStatus = $loginStatus");
-        if(loginStatus == "Ready"){
-          mCallBack?.onLoggedInSucess();
-          await prefs.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), true);
-        } else {
-          mCallBack?.onLoggedInFailure(loginStatus);
-        }
+      case "on-inialization-failure":
+        var message = call.arguments['data'];
+        mCallBack?.onInitializationFailure(message);
         break;
-      case "callStatus":
-        callingStatus =  call.arguments.toString();
-        log("callingStatus = $callingStatus");
-        if(callingStatus == "Ringing"){
-          mCallBack?.onCallRinging();
-        } else if(callingStatus == "Connected"){
-          mCallBack?.onCallConnected();
-        }
-        else if(callingStatus == "Ended"){
-          mCallBack?.onCallEnded();
-        }
+      case "on-authentication-failure":
+        var message = call.arguments['data'];
+        mCallBack?.onAuthenticationFailure(message);
         break;
-      case "incoming"://to-do: need to refactor, need code optimization
+      case "on-call-initiated":
+        mCallBack?.onCallInitiated();
+        break;
+      case "on-call-ringing":
+        mCallBack?.onCallRinging();
+        break;
+      case "on-call-established":
+        mCallBack?.onCallEstablished();
+        break;
+      case "on-call-ended":
+        mCallBack?.onCallEnded();
+        break;
+      case "on-missed-call":
+        mCallBack?.onMissedCall();
+        break;
+      case "on-media-disrupted":
+        mCallBack?.onMediaDisrupted();
+        break;
+      case "on-renewing-media":
+        mCallBack?.onRenewingMedia();
+        break;
+      case "on-incoming-call"://to-do: need to refactor, need code optimization
         log("in case incoming in exotelsdkclient.dart");
         String callId = call.arguments['callId'];
         String destination = call.arguments['destination'];
         print('in FlutterCallHandler(), callId is $callId, destination is $destination ');
         mCallBack?.onCallIncoming(callId, destination);
+        break;
+      case "on-upload-log-success":
+        mCallBack?.onUploadLogSuccess();
+        break;
+      case "on-upload-log-failure":
+        var message = call.arguments['data'];
+        mCallBack?.onUploadLogFailure(message);
         break;
       default:
         break;

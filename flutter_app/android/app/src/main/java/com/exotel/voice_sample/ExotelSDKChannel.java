@@ -122,10 +122,6 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                                 result.error(ErrorType.INTERNAL_ERROR.name(), "Outgoing call not initiated","call instance is null");
                             }
                             break;
-                        case "makeWhatsAppCall":
-                            dialNumber = call.argument("dialTo");
-                            makeWhatsAppCall(dialNumber);
-                            break;
                         case "mute":
                             mute();
                             break;
@@ -206,9 +202,6 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                             VoiceAppLogger.debug(TAG, "in java relayNotificationData data = " + data);
                             processPushNotification(data);
                             break;
-                        case "contacts":
-                            fetchContactList();
-                            break;
                         default:
                             System.out.println("FAIL");
                             result.notImplemented();
@@ -220,18 +213,11 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
 
     }
 
-    Map<String, String> createResponse(String code, String status, String data){
+    Map<String, String> createResponse(String data){
         Map<String,String> result = new HashMap<>();
-        result.put("code",code);
-        result.put("status",status);
         result.put("data",data);
         return result;
     }
-
-    private void  makeWhatsAppCall(String destination) {
-    mService.makeWhatsAppCall(destination);
-    }
-
     private void reset() {
         VoiceAppLogger.debug(TAG, "going to reset sdk");
         if (null != mService) {
@@ -246,7 +232,7 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
     @Override
     public void onInitializationSuccess() {
         uiThreadHandler.post(()->{
-            channel.invokeMethod(MethodChannelInvokeMethod.INIALIZE_RESULT,createResponse("401","OK","Ready"));
+            channel.invokeMethod(MethodChannelInvokeMethod.ON_INITIALIZATION_SUCCESS,null);
         });
     }
 
@@ -254,7 +240,7 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
     public void onInitializationFailure(ExotelVoiceError err) {
         VoiceAppLogger.debug(TAG, "onInitializationFailure");
         uiThreadHandler.post(()->{
-            channel.invokeMethod(MethodChannelInvokeMethod.INIALIZE_RESULT,createResponse("401","FAIL",err.getErrorMessage()));
+            channel.invokeMethod(MethodChannelInvokeMethod.ON_INITIALIZATION_FAILURE,createResponse(err.getErrorMessage()));
         });
     }
 
@@ -262,13 +248,16 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
     public void onAuthFailure() {
         VoiceAppLogger.debug(TAG, "On Authentication failure");
         uiThreadHandler.post(()->{
-            channel.invokeMethod(MethodChannelInvokeMethod.INIALIZE_RESULT,createResponse("401","FAIL","Authentication failure"));
+            channel.invokeMethod(MethodChannelInvokeMethod.ON_AUTHENTICATION_FAILURE,createResponse("Authentication failure"));
         });
     }
 
     @Override
     public void onCallInitiated(Call call) {
         VoiceAppLogger.debug(TAG,"onCallInitiated");
+        uiThreadHandler.post(()->{
+            channel.invokeMethod(MethodChannelInvokeMethod.ON_CALL_INITIATED, null);
+        });
     }
 
     @Override
@@ -278,7 +267,7 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
          * [sdk-calling-flow] sending message to flutter that dialer number is ringing
          */
         uiThreadHandler.post(()->{
-            channel.invokeMethod("callStatus", "Ringing");
+            channel.invokeMethod(MethodChannelInvokeMethod.ON_CALL_RINGING, null);
         });
     }
 
@@ -289,7 +278,7 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
          * [sdk-calling-flow] sending message to flutter that call is connected
          */
         uiThreadHandler.post(()-> {
-            channel.invokeMethod("callStatus", "Connected");
+            channel.invokeMethod(MethodChannelInvokeMethod.ON_CALL_ESTABLISHED, null);
         });
         VoiceAppLogger.debug(TAG, "Call Established, callId: " + call.getCallDetails().getCallId()
                 + " Destination: " + call.getCallDetails().getRemoteId());
@@ -307,7 +296,7 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
          * [sdk-calling-flow] sending message to flutter that call is disconnected
          */
         uiThreadHandler.post(()-> {
-            channel.invokeMethod("callStatus", "Ended");
+            channel.invokeMethod(MethodChannelInvokeMethod.ON_CALL_ENDED, null);
         });
     }
 
@@ -401,47 +390,6 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
         }
     }
 
-    private void fetchContactList() {
-
-        OkHttpClient okHttpClient = new OkHttpClient();
-        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-        String url = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.APP_HOSTNAME.toString());
-        String accountSid = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
-        String username = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.USER_NAME.toString());
-
-        url = url + "/accounts/" + accountSid + "/subscribers/" + username + "/contacts";
-        VoiceAppLogger.debug(TAG, "contactApiUrl :" + url);
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-
-        okHttpClient.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
-                VoiceAppLogger.error(TAG, "getContactList: Failed to get response"
-                        + e.getMessage());
-            }
-
-            @Override
-            public void onResponse(@NonNull okhttp3.Call call, @NonNull Response response) throws IOException {
-                VoiceAppLogger.debug(TAG, "response code :" + response.code());
-                String jsonData;
-                jsonData = response.body().string();
-                JSONObject jsonObject;
-                VoiceAppLogger.debug(TAG, "Response body: " + jsonData);
-                try {
-                    uiThreadHandler.post(()->{
-                        channel.invokeMethod("contacts", jsonData);
-                    });
-                } catch (Exception e) {
-                    VoiceAppLogger.error(TAG, "contact exception" + e.getMessage());
-                }
-                response.body().close();
-            }
-        });
-    }
-
-
 
 
     private void uploadLogs(Date startDate, Date endDate, String description) throws Exception {
@@ -453,16 +401,24 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
     @Override
     public void onMissedCall(String remoteUserId, Date time) {
         VoiceAppLogger.debug(TAG,"onMissedCall");
+        uiThreadHandler.post(()->{
+            channel.invokeMethod(MethodChannelInvokeMethod.ON_MISSED_CALL, null);
+        });
     }
 
     @Override
     public void onMediaDisrupted(Call call) {
+        uiThreadHandler.post(()->{
+            channel.invokeMethod(MethodChannelInvokeMethod.ON_MEDIA_DISTRUPTED, null);
+        });
 
     }
 
     @Override
     public void onRenewingMedia(Call call) {
-
+        uiThreadHandler.post(()->{
+            channel.invokeMethod(MethodChannelInvokeMethod.ON_RENEWING_MEDIA, null);
+        });
     }
 
     @Override
@@ -479,17 +435,18 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
             HashMap<String, Object> arguments = new HashMap<>();
             arguments.put("callId", callId);
             arguments.put("destination", destination);
-            channel.invokeMethod("incoming", arguments);
+            channel.invokeMethod(MethodChannelInvokeMethod.ON_INCOMING_CALL, arguments);
         });
     }
 
     public void onUploadLogSuccess() {
         VoiceAppLogger.getSignedUrlForLogUpload();
+        channel.invokeMethod(MethodChannelInvokeMethod.ON_UPLOAD_LOG_SUCCESS,null);
     }
 
     @Override
     public void onUploadLogFailure(ExotelVoiceError error) {
-
+        channel.invokeMethod(MethodChannelInvokeMethod.ON_UPLOAD_LOG_FAILURE,createResponse(error.getErrorMessage()));
     }
 
 
