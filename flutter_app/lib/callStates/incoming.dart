@@ -50,7 +50,11 @@ class _IncomingState extends State<Incoming> {
                     children: <Widget>[
                       GestureDetector(
                         onTap: () {
-                          ExotelSDKClient.getInstance().answer();
+                          try {
+                            ApplicationUtils.getInstance(context).answer();
+                          } catch (e) {
+                            return;
+                          }
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             Navigator.pushReplacementNamed(
                               context,
@@ -70,7 +74,7 @@ class _IncomingState extends State<Incoming> {
                       SizedBox(width: MediaQuery.of(context).size.width * 0.1), // Add space
                       GestureDetector(
                         onTap: () {
-                          ExotelSDKClient.getInstance().hangup();
+                          ApplicationUtils.getInstance(context).hangup();
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             Navigator.pushReplacementNamed(
                               context,

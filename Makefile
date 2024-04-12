@@ -1,9 +1,11 @@
 SDK_VERSION:=1.0.0
 
+clean:
+	rm -rf SDK/*
 android-deps:
 	make deps -C flutter_app/android
 
-generate-sdk:android-deps
+generate-sdk: clean android-deps
 	mkdir SDK/flutter-sdk
 	cp -r flutter_app/android ./SDK/flutter-sdk
 	cp -r flutter_app/ios ./SDK/flutter-sdk
