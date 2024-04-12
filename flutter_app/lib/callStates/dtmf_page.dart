@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/main.dart';
 import 'package:flutter_app/exotelSDK/ExotelSDKClient.dart';
 
+import '../Utils/ApplicationUtils.dart';
+
 class DtmfPage extends StatefulWidget {
   @override
   _DtmfPageState createState() => _DtmfPageState();
@@ -15,7 +17,7 @@ class _DtmfPageState extends State<DtmfPage> {
     setState(() {
       dtmfInput = key; // store only the last pressed key
     });
-      ExotelSDKClient.getInstance().sendDtmf(dtmfInput);
+      ApplicationUtils.getInstance(context).sendDtmf(dtmfInput);
 
   }
 

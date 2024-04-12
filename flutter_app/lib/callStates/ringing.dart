@@ -47,7 +47,7 @@ class _RingingState extends State<Ringing> {
                     padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05, bottom: MediaQuery.of(context).size.height * 0.02),
                     child: GestureDetector(
                       onTap:() {
-                        ExotelSDKClient.getInstance().hangup();
+                        ApplicationUtils.getInstance(context).hangup();
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           Navigator.pushReplacementNamed(
                             context,
