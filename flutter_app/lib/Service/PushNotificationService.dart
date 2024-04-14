@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_app/exotelSDK/ExotelVoiceClient.dart';
 import 'package:flutter_app/exotelSDK/ExotelVoiceClientFactory.dart';
@@ -30,6 +32,11 @@ class PushNotificationService {
   }
 
   Future<String?> getToken() async {
+    if(Platform.isIOS) {
+      print("getting apns token");
+      String? apnsToken = await _fcm?.getAPNSToken();
+      print("apnsToken : ${apnsToken}");
+    }
     String? token = await _fcm?.getToken();
     print('Token: $token');
     return token;

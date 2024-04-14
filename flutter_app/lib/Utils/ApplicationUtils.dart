@@ -4,7 +4,6 @@ import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -95,17 +94,17 @@ class ApplicationUtils implements ExotelSDKCallback {
     );
   }
 
-  Future<String?> _getId() async {
-    var deviceInfo = DeviceInfoPlugin();
-    if (Platform.isIOS) {
-      // import 'dart:io'
-      var iosDeviceInfo = await deviceInfo.iosInfo;
-      return iosDeviceInfo.identifierForVendor; // unique ID on iOS
-    } else if (Platform.isAndroid) {
-      var androidDeviceInfo = await deviceInfo.androidInfo;
-      return androidDeviceInfo.id; // unique ID on Android
-    }
-  }
+  // Future<String?> _getId() async {
+  //   var deviceInfo = DeviceInfoPlugin();
+  //   if (Platform.isIOS) {
+  //     // import 'dart:io'
+  //     var iosDeviceInfo = await deviceInfo.iosInfo;
+  //     return iosDeviceInfo.identifierForVendor; // unique ID on iOS
+  //   } else if (Platform.isAndroid) {
+  //     var androidDeviceInfo = await deviceInfo.androidInfo;
+  //     return androidDeviceInfo.id; // unique ID on Android
+  //   }
+  // }
 
   Future<void> login(String subscriberName, String password, String accountSid,
       String appHostname) async {
@@ -183,14 +182,18 @@ class ApplicationUtils implements ExotelSDKCallback {
             ApplicationSharedPreferenceData.CONTACT_DISPLAY_NAME.toString(),
             mDisplayName!);
 
-        String? devicetoken =
-            await PushNotificationService.getInstance().getToken();
+        String? devicetoken = "";
+        if(Platform.isAndroid){
+            devicetoken = await PushNotificationService.getInstance().getToken();
+        }
         sendDeviceToken(devicetoken, mAppHostName, subscriberName, accountSid);
+        
       } else {
         // If the server returns an error response, throw an exception
         print(response.body);
       }
     } catch (e) {
+      print("Error while hitting login ${e.toString()}");
       onInitializationFailure(e.toString());
     }
   }
@@ -405,6 +408,7 @@ class ApplicationUtils implements ExotelSDKCallback {
       } else {
         // If the server returns an error response, throw an exception
         print(response.body);
+        onInitializationFailure("Unable to send device token");
       }
     } on PlatformException catch (e) {
       print("Error while intialize ${e.toString()} ");
@@ -592,7 +596,8 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   Future<void> setupLocalNotification() async {
     const androidInitializationSetting = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const initSettings = InitializationSettings(android: androidInitializationSetting);
+    const iosInitializationSetting = DarwinInitializationSettings();
+    const initSettings = InitializationSettings(android: androidInitializationSetting,iOS: iosInitializationSetting);
     await _flutterLocalNotificationsPlugin.initialize(initSettings);
     var service = FlutterBackgroundService();
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);

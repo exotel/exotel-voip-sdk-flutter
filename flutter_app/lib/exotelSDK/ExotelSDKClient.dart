@@ -1,5 +1,6 @@
 
 import 'dart:developer';
+import 'dart:io';
 import 'package:flutter_app/exotelSDK/MethodChannelInvokeMethod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'ExotelSDKCallback.dart';
@@ -12,7 +13,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
 
   // static final ExotelSDKClient _instance = ExotelSDKClient._internal();
 
-  MethodChannel? androidChannel;
+  MethodChannel? channel;
 
   ExotelSDKCallback? mCallBack;
 
@@ -24,9 +25,10 @@ class ExotelSDKClient implements ExotelVoiceClient {
 
   @override
   void registerPlatformChannel() {
-    androidChannel = MethodChannel('android/exotel_sdk');
+    if(Platform.isAndroid) channel = MethodChannel('android/exotel_sdk');
+    if(Platform.isIOS) channel = MethodChannel('ios/exotel_sdk');
     // handle messages from android to flutter
-    androidChannel!.setMethodCallHandler(_flutterCallHandler);
+    channel!.setMethodCallHandler(_flutterCallHandler);
   }
 
   @override
@@ -94,7 +96,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
   @override
   Future<String> getDeviceId() async {
     try {
-      return await androidChannel?.invokeMethod(
+      return await channel?.invokeMethod(
           MethodChannelInvokeMethod.GET_DEVICE_ID);
     } catch(e){
       rethrow;
@@ -111,7 +113,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
        'display_name':displayName
      };
 
-     androidChannel?.invokeMethod(MethodChannelInvokeMethod.INITIALIZE,arg)
+     channel?.invokeMethod(MethodChannelInvokeMethod.INITIALIZE,arg)
          .catchError((e) {
          print("Failed to Invoke ${MethodChannelInvokeMethod.INITIALIZE}: ${e.toString()}");
          throw e;
@@ -122,14 +124,14 @@ class ExotelSDKClient implements ExotelVoiceClient {
   @override
   Future<void> reset() async{
     log("login button function start");
-      androidChannel?.invokeMethod(MethodChannelInvokeMethod.RESET);
+      channel?.invokeMethod(MethodChannelInvokeMethod.RESET);
   }
 
   @override
   Future<void> dial(String dialTo, String message) async{
     log("call button function start");
     try {
-      await androidChannel?.invokeMethod(MethodChannelInvokeMethod.DIAL, {'dialTo':dialTo,'message':message});
+      await channel?.invokeMethod(MethodChannelInvokeMethod.DIAL, {'dialTo':dialTo,'message':message});
     } catch (e) {
       print("Failed to Invoke ${MethodChannelInvokeMethod.DIAL}: ${e.toString()}");
       rethrow;
@@ -140,7 +142,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
   @override
   Future<void> mute() async{
     log("mute function start");
-      androidChannel?.invokeMethod(MethodChannelInvokeMethod.MUTE)
+      channel?.invokeMethod(MethodChannelInvokeMethod.MUTE)
           .catchError((e){
         print("Failed to Invoke ${MethodChannelInvokeMethod.MUTE}: ${e.toString()}");
       });
@@ -149,7 +151,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
   @override
   Future<void> unmute() async{
     log("unmute function start");
-    androidChannel?.invokeMethod(MethodChannelInvokeMethod.UNMUTE)
+    channel?.invokeMethod(MethodChannelInvokeMethod.UNMUTE)
     .catchError((e){
       print("Failed to Invoke ${MethodChannelInvokeMethod.UNMUTE}: ${e.toString()}");
     });
@@ -158,7 +160,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
   @override
   Future<void> enableSpeaker() async{
     log("enableSpeaker function start");
-    androidChannel?.invokeMethod(MethodChannelInvokeMethod.ENABLE_SPEAKER)
+    channel?.invokeMethod(MethodChannelInvokeMethod.ENABLE_SPEAKER)
     .catchError((e){
       print("Failed to Invoke ${MethodChannelInvokeMethod.ENABLE_SPEAKER}: ${e.toString()}");
     });
@@ -167,7 +169,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
   @override
   Future<void> disableSpeaker() async{
     log("disableSpeaker function start");
-    androidChannel?.invokeMethod(MethodChannelInvokeMethod.DISABLE_SPEAKER)
+    channel?.invokeMethod(MethodChannelInvokeMethod.DISABLE_SPEAKER)
     .catchError((e){
       print("Failed to Invoke ${MethodChannelInvokeMethod.DISABLE_SPEAKER}: ${e.toString()}");
     });
@@ -176,7 +178,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
   @override
   Future<void> enableBluetooth() async{
     log("enableBluetooth function start");
-    androidChannel?.invokeMethod(MethodChannelInvokeMethod.ENABLE_BLUETOOTH)
+    channel?.invokeMethod(MethodChannelInvokeMethod.ENABLE_BLUETOOTH)
         .catchError((e){
       print("Failed to Invoke ${MethodChannelInvokeMethod.ENABLE_BLUETOOTH}: ${e.toString()}");
     });
@@ -186,7 +188,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
   @override
   Future<void> disableBluetooth() async{
     log("disableBluetooth function start");
-    androidChannel?.invokeMethod(MethodChannelInvokeMethod.DISABLE_BLUETOOTH)
+    channel?.invokeMethod(MethodChannelInvokeMethod.DISABLE_BLUETOOTH)
         .catchError((e){
       print("Failed to Invoke ${MethodChannelInvokeMethod.DISABLE_BLUETOOTH.toString()}");
     });
@@ -195,7 +197,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
   @override
   Future<void> hangup() async{
     log("hangup function start");
-      androidChannel?.invokeMethod(MethodChannelInvokeMethod.HANGUP)
+      channel?.invokeMethod(MethodChannelInvokeMethod.HANGUP)
           .catchError((e){
         print("Failed to Invoke ${MethodChannelInvokeMethod.HANGUP}: ${e.toString()}");
       });
@@ -204,7 +206,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
   @override
   Future<void> answer() async{
     log("answer function start");
-    await androidChannel?.invokeMethod(MethodChannelInvokeMethod.ANSWER)
+    await channel?.invokeMethod(MethodChannelInvokeMethod.ANSWER)
         .catchError((e){
       print("Failed to Invoke ${MethodChannelInvokeMethod.ANSWER}: ${e.toString()}");
       throw e;
@@ -214,7 +216,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
   @override
   Future<void> sendDtmf(String digit) async{
     log("sendDtmf function start");
-    androidChannel?.invokeMethod(MethodChannelInvokeMethod.SEND_DTMF,{'digit': digit})
+    channel?.invokeMethod(MethodChannelInvokeMethod.SEND_DTMF,{'digit': digit})
         .catchError((e){
       print("Failed to Invoke ${MethodChannelInvokeMethod.SEND_DTMF}: ${e.toString()}");
     });
@@ -226,7 +228,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
     log("lastCallFeedback function start");
     log(" rating : $rating issue: $issue");
     try {
-      androidChannel?.invokeMethod(MethodChannelInvokeMethod.POST_FEEDBACK,{'rating': rating, 'issue':issue });
+      channel?.invokeMethod(MethodChannelInvokeMethod.POST_FEEDBACK,{'rating': rating, 'issue':issue });
     } catch (e) {
       print("Failed to Invoke ${MethodChannelInvokeMethod.POST_FEEDBACK}: ${e.toString()}");
       rethrow;
@@ -237,7 +239,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
   Future<String> getVersionDetails() async{
     log("getVersionDetails function start");
     try {
-     return await androidChannel?.invokeMethod(MethodChannelInvokeMethod.GET_VERSION_DETAILS);
+     return await channel?.invokeMethod(MethodChannelInvokeMethod.GET_VERSION_DETAILS);
     } catch (e) {
       print("Failed to Invoke ${MethodChannelInvokeMethod.GET_VERSION_DETAILS}: ${e.toString()}");
       rethrow;
@@ -252,7 +254,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
       String startDateString = startDate.toIso8601String();
       String endDateString = endDate.toIso8601String();
       log("startDateString: $startDateString, endDateString: $endDateString");
-      androidChannel?.invokeMethod(MethodChannelInvokeMethod.UPLOAD_LOGS, {
+      channel?.invokeMethod(MethodChannelInvokeMethod.UPLOAD_LOGS, {
         'startDateString': startDateString,
         'endDateString': endDateString,
         'description': description,
@@ -270,7 +272,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
       "payloadVersion":data['payloadVersion'].toString()
     };
     print("in relayFirebaseMessagingData");
-    androidChannel?.invokeMethod(MethodChannelInvokeMethod.RELAY_SESSION_DATA,{'data':sessionData});
+    channel?.invokeMethod(MethodChannelInvokeMethod.RELAY_SESSION_DATA,{'data':sessionData});
   }
 
 
