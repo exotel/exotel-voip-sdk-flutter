@@ -540,15 +540,17 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   Future<void> requestPermissions() async {
+    print("requesting for permission");
     Map<Permission, PermissionStatus> statuses = await [
     Permission.phone,
-        Permission.microphone,
+    Permission.camera,
+    Permission.microphone,
     Permission.notification,
     Permission.nearbyWifiDevices,
     Permission.accessMediaLocation,
-    Permission.location,  Permission.bluetoothScan,
+    Permission.location,  
+    Permission.bluetoothScan,
     Permission.bluetoothConnect,
-    // Add other permissions you want to request
     ].request();
   }
 

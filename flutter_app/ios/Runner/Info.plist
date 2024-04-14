@@ -52,6 +52,8 @@
         <string>remote-notification</string>
         <string>voip</string>
     </array>
+    <key>NSCameraUsageDescription</key>
+    <string>Using camera for call</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>Enable microphone access to allow other people to hear you.</string>
     <key>NSAppTransportSecurity</key>
