@@ -1,7 +1,7 @@
 framework module ExotelVoice {
   umbrella header "ExotelVoice.h"
-
   export *
+
   module * { export * }
 }
 
