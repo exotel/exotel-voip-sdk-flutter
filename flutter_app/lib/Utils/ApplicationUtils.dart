@@ -74,6 +74,7 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   void showLoadingDialog(String message) {
+     print("Going to Start loading dialog");
     if (isLoading) return;
 
     showDialog(
@@ -92,6 +93,7 @@ class ApplicationUtils implements ExotelSDKCallback {
         );
       },
     );
+    print("Started loading dialog");
   }
 
   // Future<String?> _getId() async {
@@ -190,7 +192,9 @@ class ApplicationUtils implements ExotelSDKCallback {
         
       } else {
         // If the server returns an error response, throw an exception
+        print("login failed with response code ${response.statusCode} and response body : ");
         print(response.body);
+        throw Exception("login failed with response code ${response.statusCode}");
       }
     } catch (e) {
       print("Error while hitting login ${e.toString()}");
@@ -199,9 +203,11 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   void stopLoadingDialog() {
+    print("Going to Stop loading dialog");
     if (isLoading) {
       Navigator.pop(context!); // Close the loading dialog
       isLoading = false;
+      print("Stopped loading dialog");
     }
   }
 

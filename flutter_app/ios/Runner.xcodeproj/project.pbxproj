@@ -20,6 +20,8 @@
 		FA0EEB2F2BCB1A6300BB0DA4 /* ExotelVoice.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA0EEB2E2BCB1A6200BB0DA4 /* ExotelVoice.framework */; };
 		FA0EEB302BCB1A6300BB0DA4 /* ExotelVoice.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FA0EEB2E2BCB1A6200BB0DA4 /* ExotelVoice.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FA0EEB322BCBBDB500BB0DA4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = FA0EEB312BCBBDB500BB0DA4 /* GoogleService-Info.plist */; };
+		FA3BCAAB2BCBD71A005195AB /* VoiceAppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3BCAAA2BCBD71A005195AB /* VoiceAppLogger.swift */; };
+		FA3BCAAD2BCBDD45005195AB /* MethodChannelInvokeMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3BCAAC2BCBDD45005195AB /* MethodChannelInvokeMethod.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,6 +76,8 @@
 		FA0EEB2E2BCB1A6200BB0DA4 /* ExotelVoice.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ExotelVoice.framework; sourceTree = "<group>"; };
 		FA0EEB312BCBBDB500BB0DA4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		FA0EEB332BCBBECE00BB0DA4 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
+		FA3BCAAA2BCBD71A005195AB /* VoiceAppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAppLogger.swift; sourceTree = "<group>"; };
+		FA3BCAAC2BCBDD45005195AB /* MethodChannelInvokeMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodChannelInvokeMethod.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -182,6 +186,8 @@
 			isa = PBXGroup;
 			children = (
 				FA0EEB2C2BCB12E000BB0DA4 /* ExotelSDKChannel.swift */,
+				FA3BCAAA2BCBD71A005195AB /* VoiceAppLogger.swift */,
+				FA3BCAAC2BCBDD45005195AB /* MethodChannelInvokeMethod.swift */,
 			);
 			path = Translator;
 			sourceTree = "<group>";
@@ -423,6 +429,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA0EEB2D2BCB12E000BB0DA4 /* ExotelSDKChannel.swift in Sources */,
+				FA3BCAAD2BCBDD45005195AB /* MethodChannelInvokeMethod.swift in Sources */,
+				FA3BCAAB2BCBD71A005195AB /* VoiceAppLogger.swift in Sources */,
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
