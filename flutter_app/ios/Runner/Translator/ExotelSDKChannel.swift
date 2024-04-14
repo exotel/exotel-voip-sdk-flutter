@@ -81,6 +81,12 @@ class ExotelSDKChannel {
             VoiceAppLogger.debug(TAG: self.TAG, message: "Returning from exotel voice client init")
         }
     }
+    func createResponse(data: String) -> [String: String]{
+        let response : [String: String] = [
+            "data": data
+        ]
+        return response;
+    }
 }
     
 extension ExotelSDKChannel: ExotelVoiceClientEventListener {
@@ -94,7 +100,7 @@ extension ExotelSDKChannel: ExotelVoiceClientEventListener {
     func onInitializationFailure(error: any ExotelVoice.ExotelVoiceError) {
         VoiceAppLogger.info(TAG: self.TAG, message: "in \(#function)")
         DispatchQueue.main.async {
-            self.channel.invokeMethod(MethodChannelInvokeMethod.ON_INITIALIZATION_FAILURE, arguments: error.getErrorMessage())
+            self.channel.invokeMethod(MethodChannelInvokeMethod.ON_INITIALIZATION_FAILURE, arguments: self.createResponse(data: error.getErrorMessage()))
         }
     }
     
@@ -124,9 +130,11 @@ extension ExotelSDKChannel: ExotelVoiceClientEventListener {
     func onAuthenticationFailure(error: any ExotelVoice.ExotelVoiceError) {
         VoiceAppLogger.info(TAG: self.TAG, message: "in \(#function)")
         DispatchQueue.main.async {
-            self.channel.invokeMethod(MethodChannelInvokeMethod.ON_AUTHENTICATION_FAILURE, arguments: error.getErrorMessage())
+            self.channel.invokeMethod(MethodChannelInvokeMethod.ON_AUTHENTICATION_FAILURE, arguments: self.createResponse(data: error.getErrorMessage()))
         }
     }
+    
+    
     
 }
 
