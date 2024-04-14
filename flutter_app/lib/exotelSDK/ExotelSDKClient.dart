@@ -47,11 +47,6 @@ class ExotelSDKClient implements ExotelVoiceClient {
         break;
       case "on-inialization-failure":
         var message = call.arguments['data'];
-        if(mCallBack == null){
-          print("mCallback is null");
-        } else {
-          print("mCallback is not null");
-        }
         mCallBack?.onInitializationFailure(message);
         break;
       case "on-authentication-failure":
