@@ -339,6 +339,7 @@ class ApplicationUtils implements ExotelSDKCallback {
   @override
   void onCallEnded() {
     showToast("Ended");
+    removeCallContext();
     navigateToHome();
   }
 
@@ -433,14 +434,16 @@ class ApplicationUtils implements ExotelSDKCallback {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? exophone = sharedPreferences
         .getString(ApplicationSharedPreferenceData.EXOPHONE.toString());
-    try {
-      await _exotelVoiceClient?.dial(exophone!, message);
-    } catch (e) {
-      print("Error while dialing out : ${e.toString()}");
-      onCallEnded();
-      return;
-    }
-    setCallContext(dialTo, "");
+    
+    setCallContext(dialTo, "")
+    .then((value) {
+        _exotelVoiceClient?.dial(exophone!, message)
+        .catchError((error){
+          print("Error while dialing out : ${e.toString()}");
+          onCallEnded();
+        });
+
+    });
   }
 
   Future<void> setCallContext(String dialTo, String message) async {
@@ -477,6 +480,34 @@ class ApplicationUtils implements ExotelSDKCallback {
     } on Exception catch (e) {
       print("Error ${e.toString()}");
       showToast("fail setting call context");
+    }
+  }
+
+  Future<void> removeCallContext() async {
+    String url = mAppHostName! +
+        "/accounts/" +
+        mAccountSid! +
+        "/subscribers/" +
+        mSubscriberName! +
+        "/context";
+        try {
+      final response = await http
+          .delete(Uri.parse(url))
+          .timeout(Duration(seconds: 15))
+          .catchError((error) {
+        print("Failed to get response for remove call context ${error.toString()}");
+        throw error;
+      });
+
+      print("Got response for remove call context: ${response.statusCode}");
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("remove call context success");
+      } else {
+        print("remove call context fail");
+      }
+    } on Exception catch (e) {
+      print("Error ${e.toString()}");
+      showToast("fail removing call context");
     }
   }
 
