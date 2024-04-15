@@ -2,7 +2,6 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:flutter_app/exotelSDK/MethodChannelInvokeMethod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'ExotelSDKCallback.dart';
 import 'package:flutter/services.dart';
 
@@ -39,7 +38,6 @@ class ExotelSDKClient implements ExotelVoiceClient {
   Future<void> _flutterCallHandler(MethodCall call) async {
     String loginStatus = "not ready";
     String callingStatus = "blank";
-    SharedPreferences prefs = await SharedPreferences.getInstance();
     print("flutter method handler got call.method : ${call.method} , arguments : ${call.arguments.toString()}");
     switch (call.method) {
       case "on-inialization-success":
@@ -88,6 +86,11 @@ class ExotelSDKClient implements ExotelVoiceClient {
         var message = call.arguments['data'];
         mCallBack?.onUploadLogFailure(message);
         break;
+      case "on-log":
+        var level = call.arguments["level"];
+        String tag = call.arguments["tag"];
+        String message = call.arguments["message"];
+      break;
       default:
         print("No Method Hander found for ${call.method}");
         break;
