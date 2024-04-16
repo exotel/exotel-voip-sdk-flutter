@@ -22,6 +22,7 @@
 		FA0EEB322BCBBDB500BB0DA4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = FA0EEB312BCBBDB500BB0DA4 /* GoogleService-Info.plist */; };
 		FA3BCAAB2BCBD71A005195AB /* VoiceAppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3BCAAA2BCBD71A005195AB /* VoiceAppLogger.swift */; };
 		FA3BCAAD2BCBDD45005195AB /* MethodChannelInvokeMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3BCAAC2BCBDD45005195AB /* MethodChannelInvokeMethod.swift */; };
+		FA3BCAAF2BCCFDDB005195AB /* VoiceAppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3BCAAE2BCCFDDB005195AB /* VoiceAppError.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,6 +79,7 @@
 		FA0EEB332BCBBECE00BB0DA4 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		FA3BCAAA2BCBD71A005195AB /* VoiceAppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAppLogger.swift; sourceTree = "<group>"; };
 		FA3BCAAC2BCBDD45005195AB /* MethodChannelInvokeMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodChannelInvokeMethod.swift; sourceTree = "<group>"; };
+		FA3BCAAE2BCCFDDB005195AB /* VoiceAppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAppError.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -188,6 +190,7 @@
 				FA0EEB2C2BCB12E000BB0DA4 /* ExotelSDKChannel.swift */,
 				FA3BCAAA2BCBD71A005195AB /* VoiceAppLogger.swift */,
 				FA3BCAAC2BCBDD45005195AB /* MethodChannelInvokeMethod.swift */,
+				FA3BCAAE2BCCFDDB005195AB /* VoiceAppError.swift */,
 			);
 			path = Translator;
 			sourceTree = "<group>";
@@ -429,6 +432,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA0EEB2D2BCB12E000BB0DA4 /* ExotelSDKChannel.swift in Sources */,
+				FA3BCAAF2BCCFDDB005195AB /* VoiceAppError.swift in Sources */,
 				FA3BCAAD2BCBDD45005195AB /* MethodChannelInvokeMethod.swift in Sources */,
 				FA3BCAAB2BCBD71A005195AB /* VoiceAppLogger.swift in Sources */,
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
@@ -525,6 +529,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = 9MNNV436TM;
 				ENABLE_BITCODE = NO;
@@ -539,6 +545,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.exotel.voiceflutterapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -713,6 +720,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = 9MNNV436TM;
 				ENABLE_BITCODE = NO;
@@ -727,6 +736,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.exotel.voiceflutterapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -741,6 +751,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = 9MNNV436TM;
 				ENABLE_BITCODE = NO;
@@ -755,6 +767,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.exotel.voiceflutterapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
