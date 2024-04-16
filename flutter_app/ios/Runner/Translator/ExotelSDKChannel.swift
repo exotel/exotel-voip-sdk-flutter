@@ -35,8 +35,9 @@ class ExotelSDKChannel {
         self.channel = channel
         self.channel.setMethodCallHandler({
             (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
-            print("This is native code ")
-            print("call.method = \(call.method)")
+            VoiceAppLogger.info(TAG: self.TAG, message: "This is native ios method handler")
+            VoiceAppLogger.info(TAG: self.TAG, message: "call.method = \(call.method)")
+            VoiceAppLogger.info(TAG: self.TAG, message: "call.argument = \(String(describing: call.arguments))")
             switch call.method {
             case "get-device-id":
 
@@ -116,6 +117,38 @@ class ExotelSDKChannel {
                     result(FlutterError(code: "ERROR", message: error.localizedDescription , details: nil))
                 }
                 
+            case "post-feedback":
+                let rating: Int = (call.arguments as! [String: Int])["rating"]!
+                let issue: String = (call.arguments as! [String: String])["issue"]!
+                do {
+                    try self.postFeedback(rating: rating, issue: issue)
+                } catch let error {
+                    result(FlutterError(code: "ERROR", message: error.localizedDescription , details: nil))
+                }
+                
+            case "get-call-duration":
+                let duration:Int = self.getCallDuration()
+                result(duration)
+                
+            case "get-version-details":
+                let version:String = self.getVersionDetails()
+                result(version)
+                
+            case "upload-logs":
+                let startDate: String = (call.arguments as! [String: String])["startDateString"]!
+                let endDate: String = (call.arguments as! [String: String])["endDateString"]!
+                let description: String = (call.arguments as! [String: String])["description"]!
+                
+                self.uploadLogs(startDateString: startDate, endDateString: endDate, description: description)
+                
+            case "relay-session-data":
+                let data:[String: String] = (call.arguments as! [String: [String:String]])["data"]!
+                do {
+                    let relaySuccess: Bool = try self.relaySessionData(payload: data)
+                    result(relaySuccess)
+                } catch let error {
+                    result(FlutterError(code: "ERROR", message: error.localizedDescription , details: nil))
+                }
                 
             default:
                 print("default case")
@@ -289,10 +322,10 @@ class ExotelSDKChannel {
         }
     }
     
-    func postFeedback(rating: Int, issue: CallIssue) throws {
+    func postFeedback(rating: Int, issue: String) throws {
         do {
             if nil != mPreviousCall {
-                try mPreviousCall?.postFeedback(rating: rating, issue: issue)
+                try mPreviousCall?.postFeedback(rating: rating, issue: CallIssue.stringToEnum(callIssue: issue))
             } else {
                 VoiceAppLogger.error(TAG: TAG, message: "Call handle is NULL, cannot post feedback")
             }
@@ -317,8 +350,29 @@ class ExotelSDKChannel {
         return message
     }
     
-    func uploadLogs(startDate: Date, endDate: Date, description: String) -> Void {
-        exotelVoiceClient?.uploadLogs(startDate: startDate, endDate: endDate, description: description)
+    func uploadLogs(startDateString: String, endDateString: String, description: String) -> Void {
+        do {
+            let startDate:Date = try convertToDate(dateString: startDateString)
+            let endDate:Date = try convertToDate(dateString: endDateString)
+            exotelVoiceClient?.uploadLogs(startDate: startDate, endDate: endDate, description: description)
+        } catch let error {
+            VoiceAppLogger.warning(TAG: self.TAG, message: error.localizedDescription)
+        }
+    }
+    
+    func convertToDate(dateString: String) throws -> Date {
+        let dateFormatter = DateFormatter()
+
+        // Set the date format of the input string
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+
+        // Convert the string to a Date object
+        if let date = dateFormatter.date(from: dateString) {
+            print("Date object:", date)
+            return date
+        } else {
+            throw NSError(domain: Bundle.main.bundleIdentifier ?? "com.exotel.voiceflutterapp" , code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid input provided"])
+        }
     }
     
     func relaySessionData(payload: [String: String]) throws -> Bool {
@@ -405,6 +459,7 @@ extension ExotelSDKChannel: ExotelVoiceClientEventListener {
 extension ExotelSDKChannel: CallListener {
     func onIncomingCall(call: any ExotelVoice.Call) {
         VoiceAppLogger.info(TAG: self.TAG, message: "in \(#function)")
+        mCall = call
         DispatchQueue.main.async {
             let response : [String: String] = [
                 "callId": call.getCallDetails().getCallId(),
