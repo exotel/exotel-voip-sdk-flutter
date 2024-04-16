@@ -44,12 +44,12 @@ class _HomePageState extends State<HomePage> {
             return Text('Error: ${snapshot.error}');
           } else {
             final prefs = snapshot.data;
-            final String? userId = prefs?.getString('userId');
-            final String? displayName = prefs?.getString('displayName');
-            final String? accountSid = prefs?.getString('accountSid');
-            final String? hostname = prefs?.getString('hostname');
-            final String? password = prefs?.getString('password');
-            TextEditingController dialNumberController = TextEditingController(text: "8123674275");
+            final String? userId =  prefs?.getString(ApplicationSharedPreferenceData.USER_NAME.toString());
+            final String? displayName = prefs?.getString(ApplicationSharedPreferenceData.DISPLAY_NAME.toString());
+            final String? accountSid = prefs?.getString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
+            final String? hostname = prefs?.getString(ApplicationSharedPreferenceData.APP_HOSTNAME.toString());
+            final String? password = prefs?.getString(ApplicationSharedPreferenceData.PASSWORD.toString());
+            TextEditingController dialNumberController = TextEditingController(text: "1234567890");
 
 
     // Future<String?> getStatus() async{
@@ -387,20 +387,10 @@ class DialTabContent extends StatefulWidget {
 }
 
 class _DialTabContentState extends State<DialTabContent> {
+   TextEditingController dialNumberController = TextEditingController(text: "1234567890");
   @override
   Widget build(BuildContext context) {
     var mApplicationUtil = ApplicationUtils.getInstance(context);
-    return FutureBuilder<SharedPreferences>(
-      future: SharedPreferences.getInstance(),
-      builder: (BuildContext context, AsyncSnapshot<SharedPreferences> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
-        } else {
-          if (snapshot.hasError) {
-            return Text('Error: ${snapshot.error}');
-          } else {
-            final prefs = snapshot.data;
-    TextEditingController dialNumberController = TextEditingController(text: "8123674275");
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 0), // Added horizontal and vertical padding
       child: Column(
@@ -422,6 +412,7 @@ class _DialTabContentState extends State<DialTabContent> {
                   width: 2.0, // Set the border width
                 ),
               ),
+              filled: true, // Don't forget this
             ),
           ),
           Padding(
@@ -451,10 +442,6 @@ class _DialTabContentState extends State<DialTabContent> {
       ),
     );
   }
-}
-},
-);
-}
 }
 
 
