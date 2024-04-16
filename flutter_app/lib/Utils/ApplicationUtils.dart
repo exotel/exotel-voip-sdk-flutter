@@ -185,9 +185,8 @@ class ApplicationUtils implements ExotelSDKCallback {
             mDisplayName!);
 
         String? devicetoken = "";
-        if(Platform.isAndroid){
-            devicetoken = await PushNotificationService.getInstance().getToken();
-        }
+        devicetoken = await PushNotificationService.getInstance().getToken();
+
         sendDeviceToken(devicetoken, mAppHostName, subscriberName, accountSid);
         
       } else {
@@ -212,9 +211,11 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   void navigateToHome() {
-    navigatorKey.currentState!.pushNamedAndRemoveUntil(
+    print("in navigateToHome()");
+    Navigator.pushNamedAndRemoveUntil(
+      context!,
       '/home',
-      (Route<dynamic> route) => false,
+          (route) => false,
     );
   }
 
@@ -229,7 +230,6 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   void navigateToIncoming() {
     print("in navigateToIncoming");
-    recentCallsPage(mDestination!, 'INCOMING');
     showLocalNotification(
       'Incoming call!',
       '$mDestination',
@@ -240,15 +240,17 @@ class ApplicationUtils implements ExotelSDKCallback {
         '/incoming',
       );
     });
-
+    recentCallsPage(mDestination!, 'INCOMING');
   }
 
   void navigateToRinging() {
+    print("Navigating to /ringing with state: Ringing");
+    // Add the call to recent calls before navigating
     recentCallsPage(mDialTo!, 'OUTGOING');
-    navigatorKey.currentState!.pushNamedAndRemoveUntil(
+    Navigator.pushNamed(
+      context!,
       '/ringing',
-      (Route<dynamic> route) => false,
-      arguments: {'state': "Ringing"}, //Hard-coded
+      arguments: {'dialTo': mDialTo, 'state': "Ringing"},
     );
   }
 
@@ -602,7 +604,7 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   void disableSpeaker() {
-    _exotelVoiceClient?.enableSpeaker();
+    _exotelVoiceClient?.disableSpeaker();
   }
 
   void mute() {
@@ -643,14 +645,18 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   void showLocalNotification(String title, String body) {
+  
     const androidNotificationDetail = AndroidNotificationDetails(
       '0', // channel Id
       'general',// channel Name
       importance: Importance.max,
       priority: Priority.high,
     );
+    const DarwinNotificationDetails iOSPlatformChannelSpecifics =
+    DarwinNotificationDetails(threadIdentifier: 'thread_id');
     const notificationDetails = NotificationDetails(
       android: androidNotificationDetail,
+      iOS: iOSPlatformChannelSpecifics,
     );
     _flutterLocalNotificationsPlugin.show(0, title, body, notificationDetails);
   }
