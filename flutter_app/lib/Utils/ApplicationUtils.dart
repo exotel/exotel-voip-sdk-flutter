@@ -4,7 +4,6 @@ import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -75,6 +74,7 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   void showLoadingDialog(String message) {
+     print("Going to Start loading dialog");
     if (isLoading) return;
 
     showDialog(
@@ -93,19 +93,20 @@ class ApplicationUtils implements ExotelSDKCallback {
         );
       },
     );
+    print("Started loading dialog");
   }
 
-  Future<String?> _getId() async {
-    var deviceInfo = DeviceInfoPlugin();
-    if (Platform.isIOS) {
-      // import 'dart:io'
-      var iosDeviceInfo = await deviceInfo.iosInfo;
-      return iosDeviceInfo.identifierForVendor; // unique ID on iOS
-    } else if (Platform.isAndroid) {
-      var androidDeviceInfo = await deviceInfo.androidInfo;
-      return androidDeviceInfo.id; // unique ID on Android
-    }
-  }
+  // Future<String?> _getId() async {
+  //   var deviceInfo = DeviceInfoPlugin();
+  //   if (Platform.isIOS) {
+  //     // import 'dart:io'
+  //     var iosDeviceInfo = await deviceInfo.iosInfo;
+  //     return iosDeviceInfo.identifierForVendor; // unique ID on iOS
+  //   } else if (Platform.isAndroid) {
+  //     var androidDeviceInfo = await deviceInfo.androidInfo;
+  //     return androidDeviceInfo.id; // unique ID on Android
+  //   }
+  // }
 
   Future<void> login(String subscriberName, String password, String accountSid,
       String appHostname) async {
@@ -183,29 +184,38 @@ class ApplicationUtils implements ExotelSDKCallback {
             ApplicationSharedPreferenceData.CONTACT_DISPLAY_NAME.toString(),
             mDisplayName!);
 
-        String? devicetoken =
-            await PushNotificationService.getInstance().getToken();
+        String? devicetoken = "";
+        devicetoken = await PushNotificationService.getInstance().getToken();
+
         sendDeviceToken(devicetoken, mAppHostName, subscriberName, accountSid);
+        
       } else {
         // If the server returns an error response, throw an exception
+        print("login failed with response code ${response.statusCode} and response body : ");
         print(response.body);
+        throw Exception("login failed with response code ${response.statusCode}");
       }
     } catch (e) {
+      print("Error while hitting login ${e.toString()}");
       onInitializationFailure(e.toString());
     }
   }
 
   void stopLoadingDialog() {
+    print("Going to Stop loading dialog");
     if (isLoading) {
       Navigator.pop(context!); // Close the loading dialog
       isLoading = false;
+      print("Stopped loading dialog");
     }
   }
 
   void navigateToHome() {
-    navigatorKey.currentState!.pushNamedAndRemoveUntil(
+    print("in navigateToHome()");
+    Navigator.pushNamedAndRemoveUntil(
+      context!,
       '/home',
-      (Route<dynamic> route) => false,
+          (route) => false,
     );
   }
 
@@ -220,7 +230,6 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   void navigateToIncoming() {
     print("in navigateToIncoming");
-    recentCallsPage(mDestination!, 'INCOMING');
     showLocalNotification(
       'Incoming call!',
       '$mDestination',
@@ -231,15 +240,17 @@ class ApplicationUtils implements ExotelSDKCallback {
         '/incoming',
       );
     });
-
+    recentCallsPage(mDestination!, 'INCOMING');
   }
 
   void navigateToRinging() {
+    print("Navigating to /ringing with state: Ringing");
+    // Add the call to recent calls before navigating
     recentCallsPage(mDialTo!, 'OUTGOING');
-    navigatorKey.currentState!.pushNamedAndRemoveUntil(
+    Navigator.pushNamed(
+      context!,
       '/ringing',
-      (Route<dynamic> route) => false,
-      arguments: {'state': "Ringing"}, //Hard-coded
+      arguments: {'dialTo': mDialTo, 'state': "Ringing"},
     );
   }
 
@@ -330,6 +341,7 @@ class ApplicationUtils implements ExotelSDKCallback {
   @override
   void onCallEnded() {
     showToast("Ended");
+    removeCallContext();
     navigateToHome();
   }
 
@@ -405,6 +417,7 @@ class ApplicationUtils implements ExotelSDKCallback {
       } else {
         // If the server returns an error response, throw an exception
         print(response.body);
+        onInitializationFailure("Unable to send device token");
       }
     } on PlatformException catch (e) {
       print("Error while intialize ${e.toString()} ");
@@ -423,14 +436,16 @@ class ApplicationUtils implements ExotelSDKCallback {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? exophone = sharedPreferences
         .getString(ApplicationSharedPreferenceData.EXOPHONE.toString());
-    try {
-      await _exotelVoiceClient?.dial(exophone!, message);
-    } catch (e) {
-      print("Error while dialing out : ${e.toString()}");
-      onCallEnded();
-      return;
-    }
-    setCallContext(dialTo, "");
+    
+    setCallContext(dialTo, "")
+    .then((value) {
+        _exotelVoiceClient?.dial(exophone!, message)
+        .catchError((error){
+          print("Error while dialing out : ${e.toString()}");
+          onCallEnded();
+        });
+
+    });
   }
 
   Future<void> setCallContext(String dialTo, String message) async {
@@ -467,6 +482,34 @@ class ApplicationUtils implements ExotelSDKCallback {
     } on Exception catch (e) {
       print("Error ${e.toString()}");
       showToast("fail setting call context");
+    }
+  }
+
+  Future<void> removeCallContext() async {
+    String url = mAppHostName! +
+        "/accounts/" +
+        mAccountSid! +
+        "/subscribers/" +
+        mSubscriberName! +
+        "/context";
+        try {
+      final response = await http
+          .delete(Uri.parse(url))
+          .timeout(Duration(seconds: 15))
+          .catchError((error) {
+        print("Failed to get response for remove call context ${error.toString()}");
+        throw error;
+      });
+
+      print("Got response for remove call context: ${response.statusCode}");
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("remove call context success");
+      } else {
+        print("remove call context fail");
+      }
+    } on Exception catch (e) {
+      print("Error ${e.toString()}");
+      showToast("fail removing call context");
     }
   }
 
@@ -530,15 +573,16 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   Future<void> requestPermissions() async {
+    print("requesting for permission");
     Map<Permission, PermissionStatus> statuses = await [
     Permission.phone,
-        Permission.microphone,
+    Permission.microphone,
     Permission.notification,
     Permission.nearbyWifiDevices,
     Permission.accessMediaLocation,
-    Permission.location,  Permission.bluetoothScan,
+    Permission.location,  
+    Permission.bluetoothScan,
     Permission.bluetoothConnect,
-    // Add other permissions you want to request
     ].request();
   }
 
@@ -559,7 +603,7 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   void disableSpeaker() {
-    _exotelVoiceClient?.enableSpeaker();
+    _exotelVoiceClient?.disableSpeaker();
   }
 
   void mute() {
@@ -592,21 +636,26 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   Future<void> setupLocalNotification() async {
     const androidInitializationSetting = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const initSettings = InitializationSettings(android: androidInitializationSetting);
+    const iosInitializationSetting = DarwinInitializationSettings();
+    const initSettings = InitializationSettings(android: androidInitializationSetting,iOS: iosInitializationSetting);
     await _flutterLocalNotificationsPlugin.initialize(initSettings);
     var service = FlutterBackgroundService();
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   }
 
   void showLocalNotification(String title, String body) {
+  
     const androidNotificationDetail = AndroidNotificationDetails(
       '0', // channel Id
       'general',// channel Name
       importance: Importance.max,
       priority: Priority.high,
     );
+    const DarwinNotificationDetails iOSPlatformChannelSpecifics =
+    DarwinNotificationDetails(threadIdentifier: 'thread_id');
     const notificationDetails = NotificationDetails(
       android: androidNotificationDetail,
+      iOS: iOSPlatformChannelSpecifics,
     );
     _flutterLocalNotificationsPlugin.show(0, title, body, notificationDetails);
   }

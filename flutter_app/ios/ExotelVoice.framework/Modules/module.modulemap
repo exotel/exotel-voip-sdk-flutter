@@ -1,0 +1,11 @@
+framework module ExotelVoice {
+  umbrella header "ExotelVoice.h"
+  export *
+
+  module * { export * }
+}
+
+module ExotelVoice.Swift {
+  header "ExotelVoice-Swift.h"
+  requires objc
+}
