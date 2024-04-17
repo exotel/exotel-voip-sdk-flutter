@@ -286,9 +286,6 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
     @Override
     public void onCallEnded(Call call) {
         VoiceAppLogger.debug(TAG,"onCallEnded");
-        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-        String userId = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.USER_NAME.toString());
-        mService.removeCallContext(userId);
         /**
          * [sdk-calling-flow] sending message to flutter that call is disconnected
          */

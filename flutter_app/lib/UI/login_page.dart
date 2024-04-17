@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import '../exotelSDK/ExotelSDKClient.dart';
 import 'home_page.dart';
 import '../main.dart';
+import '../Utils/ApplicationSharedPreferenceData.dart';
 
 class LoginPage extends StatefulWidget {
   final Function(String, String, String, String) onLoggedin;
@@ -294,11 +295,11 @@ class _LoginPageState extends State<LoginPage> {
                         mApplicationUtil.login(userId, password, accountSid, hostname);
                         mApplicationUtil.showLoadingDialog("Logging In");
                         SharedPreferences prefs = await SharedPreferences.getInstance();
-                        await prefs.setString('userId', userId);
-                        await prefs.setString('password', password);
-                        await prefs.setString('displayName', displayName);
-                        await prefs.setString('accountSid', accountSid);
-                        await prefs.setString('hostname', hostname);
+                        await prefs.setString(ApplicationSharedPreferenceData.USER_NAME.toString(), userId);
+                        await prefs.setString(ApplicationSharedPreferenceData.PASSWORD.toString(), password);
+                        await prefs.setString(ApplicationSharedPreferenceData.DISPLAY_NAME.toString(), displayName);
+                        await prefs.setString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString(), accountSid);
+                        await prefs.setString(ApplicationSharedPreferenceData.APP_HOSTNAME.toString(), hostname);
                       } catch (e) {
                         mApplicationUtil.showToast("Error while login");
                       }

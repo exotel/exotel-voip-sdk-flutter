@@ -1,3 +1,4 @@
+import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
 import 'package:flutter_app/exotelSDK/ExotelVoiceClient.dart';
 
 import 'Utils/ApplicationUtils.dart';
@@ -83,6 +84,6 @@ class MyApp extends StatelessWidget {
 
   Future<bool> checkIfUserIsLoggedIn() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('isLoggedIn') ?? false;
+    return prefs.getBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString()) ?? false;
   }
 }
