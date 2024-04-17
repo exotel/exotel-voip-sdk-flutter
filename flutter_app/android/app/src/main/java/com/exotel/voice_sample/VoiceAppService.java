@@ -803,34 +803,5 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
 
     }
 
-    public void removeCallContext(String userId) {
-        OkHttpClient client = new OkHttpClient();
-        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
-        String url = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.APP_HOSTNAME.toString());
-        String accountSid = sharedPreferencesHelper.getString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
-        url = url + "/accounts/" + accountSid + "/subscribers/" + userId + "/context";
-        VoiceAppLogger.debug(TAG, "Remove call context URL is: " + url);
-
-        Request request = new Request.Builder()
-                .url(url)
-                .delete()
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(okhttp3.Call call, IOException e) {
-                VoiceAppLogger.error(TAG, "removeCallContext: Failed to get response"
-                        + e.getMessage());
-            }
-
-            @Override
-            public void onResponse(okhttp3.Call call, Response response) throws IOException {
-                VoiceAppLogger.debug(TAG, "removeCallContext: Got response for removeCallContext: " + response.code());
-
-            }
-        });
-
-    }
-
 }
 
