@@ -10,12 +10,29 @@ class Ringing extends StatefulWidget {
 
 class _RingingState extends State<Ringing> {
   String? state; // Define state variable
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Initialize state with the current call state
+    String newState = (ModalRoute.of(context)!.settings.arguments as Map)['state'] as String;
+    print('New state: $newState');
+    if (newState != state) {
+      setState(() {
+        state = newState;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var mApplicationUtil = ApplicationUtils.getInstance(context);
     final String? dialTo = mApplicationUtil.mDialTo;
-    final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
-    String? state = arguments['state'];
 
     return Scaffold(
       appBar: AppBar(
@@ -46,14 +63,12 @@ class _RingingState extends State<Ringing> {
                   Padding(
                     padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05, bottom: MediaQuery.of(context).size.height * 0.02),
                     child: GestureDetector(
-                      onTap:() {
+                      onTap: () {
                         ExotelSDKClient.getInstance().hangup();
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
                           Navigator.pushReplacementNamed(
                             context,
                             '/home',
                           );
-                        });
                       },
                       child: ClipOval(
                         child: Image.asset(
