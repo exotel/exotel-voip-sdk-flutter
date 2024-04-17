@@ -576,7 +576,6 @@ class ApplicationUtils implements ExotelSDKCallback {
     print("requesting for permission");
     Map<Permission, PermissionStatus> statuses = await [
     Permission.phone,
-    Permission.camera,
     Permission.microphone,
     Permission.notification,
     Permission.nearbyWifiDevices,
