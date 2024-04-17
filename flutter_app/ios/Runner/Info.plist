@@ -45,5 +45,20 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>audio</string>
+        <string>fetch</string>
+        <string>remote-notification</string>
+        <string>voip</string>
+    </array>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Enable microphone access to allow other people to hear you.</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+       <key>NSAllowsArbitraryLoads</key><true/>
+    </dict>
+    <key>FirebaseAppDelegateProxyEnabled</key>
+    <string>NO</string>
 </dict>
 </plist>

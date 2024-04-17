@@ -135,6 +135,10 @@ class _ConnectedState extends State<Connected> {
                     GestureDetector(
                       onTap: () {
                         ApplicationUtils.getInstance(context).hangup();
+                        Navigator.pushReplacementNamed(
+                          context,
+                          '/home',
+                        );
                       },
                       child: ClipOval(
                         child: Image.asset(
