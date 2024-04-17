@@ -134,6 +134,10 @@ class _ConnectedState extends State<Connected> {
                     GestureDetector(
                       onTap: () {
                         ExotelSDKClient.getInstance().hangup();
+                        Navigator.pushReplacementNamed(
+                          context,
+                          '/home',
+                        );
                       },
                       child: ClipOval(
                         child: Image.asset(

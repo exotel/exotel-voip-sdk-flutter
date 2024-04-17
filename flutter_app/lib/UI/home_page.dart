@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
 import 'dart:convert';
 import '../exotelSDK/ExotelSDKCallback.dart';
 import '../exotelSDK/ExotelSDKClient.dart';
@@ -43,18 +44,13 @@ class _HomePageState extends State<HomePage> {
             return Text('Error: ${snapshot.error}');
           } else {
             final prefs = snapshot.data;
-            final String? userId = prefs?.getString('userId');
-            final String? displayName = prefs?.getString('displayName');
-            final String? accountSid = prefs?.getString('accountSid');
-            final String? hostname = prefs?.getString('hostname');
-            final String? password = prefs?.getString('password');
+            final String? userId =  prefs?.getString(ApplicationSharedPreferenceData.USER_NAME.toString());
+            final String? displayName = prefs?.getString(ApplicationSharedPreferenceData.DISPLAY_NAME.toString());
+            final String? accountSid = prefs?.getString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
+            final String? hostname = prefs?.getString(ApplicationSharedPreferenceData.APP_HOSTNAME.toString());
+            final String? password = prefs?.getString(ApplicationSharedPreferenceData.PASSWORD.toString());
             TextEditingController dialNumberController = TextEditingController(text: "8123674275");
 
-    Future<String> getVersion() async {
-      String ver;
-      ver = await mApplicationUtil.mVersion;
-      return ver;
-    }
 
     // Future<String?> getStatus() async{
     //   String? status;
@@ -65,7 +61,7 @@ class _HomePageState extends State<HomePage> {
               String? status = await mApplicationUtil.mStatus;
               if (status == null) {
                 // If mStatus is not ready, invoke the initialization method
-                await ExotelSDKClient.getInstance().logIn(userId!, password!, accountSid!, hostname!);
+                mApplicationUtil.login(userId!, password!, accountSid!, hostname!);
                 // After initialization, get the status again
                 status = await mApplicationUtil.mStatus;
               }
@@ -77,7 +73,7 @@ class _HomePageState extends State<HomePage> {
         context: context,
         builder: (BuildContext context) {
           return FutureBuilder<String>(
-            future: getVersion(),
+            future: ExotelSDKClient.getInstance().getVersionDetails(),
             builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return AlertDialog(
@@ -176,7 +172,7 @@ class _HomePageState extends State<HomePage> {
                   TextButton(
                     child: Text('OK'),
                     onPressed: () {
-                      ExotelSDKClient.getInstance().lastCallFeedback(dropdownValue1, dropdownValue2);
+                      ExotelSDKClient.getInstance().postFeedback(dropdownValue1, dropdownValue2);
                       Navigator.of(context).pop();
                     },
                   ),
@@ -235,7 +231,11 @@ class _HomePageState extends State<HomePage> {
                   final DateTime endDate = DateTime.now();
                   final DateTime startDate = endDate.subtract(day * uploadLogNumDays);
                   print('User input: $description, startDate: $startDate, endDate: $endDate');
-                  ExotelSDKClient.getInstance().uploadLogs(startDate, endDate, description);
+                  try {
+                    ExotelSDKClient.getInstance().uploadLogs(startDate, endDate, description);
+                  } catch (e) {
+                    mApplicationUtil.showToast("Upload Error");
+                  }
                   Navigator.of(context).pop();
                 },
               ),
@@ -269,9 +269,9 @@ class _HomePageState extends State<HomePage> {
                           switch (result) {
                             case 'Button 1':
                             // Handle Button 1 press
-                              ExotelSDKClient.getInstance().logout();
+                              ExotelSDKClient.getInstance().reset();
                               SharedPreferences prefs = await SharedPreferences.getInstance();
-                              await prefs.setBool('isLoggedIn', false);
+                              await prefs.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), false);
                               mApplicationUtil.navigateToStart();
                               print('Button 1 pressed');
                               break;
@@ -281,7 +281,6 @@ class _HomePageState extends State<HomePage> {
                               print('Button 2 pressed');
                               break;
                             case 'Button 3':
-                              ExotelSDKClient.getInstance().checkVersionDetails();
                               showVersionDialog();
                               print('Button 3 pressed');
                               break;
@@ -388,24 +387,10 @@ class DialTabContent extends StatefulWidget {
 }
 
 class _DialTabContentState extends State<DialTabContent> {
+  TextEditingController dialNumberController = TextEditingController(text: "7838167990");
   @override
   Widget build(BuildContext context) {
     var mApplicationUtil = ApplicationUtils.getInstance(context);
-    return FutureBuilder<SharedPreferences>(
-      future: SharedPreferences.getInstance(),
-      builder: (BuildContext context, AsyncSnapshot<SharedPreferences> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
-        } else {
-          if (snapshot.hasError) {
-            return Text('Error: ${snapshot.error}');
-          } else {
-            final prefs = snapshot.data;
-            final String? userId = prefs?.getString('userId');
-            final String? displayName = prefs?.getString('displayName');
-            final String? accountSid = prefs?.getString('accountSid');
-            final String? hostname = prefs?.getString('hostname');
-    TextEditingController dialNumberController = TextEditingController(text: "8123674275");
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 0), // Added horizontal and vertical padding
       child: Column(
@@ -440,7 +425,7 @@ class _DialTabContentState extends State<DialTabContent> {
               arguments: {'state': "Connecting...."},
             );
             mApplicationUtil.setDialTo(dialTo);
-            ExotelSDKClient.getInstance().call(userId!,dialTo);
+            mApplicationUtil.makeIPCall(dialTo,"test:1234");
             },
               child: ClipOval(
                 child: Image.asset(
@@ -455,10 +440,6 @@ class _DialTabContentState extends State<DialTabContent> {
         ],
       ),
     );
-  }
-}
-},
-);
 }
 }
 
@@ -480,20 +461,20 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
   late Future<void> _fetchAndParseJsonData;
 
   @override
-  @override
   void initState() {
     super.initState();
     searchController = TextEditingController();
     showContacts = false;
     mApplicationUtil = ApplicationUtils.getInstance(context); // Initialize here
+    mApplicationUtil.fetchContactList();
     _fetchAndParseJsonData = _fetchAndParseData(); // Assign a value here
     _loadContacts();
   }
 
   Future<void> _loadContacts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (prefs.containsKey('contacts')) {
-      var jsonData = prefs.getString('contacts');
+    if (prefs.containsKey('CONTACTS')) {
+      var jsonData = prefs.getString(ApplicationSharedPreferenceData.CONTACTS.toString());
       final contacts = _parseJsonData(jsonData!);
       setState(() {
         allContacts = contacts;
@@ -512,7 +493,7 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
       });
       // Store the contacts in shared preferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('contacts', jsonEncode(contacts.map((contact) => contact.toJson()).toList()));
+      await prefs.setString(ApplicationSharedPreferenceData.CONTACTS.toString(), jsonEncode(contacts.map((contact) => contact.toJson()).toList()));
     } catch (error) {
       // Handle error
       print('Error: $error');
@@ -602,10 +583,8 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
                           onTap: () {
                             String dialTo = contact.number;
                             print("DialTo is:  $dialTo");
-                            String? userId = mApplicationUtil.mUserId as String;
-                            print("userId is:  $userId");
                             mApplicationUtil.setDialTo(dialTo);
-                            ExotelSDKClient.getInstance().call(userId, dialTo);
+                            mApplicationUtil.makeIPCall(dialTo,"");
                             print("Calling ${contact.name}");
                           },
                           child: ClipOval(
@@ -666,6 +645,13 @@ class RecentCallsTabContent extends StatefulWidget {
 }
 
 class _RecentCallsTabContentState extends State<RecentCallsTabContent> {
+  @override
+  void initState() {
+    super.initState();
+    // Load recent calls when the widget is initialized
+    Provider.of<CallList>(context, listen: false).loadRecentCalls();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<CallList>(
@@ -733,7 +719,7 @@ class CallList extends ChangeNotifier {
 
   Future<void> loadRecentCalls() async {
     final prefs = await SharedPreferences.getInstance();
-    final String? recentCallsJson = prefs.getString('recentCalls');
+    final String? recentCallsJson = prefs.getString(ApplicationSharedPreferenceData.RECENT_CALLS.toString());
     if (recentCallsJson != null) {
       final List<dynamic> recentCallsList = jsonDecode(recentCallsJson);
       _recentCalls = recentCallsList.map((callJson) => Call.fromJson(callJson)).toList();
@@ -750,6 +736,6 @@ class CallList extends ChangeNotifier {
   Future<void> saveRecentCalls() async {
     final prefs = await SharedPreferences.getInstance();
     final String recentCallsJson = jsonEncode(_recentCalls.map((call) => call.toJson()).toList());
-    await prefs.setString('recentCalls', recentCallsJson);
+    await prefs.setString(ApplicationSharedPreferenceData.RECENT_CALLS.toString(), recentCallsJson);
   }
 }

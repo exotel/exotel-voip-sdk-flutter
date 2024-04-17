@@ -1,3 +1,4 @@
+import 'Utils/ApplicationSharedPreferenceData.dart';
 import 'Utils/ApplicationUtils.dart';
 import 'package:flutter/material.dart';
 import 'UI/login_page.dart';
@@ -80,6 +81,6 @@ class MyApp extends StatelessWidget {
 
   Future<bool> checkIfUserIsLoggedIn() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('isLoggedIn') ?? false;
+    return prefs.getBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString()) ?? false;
   }
 }
