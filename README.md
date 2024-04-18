@@ -7,6 +7,3 @@ or Download latest android aar file from [Exotel Android Voice SDK Release ](htt
 
 ## Exotel Voice Flutter SDK Integration Guide  
 File: [Exotel Flutter SDK Integration Guide.pdf](Exotel%20Flutter%20SDK%20Integration%20Guide.pdf)
-
-## Flutter integration with Android 
-Please refer. [android_integration_guide.md](android_integration_guide.md)
