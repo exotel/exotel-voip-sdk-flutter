@@ -35,11 +35,11 @@ public class MainActivity extends FlutterActivity {
 //        channel.invokeMethod("flutterChannel","message from android");
         channel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL);
         Intent intent = new Intent(this, ExotelTranslatorService.class);
-//        startService(intent);
-//        bindService(intent,connection, BIND_AUTO_CREATE);
-        ExotelTranslatorService exotelTranslatorService = new ExotelTranslatorService();
-        exotelTranslatorService.setContext(this);
-        exotelTranslatorService.registerPlatformChannel(channel);
+        startService(intent);
+        bindService(intent,connection, BIND_AUTO_CREATE);
+//        ExotelTranslatorService exotelTranslatorService = new ExotelTranslatorService();
+//        exotelTranslatorService.setContext(this);
+//        exotelTranslatorService.registerPlatformChannel(channel);
     }
 
     private ServiceConnection connection = new ServiceConnection() {
