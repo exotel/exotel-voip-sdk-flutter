@@ -15,9 +15,9 @@ class _ConnectedState extends State<Connected> {
     setState(() {
       isSpeakerEnabled = !isSpeakerEnabled;
       if (isSpeakerEnabled) {
-        ExotelSDKClient.getInstance().enableSpeaker();
+        ApplicationUtils.getInstance(context).enableSpeaker();
       } else {
-        ExotelSDKClient.getInstance().disableSpeaker();
+        ApplicationUtils.getInstance(context).disableSpeaker();
       }
     });
   }
@@ -27,9 +27,10 @@ class _ConnectedState extends State<Connected> {
     setState(() {
       isMuteEnabled = !isMuteEnabled;
       if (isMuteEnabled) {
-        ExotelSDKClient.getInstance().mute();
+        ApplicationUtils.getInstance(context).mute();
       } else {
-        ExotelSDKClient.getInstance().unmute();
+        ApplicationUtils.getInstance(context).unmute();
+
       }
     });
   }
@@ -39,9 +40,9 @@ class _ConnectedState extends State<Connected> {
     setState(() {
       isBluetoothEnabled = !isBluetoothEnabled;
       if (isBluetoothEnabled) {
-        ExotelSDKClient.getInstance().enableBluetooth();
+        ApplicationUtils.getInstance(context).enableBluetooth();
       } else {
-        ExotelSDKClient.getInstance().disableBluetooth();
+        ApplicationUtils.getInstance(context).disableBluetooth();
       }
     });
   }
@@ -133,7 +134,7 @@ class _ConnectedState extends State<Connected> {
 
                     GestureDetector(
                       onTap: () {
-                        ExotelSDKClient.getInstance().hangup();
+                        ApplicationUtils.getInstance(context).hangup();
                         Navigator.pushReplacementNamed(
                           context,
                           '/home',
@@ -166,7 +167,7 @@ class _ConnectedState extends State<Connected> {
                     '/dtmf',
                   );
                 });
-                   },
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey, // Set the button color to blue
                 shape: RoundedRectangleBorder( // Make the button rectangular

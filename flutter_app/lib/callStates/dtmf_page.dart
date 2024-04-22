@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/main.dart';
 import 'package:flutter_app/exotelSDK/ExotelSDKClient.dart';
 
+import '../Utils/ApplicationUtils.dart';
+
 class DtmfPage extends StatefulWidget {
   @override
   _DtmfPageState createState() => _DtmfPageState();
@@ -15,7 +17,8 @@ class _DtmfPageState extends State<DtmfPage> {
     setState(() {
       dtmfInput = key; // store only the last pressed key
     });
-    ExotelSDKClient.getInstance().sendDtmf(dtmfInput);
+    ApplicationUtils.getInstance(context).sendDtmf(dtmfInput);
+
   }
 
   // Widget buildKey(String key) {
@@ -74,17 +77,17 @@ class _DtmfPageState extends State<DtmfPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 135.0, vertical: 10),
               child: ElevatedButton(
-              child: Text('HIDE KEYPAD',style: TextStyle(color: Colors.black),),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey.shade400,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(0),
+                child: Text('HIDE KEYPAD',style: TextStyle(color: Colors.black),),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey.shade400,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(0),
+                  ),
                 ),
               ),
-            ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 125.0, vertical: 250),

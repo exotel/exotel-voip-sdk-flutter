@@ -2,13 +2,13 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../Utils/ApplicationSharedPreferenceData.dart';
 import '../Utils/ApplicationUtils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../exotelSDK/ExotelSDKClient.dart';
 import 'home_page.dart';
 import '../main.dart';
+import '../Utils/ApplicationSharedPreferenceData.dart';
 
 class LoginPage extends StatefulWidget {
   final Function(String, String, String, String) onLoggedin;
@@ -291,15 +291,9 @@ class _LoginPageState extends State<LoginPage> {
                       }
                       String accountSid = accountSidController.text;
                       String hostname = hostnameController.text;
-                      String response = "";
                       try {
-                        response = await ExotelSDKClient.getInstance().logIn(userId, password, accountSid, hostname);
-                        mApplicationUtil.setUserId(userId);
-                        mApplicationUtil.setPassword(password);
-                        mApplicationUtil.displayName(displayName);
-                        mApplicationUtil.setAccountSid(accountSid);
-                        mApplicationUtil.setHostName(hostname);
-                        mApplicationUtil.showLoadingDialog(response);
+                        mApplicationUtil.login(userId, password, accountSid, hostname);
+                        mApplicationUtil.showLoadingDialog("Logging In");
                         SharedPreferences prefs = await SharedPreferences.getInstance();
                         await prefs.setString(ApplicationSharedPreferenceData.USER_NAME.toString(), userId);
                         await prefs.setString(ApplicationSharedPreferenceData.PASSWORD.toString(), password);
