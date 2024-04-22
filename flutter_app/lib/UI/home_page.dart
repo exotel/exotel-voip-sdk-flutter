@@ -68,35 +68,24 @@ class _HomePageState extends State<HomePage> {
             }
 
             Future<void> showVersionDialog() async {
+              String? version = await mApplicationUtil.mVersion;
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
-                  return FutureBuilder<String>(
-                    future: mApplicationUtil.getVersionDetails(),
-                    builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return AlertDialog(
-                          title: Text('Loading...'),
-                          content: CircularProgressIndicator(),
-                        );
-                      } else {
-                        return AlertDialog(
-                          title: Text('SDK Details'),
-                          content: Text('${snapshot.data}'),
-                          actions: <Widget>[
-                            TextButton(
-                              child: Text('OK'),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ],
-                        );
-                      }
-                    },
+                  return AlertDialog(
+                    title: Text('SDK Details'),
+                    content: Text('$version'),
+                    actions: <Widget>[
+                      TextButton(
+                        child: Text('OK'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
                   );
-                },
-              );
+                }
+               );
             }
 
             void showDropdownDialog(BuildContext context) {

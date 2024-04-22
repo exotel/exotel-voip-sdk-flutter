@@ -24,4 +24,6 @@ abstract class ExotelSDKCallback {
   void onUploadLogSuccess();
 
   void onUploadLogFailure(String errorMessage);
+
+  void onVersionDetails(String version);
 }
