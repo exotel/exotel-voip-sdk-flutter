@@ -78,7 +78,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
                     System.out.println("Entered in Native Android");
                     switch (call.method) {
                         case "get-device-id":
-                            String androidId = Settings.Secure.getString(this.context.getContentResolver(), Settings.Secure.ANDROID_ID);
+                            String androidId = Settings.Secure.getString(this.getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
                             result.success(androidId);
                             break;
                         case "initialize":
@@ -221,7 +221,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
             throw new Exception("display name is empty");
         } else {
             try {
-                exotelVoiceClient.initialize(this.context, hostname, subscriberName, displayName, accountSid, subscriberToken);
+                exotelVoiceClient.initialize(this.getApplicationContext(), hostname, subscriberName, displayName, accountSid, subscriberToken);
             } catch (Exception e) {
                 VoiceAppLogger.error(TAG, "Exception in SDK initialization: " + e.getMessage());
                 throw new Exception(e.getMessage());
