@@ -74,7 +74,7 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   void showLoadingDialog(String message) {
-    print("Going to Start loading dialog");
+     print("Going to Start loading dialog");
     if (isLoading) return;
 
     showDialog(
@@ -149,12 +149,12 @@ class ApplicationUtils implements ExotelSDKCallback {
     try {
       final response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(jsonData),
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+            },
+            body: jsonEncode(jsonData),
+          )
           .timeout(Duration(seconds: 15))
           .catchError((error) {
         print("Error while sending post request for login ${error.toString()}");
@@ -171,7 +171,7 @@ class ApplicationUtils implements ExotelSDKCallback {
         String exophone = responseData['exophone'];
         mDisplayName = responseData['contact_display_name'];
         SharedPreferences sharedPreferences =
-        await SharedPreferences.getInstance();
+            await SharedPreferences.getInstance();
         sharedPreferences.setString(
             ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString(),
             subscriberToken);
@@ -223,7 +223,7 @@ class ApplicationUtils implements ExotelSDKCallback {
     print("in navigateToConnected()");
     navigatorKey.currentState!.pushNamedAndRemoveUntil(
       '/connected',
-          (Route<dynamic> route) => false,
+      (Route<dynamic> route) => false,
       arguments: {'dialTo': mDialTo},
     );
   }
@@ -257,7 +257,7 @@ class ApplicationUtils implements ExotelSDKCallback {
   void navigateToStart() {
     navigatorKey.currentState!.pushNamedAndRemoveUntil(
       '/',
-          (Route<dynamic> route) => false,
+      (Route<dynamic> route) => false,
     );
   }
 
@@ -387,12 +387,12 @@ class ApplicationUtils implements ExotelSDKCallback {
     try {
       final response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(requestBody),
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+            },
+            body: jsonEncode(requestBody),
+          )
           .timeout(Duration(seconds: 15))
           .catchError((error) {
         print("Failed to get response for device token ${error.toString()}");
@@ -403,14 +403,14 @@ class ApplicationUtils implements ExotelSDKCallback {
       if (response.statusCode == 200 || response.statusCode == 201) {
         // Successful POST request, handle the response here
         SharedPreferences sharedPreferences =
-        await SharedPreferences.getInstance();
+            await SharedPreferences.getInstance();
         String? sdkHostName = sharedPreferences
             .getString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString());
         String? subscriberToken = sharedPreferences.getString(
             ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString());
 
-        _exotelVoiceClient?.initialize(sdkHostName!, mSubscriberName!, mDisplayName!,
-            mAccountSid!, subscriberToken!)
+            _exotelVoiceClient?.initialize(sdkHostName!, mSubscriberName!, mDisplayName!,
+                mAccountSid!, subscriberToken!)
             .catchError((e) {
           onInitializationFailure("Error while Inializing SDK");
         });
@@ -438,12 +438,12 @@ class ApplicationUtils implements ExotelSDKCallback {
         .getString(ApplicationSharedPreferenceData.EXOPHONE.toString());
 
     setCallContext(dialTo, "")
-        .then((value) {
-      _exotelVoiceClient?.dial(exophone!, message)
-          .catchError((error){
-        print("Error while dialing out : ${e.toString()}");
-        onCallEnded();
-      });
+    .then((value) {
+        _exotelVoiceClient?.dial(exophone!, message)
+        .catchError((error){
+          print("Error while dialing out : ${e.toString()}");
+          onCallEnded();
+        });
 
     });
   }
@@ -459,12 +459,12 @@ class ApplicationUtils implements ExotelSDKCallback {
     try {
       final response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(requestBody),
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+            },
+            body: jsonEncode(requestBody),
+          )
           .timeout(Duration(seconds: 15))
           .catchError((error) {
         print(
@@ -492,7 +492,7 @@ class ApplicationUtils implements ExotelSDKCallback {
         "/subscribers/" +
         mSubscriberName! +
         "/context";
-    try {
+        try {
       final response = await http
           .delete(Uri.parse(url))
           .timeout(Duration(seconds: 15))
@@ -520,7 +520,7 @@ class ApplicationUtils implements ExotelSDKCallback {
         "/subscribers/" +
         mSubscriberName! +
         "/contacts";
-    print("fetch contact list");
+  print("fetch contact list");
     await http
         .get(Uri.parse(url))
         .timeout(Duration(seconds: 15))
@@ -575,14 +575,14 @@ class ApplicationUtils implements ExotelSDKCallback {
   Future<void> requestPermissions() async {
     print("requesting for permission");
     Map<Permission, PermissionStatus> statuses = await [
-      Permission.phone,
-      Permission.microphone,
-      Permission.notification,
-      Permission.nearbyWifiDevices,
-      Permission.accessMediaLocation,
-      Permission.location,
-      Permission.bluetoothScan,
-      Permission.bluetoothConnect,
+    Permission.phone,
+    Permission.microphone,
+    Permission.notification,
+    Permission.nearbyWifiDevices,
+    Permission.accessMediaLocation,
+    Permission.location,
+    Permission.bluetoothScan,
+    Permission.bluetoothConnect,
     ].request();
   }
 

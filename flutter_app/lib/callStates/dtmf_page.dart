@@ -17,7 +17,7 @@ class _DtmfPageState extends State<DtmfPage> {
     setState(() {
       dtmfInput = key; // store only the last pressed key
     });
-    ApplicationUtils.getInstance(context).sendDtmf(dtmfInput);
+      ApplicationUtils.getInstance(context).sendDtmf(dtmfInput);
 
   }
 

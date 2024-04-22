@@ -1,0 +1,276 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.10 (swiftlang-5.10.0.13 clang-1500.3.9.4)
+// swift-module-flags: -target arm64-apple-ios12.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -Osize -enable-bare-slash-regex -module-name ExotelVoice
+import AVFoundation
+import CallKit
+@_exported import ExotelVoice
+import Foundation
+import SQLite3
+import Swift
+import SystemConfiguration
+import UIKit
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+extension Swift.String {
+  public var isAlphanumeric: Swift.Bool {
+    get
+  }
+}
+public enum CallIssue {
+  case ECHO
+  case NO_AUDIO
+  case HIGH_LATENCY
+  case CHOPPY_AUDIO
+  case BACKGROUND_NOISE
+  case NO_ISSUE
+  case NONE
+  public static func enumToString(callIssue: ExotelVoice.CallIssue) -> Swift.String
+  public static func stringToEnum(callIssue: Swift.String) -> ExotelVoice.CallIssue
+  public static func == (a: ExotelVoice.CallIssue, b: ExotelVoice.CallIssue) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+extension ExotelVoice.CloudonixCallState_e : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+public protocol Call : AnyObject {
+  func getCallDetails() -> any ExotelVoice.CallDetails
+  func answer() throws
+  func hangup() throws
+  func mute()
+  func unmute()
+  func enableSpeaker()
+  func disableSpeaker()
+  func getCallStatistics() -> any ExotelVoice.CallStatistics
+  func postFeedback(rating: Swift.Int, issue: ExotelVoice.CallIssue) throws
+  func sendDtmf(digit: Swift.Character) throws
+  func getContextMessage() -> Swift.AnyObject?
+  func enableBluetooth()
+  func disableBluetooth()
+  func getAudioRoute() -> ExotelVoice.CallAudioRoute
+}
+public protocol CallController : AnyObject {
+  func dial(remoteID: Swift.String) throws -> any ExotelVoice.Call
+  func dial(remoteID: Swift.String, message: Swift.String) throws -> any ExotelVoice.Call
+  func setCallListener(callListener: any ExotelVoice.CallListener)
+  func getLatestCallDetails() -> (any ExotelVoice.CallDetails)?
+  func getCallFromCallId(callId: Swift.String) -> (any ExotelVoice.Call)?
+}
+public enum CallDirection {
+  case INCOMING
+  case OUTGOING
+  case UNKNOWN
+  public static func == (a: ExotelVoice.CallDirection, b: ExotelVoice.CallDirection) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public enum CallState {
+  case OUTGOING_INITIATED
+  case RINGING
+  case INCOMING
+  case ANSWERING
+  case ESTABLISHED
+  case ENDED
+  case ENDING
+  case INCOMING_INITIATED
+  case CONNECTING
+  case CALLING
+  case EARLY
+  case MEDIA_ACTIVE
+  case NONE
+  public static func == (a: ExotelVoice.CallState, b: ExotelVoice.CallState) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public protocol ExotelVoiceClient {
+  func initialize(context: [Swift.String : Any], hostname: Swift.String, subscriberName: Swift.String, displayName: Swift.String, accountSid: Swift.String, subscriberToken: Swift.String)
+  func isInitialized() -> Swift.Bool
+  func reset() throws
+  func relaySessionData(payload: [Swift.String : Swift.String]) throws -> Swift.Bool
+  func setEventListener(eventListener: any ExotelVoice.ExotelVoiceClientEventListener)
+  func getCallController() -> any ExotelVoice.CallController
+  func uploadLogs(startDate: Foundation.Date, endDate: Foundation.Date, description: Swift.String)
+}
+public protocol CallDetails : AnyObject {
+  func getCallId() -> Swift.String
+  func getCallStartedTime() -> Swift.Double
+  func getCallStartedTimeMs() -> Swift.Double
+  func getCallEstablishedTime() -> Swift.Double
+  func getCallEstablishedTimeMs() -> Swift.Double
+  func getCallAnswerTime() -> Swift.Double
+  func getCallAnsweredTimeMs() -> Swift.Double
+  func getCallEndedTime() -> Swift.Double
+  func getCallEndedTimeMs() -> Swift.Double
+  func getRemoteId() -> Swift.String
+  func getRemoteDisplayName() -> Swift.String
+  func getCallDirection() -> ExotelVoice.CallDirection
+  func getCallState() -> ExotelVoice.CallState
+  func getCallEndReason() -> ExotelVoice.CallEndReason
+  func getSessionId() -> Swift.String
+  func getCallDuration() -> Swift.Int
+  func setCallId(to callId: Swift.String)
+  func setCallStartedTime(to callStartedTime: Swift.Double)
+  func setCallEstablishedTime(to establishedTime: Swift.Double)
+  func setCallAnswerTime(to answerTime: Swift.Double)
+  func setCallEndedTime(to callEndedTIme: Swift.Double)
+  func setRemoteId(remoteId: Swift.String)
+  func setRemoteDisplayName(to remoteDisplayName: Swift.String)
+  func setCallDirection(to callDirection: ExotelVoice.CallDirection)
+  func setCallState(to callState: ExotelVoice.CallState)
+  func setCallEndReason(to callEndReason: ExotelVoice.CallEndReason)
+  func setSessionId(to sessionId: Swift.String)
+  func setCallDuration(to callDuration: Swift.Int)
+}
+@_hasMissingDesignatedInitializers final public class ExotelVoiceClientSDK {
+  public static func getVersion() -> Swift.String
+  public static func getExotelVoiceClient() -> any ExotelVoice.ExotelVoiceClient
+  public static func getToken() -> Swift.String
+  @objc deinit
+}
+public enum CallAudioRoute {
+  case EARPIECE
+  case SPEAKER
+  case BLUETOOTH
+  case HEADPHONES
+  public static func == (a: ExotelVoice.CallAudioRoute, b: ExotelVoice.CallAudioRoute) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public protocol ExotelVoiceClientEventListener : AnyObject {
+  func onInitializationSuccess()
+  func onInitializationFailure(error: any ExotelVoice.ExotelVoiceError)
+  func onLog(level: ExotelVoice.LogLevel, tag: Swift.String, message: Swift.String)
+  func onUploadLogSuccess()
+  func onUploadLogFailure(error: any ExotelVoice.ExotelVoiceError)
+  func onAuthenticationFailure(error: any ExotelVoice.ExotelVoiceError)
+}
+public enum ErrorType {
+  case NETWORK_ERROR
+  case INTERNAL_ERROR
+  case AUTHENTICATION_INVALID_TOKEN
+  case AUTHENTICATION_EXPIRED_TOKEN
+  case INVALID_PARAMETER
+  case MISSING_PERMISSION
+  case UPLOAD_LOG_FAILURE
+  case DEVICE_INTEGRITY_TEST_FAILURE
+  case SERVER_ERROR
+  case SDK_UNINITIALIZED
+  case PSTN_CALL_INPROGRESS
+  case SYSTEM_BUSY
+  case TONE_PLAYBACK_ERROR
+  case PAYLOAD_ERROR
+  case INVALID_DIAL_INFO
+  public static func enumToString(errorType: ExotelVoice.ErrorType) -> Swift.String
+  public static func stringToEnum(errorType: Swift.String) -> ExotelVoice.ErrorType
+  public static func == (a: ExotelVoice.ErrorType, b: ExotelVoice.ErrorType) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public enum LogLevel : Swift.Int {
+  case NONE
+  case ERROR
+  case WARNING
+  case DEBUG
+  case INFO
+  case VERBOSE
+  case ALL
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public protocol ExotelVoiceError : Swift.Error {
+  func getErrorType() -> ExotelVoice.ErrorType
+  func getErrorMessage() -> Swift.String
+}
+public enum CallEndReason {
+  case UNREACHABLE
+  case TIMEOUT
+  case BUSY
+  case MEDIA_TIMEOUT
+  case FAILURE
+  case LOCAL_HANGUP
+  case REMOTE_HANGUP
+  case THROTTLED
+  case INVALID_DIAL_INFO
+  case MEDIA_FAILED_HANGUP
+  case PSTN_HANGUP
+  case NONE
+  public static func stringFromEnum(callEndReason: ExotelVoice.CallEndReason) -> Swift.String
+  public static func enumFromString(callEndReason: Swift.String) -> ExotelVoice.CallEndReason
+  public static func == (a: ExotelVoice.CallEndReason, b: ExotelVoice.CallEndReason) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public protocol CallbackListener {
+  func onSuccess(accessToken: Swift.String)
+  func onFailure(error: any ExotelVoice.ExotelVoiceError)
+}
+public protocol CallStatistics : AnyObject {
+  func getAverageJitterMs() -> Swift.Int32
+  func getMaxJitterMs() -> Swift.Int32
+  func getFractionLost() -> Swift.Int32
+  func getCumulativeLost() -> Swift.Int32
+  func getExtendedMax() -> Swift.Int32
+  func getJitterSamples() -> Swift.Int32
+  func getJitterBufferMs() -> Swift.Int32
+  func getPreferredJitterBufferMs() -> Swift.Int32
+  func getRttMs() -> Swift.Int32
+  func getBytesSent() -> Swift.Int32
+  func getPacketsSent() -> Swift.Int32
+  func getBytesReceived() -> Swift.Int32
+  func getPacketsReceived() -> Swift.Int32
+  func getCodecName() -> Swift.String
+  func getMOS() -> Swift.Float
+  func getRemoteFractionLoss() -> Swift.Int32
+  func getLastSRTimestamp() -> Swift.Int32
+  func getAudioBitRate() -> Swift.Int32
+  func getSeconds() -> Swift.Int
+  func getDuration() -> Swift.Int
+  func getNoPacketsTime() -> Swift.Int
+  func getAverageLatency() -> Swift.Float
+  func getLatencyJitter() -> Swift.Float
+  func getCurrentPacketLossRate() -> Swift.Float
+  func getMediaWaitingTimeMs() -> Swift.Int32
+}
+public protocol CallListener : AnyObject {
+  func onIncomingCall(call: any ExotelVoice.Call)
+  func onCallInitiated(call: any ExotelVoice.Call)
+  func onCallRinging(call: any ExotelVoice.Call)
+  func onCallEstablished(call: any ExotelVoice.Call)
+  func onCallDisrupted()
+  func onCallRenewed()
+  func onCallEnded(call: any ExotelVoice.Call)
+  func onMissedCall(remoteId: Swift.String, time: Foundation.Date)
+}
+extension ExotelVoice.CallIssue : Swift.Equatable {}
+extension ExotelVoice.CallIssue : Swift.Hashable {}
+extension ExotelVoice.CallDirection : Swift.Equatable {}
+extension ExotelVoice.CallDirection : Swift.Hashable {}
+extension ExotelVoice.CallState : Swift.Equatable {}
+extension ExotelVoice.CallState : Swift.Hashable {}
+extension ExotelVoice.CallAudioRoute : Swift.Equatable {}
+extension ExotelVoice.CallAudioRoute : Swift.Hashable {}
+extension ExotelVoice.ErrorType : Swift.Equatable {}
+extension ExotelVoice.ErrorType : Swift.Hashable {}
+extension ExotelVoice.LogLevel : Swift.Equatable {}
+extension ExotelVoice.LogLevel : Swift.Hashable {}
+extension ExotelVoice.LogLevel : Swift.RawRepresentable {}
+extension ExotelVoice.CallEndReason : Swift.Equatable {}
+extension ExotelVoice.CallEndReason : Swift.Hashable {}
