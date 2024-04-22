@@ -22,6 +22,8 @@ public class MainActivity extends FlutterActivity {
 //    private ExotelSDKChannel exotelSDKChannel;
     private static final String CHANNEL = "android/exotel_sdk";
     private MethodChannel channel;
+    private static final String TAG = "MainActivity";
+
 
     @Override
     public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
@@ -46,6 +48,7 @@ public class MainActivity extends FlutterActivity {
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
             ExotelTranslatorService.LocalBinder binder = (ExotelTranslatorService.LocalBinder) service;
+            VoiceAppLogger.debug(TAG, "In onServiceConnected() ");
             ExotelTranslatorService exotelTranslatorService  = binder.getService();
 
             exotelTranslatorService.registerPlatformChannel(channel);
@@ -54,6 +57,8 @@ public class MainActivity extends FlutterActivity {
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
+            VoiceAppLogger.debug(TAG, "In onServiceDisconnected() ");
+
         }
     };
 }

@@ -359,7 +359,12 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         VoiceAppLogger.debug(TAG, "Getting version details in sample app service");
         String message = ExotelVoiceClientSDK.getVersion();
         VoiceAppLogger.debug(TAG, "Getting version details in sample app service: "+ message);
-        return message;
+        uiThreadHandler.post(()->{
+            HashMap<String, Object> arguments = new HashMap<>();
+            arguments.put("version", message);
+            channel.invokeMethod(MethodChannelInvokeMethod.ON_VERSION_DETAILS, arguments);
+        });
+    return message;
     }
 
     public void uploadLogs(Date startDate, Date endDate, String description) throws Exception {
@@ -400,6 +405,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
     @Override
     public void onCallRinging(Call call) {
         mCall = call;
+        VoiceAppLogger.debug(TAG, "in onCallRinging(), ExotelTranslatorService");
         uiThreadHandler.post(()->{
             channel.invokeMethod(MethodChannelInvokeMethod.ON_CALL_RINGING, null);
         });

@@ -40,7 +40,7 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   String? mDialTo;
 
-  String mVersion = "waiting..";
+  String? mVersion;
 
   String? mStatus;
 
@@ -234,24 +234,22 @@ class ApplicationUtils implements ExotelSDKCallback {
       'Incoming call!',
       '$mDestination',
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.pushReplacementNamed(
-        context!,
-        '/incoming',
-      );
-    });
+    Navigator.pushNamed(
+      context!,
+      '/incoming',
+    );
     recentCallsPage(mDestination!, 'INCOMING');
   }
 
   void navigateToRinging() {
     print("Navigating to /ringing with state: Ringing");
     // Add the call to recent calls before navigating
-    recentCallsPage(mDialTo!, 'OUTGOING');
     Navigator.pushNamed(
       context!,
       '/ringing',
       arguments: {'dialTo': mDialTo, 'state': "Ringing"},
     );
+    recentCallsPage(mDialTo!, 'OUTGOING');
   }
 
   void navigateToStart() {
@@ -311,6 +309,8 @@ class ApplicationUtils implements ExotelSDKCallback {
     SharedPreferences.getInstance().then((pref) {
       pref.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), true);
     });
+    fetchContactList();
+    getVersionDetails();
 
   }
 
@@ -567,6 +567,9 @@ class ApplicationUtils implements ExotelSDKCallback {
     // TODO: implement onUploadLogSuccess
   }
 
+  void onVersionDetails(version) {
+    mVersion = version;
+  }
   void reset() {
     _exotelVoiceClient?.hangup();
     _exotelVoiceClient?.reset();

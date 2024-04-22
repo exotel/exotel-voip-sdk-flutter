@@ -9,7 +9,12 @@ class Ringing extends StatefulWidget {
 }
 
 class _RingingState extends State<Ringing> {
-  late String state; // Define state variable
+  String state =  "Connecting..."; // Define state variable
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void didChangeDependencies() {

@@ -91,6 +91,10 @@ class ExotelSDKClient implements ExotelVoiceClient {
         String tag = call.arguments["tag"];
         String message = call.arguments["message"];
       break;
+      case "on-version-details":
+        var version = call.arguments['version'];
+        mCallBack?.onVersionDetails(version);
+        break;
       default:
         print("No Method Hander found for ${call.method}");
         break;
