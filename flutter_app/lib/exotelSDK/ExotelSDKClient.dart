@@ -90,7 +90,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
         var level = call.arguments["level"];
         String tag = call.arguments["tag"];
         String message = call.arguments["message"];
-        break;
+      break;
       default:
         print("No Method Hander found for ${call.method}");
         break;
@@ -109,26 +109,26 @@ class ExotelSDKClient implements ExotelVoiceClient {
 
   @override
   Future<void> initialize(String hostname, String subsriberName, String displayName, String accountSid,String subscriberToken) async {
-    var arg = {
-      'host_name':hostname,
-      'subscriber_name':subsriberName,
-      'account_sid':accountSid,
-      'subscriber_token':subscriberToken,
-      'display_name':displayName
-    };
+     var arg = {
+       'host_name':hostname,
+       'subscriber_name':subsriberName,
+       'account_sid':accountSid,
+       'subscriber_token':subscriberToken,
+       'display_name':displayName
+     };
 
-    channel?.invokeMethod(MethodChannelInvokeMethod.INITIALIZE,arg)
-        .catchError((e) {
-      print("Failed to Invoke ${MethodChannelInvokeMethod.INITIALIZE}: ${e.toString()}");
-      throw e;
-    });
+     channel?.invokeMethod(MethodChannelInvokeMethod.INITIALIZE,arg)
+         .catchError((e) {
+         print("Failed to Invoke ${MethodChannelInvokeMethod.INITIALIZE}: ${e.toString()}");
+         throw e;
+     });
 
   }
 
   @override
   Future<void> reset() async{
     log("login button function start");
-    channel?.invokeMethod(MethodChannelInvokeMethod.RESET);
+      channel?.invokeMethod(MethodChannelInvokeMethod.RESET);
   }
 
   @override
@@ -146,17 +146,17 @@ class ExotelSDKClient implements ExotelVoiceClient {
   @override
   Future<void> mute() async{
     log("mute function start");
-    channel?.invokeMethod(MethodChannelInvokeMethod.MUTE)
-        .catchError((e){
-      print("Failed to Invoke ${MethodChannelInvokeMethod.MUTE}: ${e.toString()}");
-    });
+      channel?.invokeMethod(MethodChannelInvokeMethod.MUTE)
+          .catchError((e){
+        print("Failed to Invoke ${MethodChannelInvokeMethod.MUTE}: ${e.toString()}");
+      });
   }
 
   @override
   Future<void> unmute() async{
     log("unmute function start");
     channel?.invokeMethod(MethodChannelInvokeMethod.UNMUTE)
-        .catchError((e){
+    .catchError((e){
       print("Failed to Invoke ${MethodChannelInvokeMethod.UNMUTE}: ${e.toString()}");
     });
   }
@@ -165,7 +165,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
   Future<void> enableSpeaker() async{
     log("enableSpeaker function start");
     channel?.invokeMethod(MethodChannelInvokeMethod.ENABLE_SPEAKER)
-        .catchError((e){
+    .catchError((e){
       print("Failed to Invoke ${MethodChannelInvokeMethod.ENABLE_SPEAKER}: ${e.toString()}");
     });
   }
@@ -174,7 +174,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
   Future<void> disableSpeaker() async{
     log("disableSpeaker function start");
     channel?.invokeMethod(MethodChannelInvokeMethod.DISABLE_SPEAKER)
-        .catchError((e){
+    .catchError((e){
       print("Failed to Invoke ${MethodChannelInvokeMethod.DISABLE_SPEAKER}: ${e.toString()}");
     });
   }
@@ -201,10 +201,10 @@ class ExotelSDKClient implements ExotelVoiceClient {
   @override
   Future<void> hangup() async{
     log("hangup function start");
-    channel?.invokeMethod(MethodChannelInvokeMethod.HANGUP)
-        .catchError((e){
-      print("Failed to Invoke ${MethodChannelInvokeMethod.HANGUP}: ${e.toString()}");
-    });
+      channel?.invokeMethod(MethodChannelInvokeMethod.HANGUP)
+          .catchError((e){
+        print("Failed to Invoke ${MethodChannelInvokeMethod.HANGUP}: ${e.toString()}");
+      });
   }
 
   @override
@@ -243,7 +243,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
   Future<String> getVersionDetails() async{
     log("getVersionDetails function start");
     try {
-      return await channel?.invokeMethod(MethodChannelInvokeMethod.GET_VERSION_DETAILS);
+     return await channel?.invokeMethod(MethodChannelInvokeMethod.GET_VERSION_DETAILS);
     } catch (e) {
       print("Failed to Invoke ${MethodChannelInvokeMethod.GET_VERSION_DETAILS}: ${e.toString()}");
       rethrow;

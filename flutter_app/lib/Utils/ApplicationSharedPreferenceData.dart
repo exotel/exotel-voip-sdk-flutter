@@ -25,9 +25,5 @@ enum ApplicationSharedPreferenceData {
 
   CONTACT_DISPLAY_NAME,
 
-  DEVICE_ID,
-
-  RECENT_CALLS,
-
-  CONTACTS
+  DEVICE_ID
 }
