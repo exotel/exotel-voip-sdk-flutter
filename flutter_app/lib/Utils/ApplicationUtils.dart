@@ -4,20 +4,24 @@ import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:device_info_plus/device_info_plus.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
 import 'package:flutter_app/exotelSDK/ExotelSDKCallback.dart';
-import 'package:flutter_app/exotelSDK/ExotelSDKClient.dart';
+import 'package:flutter_app/exotelSDK/ExotelVoiceClient.dart';
+import 'package:flutter_app/exotelSDK/ExotelVoiceClientFactory.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'package:flutter_app/main.dart';
 
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:provider/provider.dart';
 import 'package:flutter_app/UI/home_page.dart';
@@ -48,7 +52,14 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   String? mDisplayName;
 
-  ApplicationUtils._internal();
+  ExotelVoiceClient? _exotelVoiceClient;
+
+  var _flutterLocalNotificationsPlugin;
+
+  ApplicationUtils._internal(){
+    _exotelVoiceClient = ExotelVoiceClientFactory.getExotelVoiceClient();
+    _flutterLocalNotificationsPlugin =  FlutterLocalNotificationsPlugin();
+  }
 
   static ApplicationUtils? _instance;
   BuildContext? context;
@@ -63,6 +74,7 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   void showLoadingDialog(String message) {
+    print("Going to Start loading dialog");
     if (isLoading) return;
 
     showDialog(
@@ -81,19 +93,20 @@ class ApplicationUtils implements ExotelSDKCallback {
         );
       },
     );
+    print("Started loading dialog");
   }
 
-  Future<String?> _getId() async {
-    var deviceInfo = DeviceInfoPlugin();
-    if (Platform.isIOS) {
-      // import 'dart:io'
-      var iosDeviceInfo = await deviceInfo.iosInfo;
-      return iosDeviceInfo.identifierForVendor; // unique ID on iOS
-    } else if (Platform.isAndroid) {
-      var androidDeviceInfo = await deviceInfo.androidInfo;
-      return androidDeviceInfo.id; // unique ID on Android
-    }
-  }
+  // Future<String?> _getId() async {
+  //   var deviceInfo = DeviceInfoPlugin();
+  //   if (Platform.isIOS) {
+  //     // import 'dart:io'
+  //     var iosDeviceInfo = await deviceInfo.iosInfo;
+  //     return iosDeviceInfo.identifierForVendor; // unique ID on iOS
+  //   } else if (Platform.isAndroid) {
+  //     var androidDeviceInfo = await deviceInfo.androidInfo;
+  //     return androidDeviceInfo.id; // unique ID on Android
+  //   }
+  // }
 
   Future<void> login(String subscriberName, String password, String accountSid,
       String appHostname) async {
@@ -113,9 +126,9 @@ class ApplicationUtils implements ExotelSDKCallback {
     print("Calling login API");
     // var deviceInfo = DeviceInfoPlugin();
     // var deviceId = await _getId();
-    var deviceId = "";
+    String? deviceId = "";
     try {
-      deviceId = await ExotelSDKClient.getInstance().getDeviceId();
+      deviceId = await _exotelVoiceClient?.getDeviceId();
     } catch (e) {
       print("Error while getting device id : ${e}");
       onInitializationFailure(e.toString());
@@ -136,12 +149,12 @@ class ApplicationUtils implements ExotelSDKCallback {
     try {
       final response = await http
           .post(
-            Uri.parse(url),
-            headers: <String, String>{
-              'Content-Type': 'application/json; charset=UTF-8',
-            },
-            body: jsonEncode(jsonData),
-          )
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(jsonData),
+      )
           .timeout(Duration(seconds: 15))
           .catchError((error) {
         print("Error while sending post request for login ${error.toString()}");
@@ -158,7 +171,7 @@ class ApplicationUtils implements ExotelSDKCallback {
         String exophone = responseData['exophone'];
         mDisplayName = responseData['contact_display_name'];
         SharedPreferences sharedPreferences =
-            await SharedPreferences.getInstance();
+        await SharedPreferences.getInstance();
         sharedPreferences.setString(
             ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString(),
             subscriberToken);
@@ -171,22 +184,29 @@ class ApplicationUtils implements ExotelSDKCallback {
             ApplicationSharedPreferenceData.CONTACT_DISPLAY_NAME.toString(),
             mDisplayName!);
 
-        String? devicetoken =
-            await PushNotificationService.getInstance().getToken();
+        String? devicetoken = "";
+        devicetoken = await PushNotificationService.getInstance().getToken();
+
         sendDeviceToken(devicetoken, mAppHostName, subscriberName, accountSid);
+
       } else {
         // If the server returns an error response, throw an exception
+        print("login failed with response code ${response.statusCode} and response body : ");
         print(response.body);
+        throw Exception("login failed with response code ${response.statusCode}");
       }
     } catch (e) {
+      print("Error while hitting login ${e.toString()}");
       onInitializationFailure(e.toString());
     }
   }
 
   void stopLoadingDialog() {
+    print("Going to Stop loading dialog");
     if (isLoading) {
       Navigator.pop(context!); // Close the loading dialog
       isLoading = false;
+      print("Stopped loading dialog");
     }
   }
 
@@ -203,15 +223,14 @@ class ApplicationUtils implements ExotelSDKCallback {
     print("in navigateToConnected()");
     navigatorKey.currentState!.pushNamedAndRemoveUntil(
       '/connected',
-      (Route<dynamic> route) => false,
+          (Route<dynamic> route) => false,
       arguments: {'dialTo': mDialTo},
     );
   }
 
   void navigateToIncoming() {
     print("in navigateToIncoming");
-    recentCallsPage(mDestination!, 'INCOMING');
-    PushNotificationService.getInstance().showLocalNotification(
+    showLocalNotification(
       'Incoming call!',
       '$mDestination',
     );
@@ -221,6 +240,7 @@ class ApplicationUtils implements ExotelSDKCallback {
         '/incoming',
       );
     });
+    recentCallsPage(mDestination!, 'INCOMING');
   }
 
   void navigateToRinging() {
@@ -234,11 +254,10 @@ class ApplicationUtils implements ExotelSDKCallback {
     );
   }
 
-
   void navigateToStart() {
     navigatorKey.currentState!.pushNamedAndRemoveUntil(
       '/',
-      (Route<dynamic> route) => false,
+          (Route<dynamic> route) => false,
     );
   }
 
@@ -285,15 +304,14 @@ class ApplicationUtils implements ExotelSDKCallback {
     mCallId = callId;
   }
 
-  void setStatus(String status) {
-    mStatus = status;
-    print('in setStatus(), mStatus is: $mStatus');
-  }
-
   @override
   void onInitializationSuccess() {
-    setStatus("Ready");
+    mStatus = "Ready";
     navigateToHome();
+    SharedPreferences.getInstance().then((pref) {
+      pref.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), true);
+    });
+
   }
 
   @override
@@ -322,8 +340,8 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   @override
   void onCallEnded() {
-    print("in void onCallEnded()");
     showToast("Ended");
+    removeCallContext();
     navigateToHome();
   }
 
@@ -338,10 +356,17 @@ class ApplicationUtils implements ExotelSDKCallback {
   void recentCallsPage(String number, String status) {
     DateTime time = DateTime.now();
     final newCall = Call(
-      timeFormatted: DateFormat('yyyy-MM-dd HH:mm:ss').format(time),
+      timeFormatted: '$time',
       number: number,
       status: status,
     );
+
+    // Format the time
+    final formattedTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(time);
+
+    // Update the newCall with the formatted time
+    newCall.timeFormatted = formattedTime;
+
     // Add the new call to the list
     Provider.of<CallList>(context!, listen: false).addCall(newCall);
   }
@@ -362,12 +387,12 @@ class ApplicationUtils implements ExotelSDKCallback {
     try {
       final response = await http
           .post(
-            Uri.parse(url),
-            headers: <String, String>{
-              'Content-Type': 'application/json; charset=UTF-8',
-            },
-            body: jsonEncode(requestBody),
-          )
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(requestBody),
+      )
           .timeout(Duration(seconds: 15))
           .catchError((error) {
         print("Failed to get response for device token ${error.toString()}");
@@ -378,20 +403,21 @@ class ApplicationUtils implements ExotelSDKCallback {
       if (response.statusCode == 200 || response.statusCode == 201) {
         // Successful POST request, handle the response here
         SharedPreferences sharedPreferences =
-            await SharedPreferences.getInstance();
+        await SharedPreferences.getInstance();
         String? sdkHostName = sharedPreferences
             .getString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString());
         String? subscriberToken = sharedPreferences.getString(
             ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString());
-        ExotelSDKClient.getInstance()
-            .initialize(sdkHostName!, mSubscriberName!, mDisplayName!,
-                mAccountSid!, subscriberToken!)
+
+        _exotelVoiceClient?.initialize(sdkHostName!, mSubscriberName!, mDisplayName!,
+            mAccountSid!, subscriberToken!)
             .catchError((e) {
           onInitializationFailure("Error while Inializing SDK");
         });
       } else {
         // If the server returns an error response, throw an exception
         print(response.body);
+        onInitializationFailure("Unable to send device token");
       }
     } on PlatformException catch (e) {
       print("Error while intialize ${e.toString()} ");
@@ -410,14 +436,16 @@ class ApplicationUtils implements ExotelSDKCallback {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? exophone = sharedPreferences
         .getString(ApplicationSharedPreferenceData.EXOPHONE.toString());
-    try {
-      await ExotelSDKClient.getInstance().dial(exophone!, message);
-    } catch (e) {
-      print("Error while dialing out : ${e.toString()}");
-      onCallEnded();
-      return;
-    }
-    setCallContext(dialTo, "");
+
+    setCallContext(dialTo, "")
+        .then((value) {
+      _exotelVoiceClient?.dial(exophone!, message)
+          .catchError((error){
+        print("Error while dialing out : ${e.toString()}");
+        onCallEnded();
+      });
+
+    });
   }
 
   Future<void> setCallContext(String dialTo, String message) async {
@@ -431,12 +459,12 @@ class ApplicationUtils implements ExotelSDKCallback {
     try {
       final response = await http
           .post(
-            Uri.parse(url),
-            headers: <String, String>{
-              'Content-Type': 'application/json; charset=UTF-8',
-            },
-            body: jsonEncode(requestBody),
-          )
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(requestBody),
+      )
           .timeout(Duration(seconds: 15))
           .catchError((error) {
         print(
@@ -457,15 +485,42 @@ class ApplicationUtils implements ExotelSDKCallback {
     }
   }
 
+  Future<void> removeCallContext() async {
+    String url = mAppHostName! +
+        "/accounts/" +
+        mAccountSid! +
+        "/subscribers/" +
+        mSubscriberName! +
+        "/context";
+    try {
+      final response = await http
+          .delete(Uri.parse(url))
+          .timeout(Duration(seconds: 15))
+          .catchError((error) {
+        print("Failed to get response for remove call context ${error.toString()}");
+        throw error;
+      });
+
+      print("Got response for remove call context: ${response.statusCode}");
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("remove call context success");
+      } else {
+        print("remove call context fail");
+      }
+    } on Exception catch (e) {
+      print("Error ${e.toString()}");
+      showToast("fail removing call context");
+    }
+  }
+
   Future<void> fetchContactList() async {
-    print("mAppHostName: $mAppHostName, mAccountSid: $mAccountSid, mSubscriberName: $mSubscriberName ");
     String url = mAppHostName! +
         "/accounts/" +
         mAccountSid! +
         "/subscribers/" +
         mSubscriberName! +
         "/contacts";
-  print("fetch contact list");
+    print("fetch contact list");
     await http
         .get(Uri.parse(url))
         .timeout(Duration(seconds: 15))
@@ -512,5 +567,103 @@ class ApplicationUtils implements ExotelSDKCallback {
     // TODO: implement onUploadLogSuccess
   }
 
+  void reset() {
+    _exotelVoiceClient?.hangup();
+    _exotelVoiceClient?.reset();
+  }
 
+  Future<void> requestPermissions() async {
+    print("requesting for permission");
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.phone,
+      Permission.microphone,
+      Permission.notification,
+      Permission.nearbyWifiDevices,
+      Permission.accessMediaLocation,
+      Permission.location,
+      Permission.bluetoothScan,
+      Permission.bluetoothConnect,
+    ].request();
+  }
+
+  getVersionDetails() {
+    _exotelVoiceClient?.getVersionDetails();
+  }
+
+  void postFeedback(int? rating, String? issue) {
+    _exotelVoiceClient?.postFeedback(rating, issue);
+  }
+
+  void uploadLogs(DateTime startDate, DateTime endDate, String description) {
+    _exotelVoiceClient?.uploadLogs(startDate, endDate, description);
+  }
+
+  void enableSpeaker() {
+    _exotelVoiceClient?.enableSpeaker();
+  }
+
+  void disableSpeaker() {
+    _exotelVoiceClient?.disableSpeaker();
+  }
+
+  void mute() {
+    _exotelVoiceClient?.mute();
+  }
+
+  void unmute() {
+    _exotelVoiceClient?.unmute();
+  }
+
+  void enableBluetooth() {
+    _exotelVoiceClient?.enableBluetooth();
+  }
+
+  void disableBluetooth() {
+    _exotelVoiceClient?.disableBluetooth();
+  }
+
+  void hangup() {
+    _exotelVoiceClient?.hangup();
+  }
+
+  void sendDtmf(String digit) {
+    _exotelVoiceClient?.sendDtmf(digit);
+  }
+
+  void answer() {
+    _exotelVoiceClient?.answer();
+  }
+
+  Future<void> setupLocalNotification() async {
+    const androidInitializationSetting = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const iosInitializationSetting = DarwinInitializationSettings();
+    const initSettings = InitializationSettings(android: androidInitializationSetting,iOS: iosInitializationSetting);
+    await _flutterLocalNotificationsPlugin.initialize(initSettings);
+    var service = FlutterBackgroundService();
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  }
+
+  void showLocalNotification(String title, String body) {
+
+    const androidNotificationDetail = AndroidNotificationDetails(
+      '0', // channel Id
+      'general',// channel Name
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+    const DarwinNotificationDetails iOSPlatformChannelSpecifics =
+    DarwinNotificationDetails(threadIdentifier: 'thread_id');
+    const notificationDetails = NotificationDetails(
+      android: androidNotificationDetail,
+      iOS: iOSPlatformChannelSpecifics,
+    );
+    _flutterLocalNotificationsPlugin.show(0, title, body, notificationDetails);
+  }
+}
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Handling a background message");
+  print("RemoteMessage : $message");
+  // Ensure Firebase is initialized
+  await Firebase.initializeApp();
+  ExotelVoiceClientFactory.getExotelVoiceClient().relaySessionData(message.data);
 }

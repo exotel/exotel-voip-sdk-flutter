@@ -9,12 +9,7 @@ class Ringing extends StatefulWidget {
 }
 
 class _RingingState extends State<Ringing> {
-  String? state; // Define state variable
-
-  @override
-  void initState() {
-    super.initState();
-  }
+  late String state; // Define state variable
 
   @override
   void didChangeDependencies() {
@@ -63,12 +58,12 @@ class _RingingState extends State<Ringing> {
                   Padding(
                     padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05, bottom: MediaQuery.of(context).size.height * 0.02),
                     child: GestureDetector(
-                      onTap: () {
-                        ExotelSDKClient.getInstance().hangup();
-                          Navigator.pushReplacementNamed(
-                            context,
-                            '/home',
-                          );
+                      onTap:() {
+                        ApplicationUtils.getInstance(context).hangup();
+                        Navigator.pushReplacementNamed(
+                          context,
+                          '/home',
+                        );
                       },
                       child: ClipOval(
                         child: Image.asset(
