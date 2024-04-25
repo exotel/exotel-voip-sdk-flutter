@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
+import 'package:my_background_plugin/my_background_plugin.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -668,5 +669,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("RemoteMessage : $message");
   // Ensure Firebase is initialized
   await Firebase.initializeApp();
+  MyBackgroundPlugin.startBackgroundTask();
   ExotelVoiceClientFactory.getExotelVoiceClient().relaySessionData(message.data);
 }
