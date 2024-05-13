@@ -17,12 +17,11 @@
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		FA0EEB2D2BCB12E000BB0DA4 /* ExotelSDKChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0EEB2C2BCB12E000BB0DA4 /* ExotelSDKChannel.swift */; };
-		FA0EEB2F2BCB1A6300BB0DA4 /* ExotelVoice.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA0EEB2E2BCB1A6200BB0DA4 /* ExotelVoice.framework */; };
-		FA0EEB302BCB1A6300BB0DA4 /* ExotelVoice.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FA0EEB2E2BCB1A6200BB0DA4 /* ExotelVoice.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FA0EEB322BCBBDB500BB0DA4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = FA0EEB312BCBBDB500BB0DA4 /* GoogleService-Info.plist */; };
 		FA3BCAAB2BCBD71A005195AB /* VoiceAppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3BCAAA2BCBD71A005195AB /* VoiceAppLogger.swift */; };
 		FA3BCAAD2BCBDD45005195AB /* MethodChannelInvokeMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3BCAAC2BCBDD45005195AB /* MethodChannelInvokeMethod.swift */; };
 		FA3BCAAF2BCCFDDB005195AB /* VoiceAppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3BCAAE2BCCFDDB005195AB /* VoiceAppError.swift */; };
+		FACF8FAC2BF23330005991BD /* ExotelVoice.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FACF8FAB2BF23330005991BD /* ExotelVoice.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,7 +41,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				FA0EEB302BCB1A6300BB0DA4 /* ExotelVoice.framework in Embed Frameworks */,
+				FACF8FAC2BF23330005991BD /* ExotelVoice.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -74,12 +73,12 @@
 		AF90A368937E57DC6BCC0287 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 		F698485C5A6DCF94E099A313 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA0EEB2C2BCB12E000BB0DA4 /* ExotelSDKChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExotelSDKChannel.swift; sourceTree = "<group>"; };
-		FA0EEB2E2BCB1A6200BB0DA4 /* ExotelVoice.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ExotelVoice.framework; sourceTree = "<group>"; };
 		FA0EEB312BCBBDB500BB0DA4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		FA0EEB332BCBBECE00BB0DA4 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		FA3BCAAA2BCBD71A005195AB /* VoiceAppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAppLogger.swift; sourceTree = "<group>"; };
 		FA3BCAAC2BCBDD45005195AB /* MethodChannelInvokeMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodChannelInvokeMethod.swift; sourceTree = "<group>"; };
 		FA3BCAAE2BCCFDDB005195AB /* VoiceAppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAppError.swift; sourceTree = "<group>"; };
+		FACF8FAB2BF23330005991BD /* ExotelVoice.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = ExotelVoice.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,7 +86,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FA0EEB2F2BCB1A6300BB0DA4 /* ExotelVoice.framework in Frameworks */,
 				195433D4AD27C9313C5C22B9 /* Pods_Runner.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -114,7 +112,6 @@
 		52073CECCF90BCADC6FF1705 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				FA0EEB2E2BCB1A6200BB0DA4 /* ExotelVoice.framework */,
 				F698485C5A6DCF94E099A313 /* Pods_Runner.framework */,
 				98D3B734144C3A2A9008EDC8 /* Pods_RunnerTests.framework */,
 			);
@@ -135,6 +132,7 @@
 		97C146E51CF9000F007C117D = {
 			isa = PBXGroup;
 			children = (
+				FACF8FAB2BF23330005991BD /* ExotelVoice.xcframework */,
 				9740EEB11CF90186004384FC /* Flutter */,
 				97C146F01CF9000F007C117D /* Runner */,
 				97C146EF1CF9000F007C117D /* Products */,
