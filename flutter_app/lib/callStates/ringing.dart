@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/main.dart';
-import 'package:flutter_app/exotelSDK/ExotelSDKClient.dart';
 import '../Utils/ApplicationUtils.dart';
 
 class Ringing extends StatefulWidget {

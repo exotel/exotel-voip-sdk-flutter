@@ -12,8 +12,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
 import 'package:flutter_app/exotelSDK/ExotelSDKCallback.dart';
-import 'package:flutter_app/exotelSDK/ExotelVoiceClient.dart';
-import 'package:flutter_app/exotelSDK/ExotelVoiceClientFactory.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -31,6 +29,8 @@ import '../Service/PushNotificationService.dart';
 import 'package:http/http.dart' as http;
 
 class ApplicationUtils implements ExotelSDKCallback {
+  ApplicationUtils();
+
   String? mSubscriberName;
 
   String? mPassword;
@@ -53,18 +53,16 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   String? mDisplayName;
 
-  ExotelVoiceClient? _exotelVoiceClient;
-
   var _flutterLocalNotificationsPlugin;
 
   ApplicationUtils._internal(){
-    _exotelVoiceClient = ExotelVoiceClientFactory.getExotelVoiceClient();
     _flutterLocalNotificationsPlugin =  FlutterLocalNotificationsPlugin();
   }
 
   static ApplicationUtils? _instance;
   BuildContext? context;
   bool isLoading = false;
+
 
   // Factory constructor with argument
   static ApplicationUtils getInstance(BuildContext buildContext) {
@@ -129,7 +127,7 @@ class ApplicationUtils implements ExotelSDKCallback {
     // var deviceId = await _getId();
     String? deviceId = "";
     try {
-      deviceId = await _exotelVoiceClient?.getDeviceId();
+      deviceId = await MyBackgroundPlugin.getDeviceId();
     } catch (e) {
       print("Error while getting device id : ${e}");
       onInitializationFailure(e.toString());
@@ -213,6 +211,11 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   void navigateToHome() {
     print("in navigateToHome()");
+    if (context == null) {
+      print('Context is null');
+    } else {
+      print('Context is not null');
+    }
     Navigator.pushNamedAndRemoveUntil(
       context!,
       '/home',
@@ -304,7 +307,13 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   @override
-  void onInitializationSuccess() {
+   void onInitializationSuccess() {
+    print("in the main project");
+    if (context == null) {
+      print('Context is null');
+    } else {
+      print('Context is not null');
+    }
     mStatus = "Ready";
     navigateToHome();
     SharedPreferences.getInstance().then((pref) {
@@ -409,8 +418,9 @@ class ApplicationUtils implements ExotelSDKCallback {
             .getString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString());
         String? subscriberToken = sharedPreferences.getString(
             ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString());
-
-            _exotelVoiceClient?.initialize(sdkHostName!, mSubscriberName!, mDisplayName!,
+        String message = "Hello from flutter";
+        // MyBackgroundPlugin.sendMessage(message)
+        MyBackgroundPlugin.initialize(sdkHostName!, mSubscriberName!, mDisplayName!,
                 mAccountSid!, subscriberToken!)
             .catchError((e) {
           onInitializationFailure("Error while Inializing SDK");
@@ -440,7 +450,7 @@ class ApplicationUtils implements ExotelSDKCallback {
 
     setCallContext(dialTo, "")
     .then((value) {
-        _exotelVoiceClient?.dial(exophone!, message)
+      MyBackgroundPlugin.dial(exophone!, message)
         .catchError((error){
           print("Error while dialing out : ${e.toString()}");
           onCallEnded();
@@ -572,8 +582,8 @@ class ApplicationUtils implements ExotelSDKCallback {
     mVersion = version;
   }
   void reset() {
-    _exotelVoiceClient?.hangup();
-    _exotelVoiceClient?.reset();
+    MyBackgroundPlugin.hangup();
+    MyBackgroundPlugin.reset();
   }
 
   Future<void> requestPermissions() async {
@@ -591,51 +601,51 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   getVersionDetails() {
-    _exotelVoiceClient?.getVersionDetails();
+    MyBackgroundPlugin.getVersionDetails();
   }
 
   void postFeedback(int? rating, String? issue) {
-    _exotelVoiceClient?.postFeedback(rating, issue);
+    MyBackgroundPlugin.postFeedback(rating, issue);
   }
 
   void uploadLogs(DateTime startDate, DateTime endDate, String description) {
-    _exotelVoiceClient?.uploadLogs(startDate, endDate, description);
+    MyBackgroundPlugin.uploadLogs(startDate, endDate, description);
   }
 
   void enableSpeaker() {
-    _exotelVoiceClient?.enableSpeaker();
+    MyBackgroundPlugin.enableSpeaker();
   }
 
   void disableSpeaker() {
-    _exotelVoiceClient?.disableSpeaker();
+    MyBackgroundPlugin.disableSpeaker();
   }
 
   void mute() {
-    _exotelVoiceClient?.mute();
+    MyBackgroundPlugin.mute();
   }
 
   void unmute() {
-    _exotelVoiceClient?.unmute();
+    MyBackgroundPlugin.unmute();
   }
 
   void enableBluetooth() {
-    _exotelVoiceClient?.enableBluetooth();
+    MyBackgroundPlugin.enableBluetooth();
   }
 
   void disableBluetooth() {
-    _exotelVoiceClient?.disableBluetooth();
+    MyBackgroundPlugin.disableBluetooth();
   }
 
   void hangup() {
-    _exotelVoiceClient?.hangup();
+    MyBackgroundPlugin.hangup();
   }
 
   void sendDtmf(String digit) {
-    _exotelVoiceClient?.sendDtmf(digit);
+    MyBackgroundPlugin.sendDtmf(digit);
   }
 
   void answer() {
-    _exotelVoiceClient?.answer();
+    MyBackgroundPlugin.answer();
   }
 
   Future<void> setupLocalNotification() async {
@@ -669,6 +679,5 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("RemoteMessage : $message");
   // Ensure Firebase is initialized
   await Firebase.initializeApp();
-  MyBackgroundPlugin.startBackgroundTask();
-  ExotelVoiceClientFactory.getExotelVoiceClient().relaySessionData(message.data);
+  MyBackgroundPlugin.relaySessionData(message.data);
 }

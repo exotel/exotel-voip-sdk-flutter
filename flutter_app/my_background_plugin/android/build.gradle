@@ -6,23 +6,37 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+        flatDir {
+            dirs project(':my_background_plugin').file('exotel-voice-sdk')
+        }
     }
 
     dependencies {
         classpath 'com.android.tools.build:gradle:7.3.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        // START: FlutterFire Configuration
+        classpath 'com.google.gms:google-services:4.3.14'
+        // END: FlutterFire Configuration
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.9'
     }
 }
 
-allprojects {
+rootProject.allprojects {
     repositories {
         google()
         mavenCentral()
+        flatDir {
+            dirs project(':my_background_plugin').file('exotel-voice-sdk')
+        }
     }
 }
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+// START: FlutterFire Configuration
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
+
 
 android {
     if (project.android.hasProperty("namespace")) {
@@ -52,6 +66,19 @@ android {
     dependencies {
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
         testImplementation 'org.mockito:mockito-core:5.0.0'
+        implementation (name: 'exotel-voice-release', ext: 'aar')
+        implementation 'androidx.appcompat:appcompat:1.6.1'
+        implementation 'com.google.android.material:material:1.5.0'
+        implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+        implementation 'com.squareup.okhttp3:okhttp:[3.14.2,)'
+        implementation 'com.squareup.okhttp3:logging-interceptor:[3.14.2,)'
+        implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.7'
+        implementation 'androidx.preference:preference:1.1.0'
+        implementation 'com.google.firebase:firebase-messaging:19.0.1'
+        implementation 'com.google.code.gson:gson:[2.8.5]'
+        implementation 'com.google.firebase:firebase-crashlytics:18.6.0'
+        implementation 'com.google.firebase:firebase-analytics:21.5.0'
+
     }
 
     testOptions {

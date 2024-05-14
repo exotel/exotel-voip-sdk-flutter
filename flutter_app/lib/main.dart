@@ -1,18 +1,16 @@
 import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
-import 'package:flutter_app/exotelSDK/ExotelVoiceClient.dart';
+import 'package:my_background_plugin/my_background_plugin.dart';
 
 import 'Utils/ApplicationUtils.dart';
 import 'package:flutter/material.dart';
 import 'UI/login_page.dart';
 import 'UI/home_page.dart';
-import 'exotelSDK/ExotelSDKClient.dart';
 import 'UI/call_page.dart';
 import 'callStates/connected.dart';
 import 'callStates/ringing.dart';
 import 'callStates/dtmf_page.dart';
 import 'callStates/incoming.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'exotelSDK/ExotelVoiceClientFactory.dart';
 import 'firebase_options.dart';
 import 'Service/PushNotificationService.dart';
 import 'package:provider/provider.dart';
@@ -28,16 +26,26 @@ void main() async {
   ));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    ExotelVoiceClient exotelVoiceClient = ExotelVoiceClientFactory.getExotelVoiceClient();
     var mApplicationUtil = ApplicationUtils.getInstance(context);
+    MyBackgroundPlugin.setCallback(mApplicationUtil);
+    MyBackgroundPlugin.initializeMethodChannel(); // Initialize your plugin
+    MyBackgroundPlugin.initializePlugin(context);
     mApplicationUtil.setupLocalNotification();
-    exotelVoiceClient.setExotelSDKCallback(mApplicationUtil);
-    exotelVoiceClient.registerPlatformChannel();
     PushNotificationService pushNotificationService = PushNotificationService.getInstance();
     pushNotificationService.initialize();
 
