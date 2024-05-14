@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
 import 'dart:convert';
 import '../exotelSDK/ExotelSDKCallback.dart';
-import '../exotelSDK/ExotelSDKClient.dart';
 import 'login_page.dart';
 import '../main.dart';
 import 'call_page.dart';
@@ -350,6 +349,8 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                   backgroundColor: const Color(0xFF0800AF),
+                  toolbarHeight: 90, // Adjust the value as needed
+
                 ),
                 body: TabBarView(
                   children: [

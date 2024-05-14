@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/main.dart';
-import 'package:flutter_app/exotelSDK/ExotelSDKClient.dart';
 
 import '../Utils/ApplicationUtils.dart';
 
@@ -17,21 +16,15 @@ class _DtmfPageState extends State<DtmfPage> {
     setState(() {
       dtmfInput = key; // store only the last pressed key
     });
-      ApplicationUtils.getInstance(context).sendDtmf(dtmfInput);
-
+    ApplicationUtils.getInstance(context).sendDtmf(dtmfInput);
   }
-
-  // Widget buildKey(String key) {
-  //   return Expanded(
-  //     child: TextButton(
-  //       child: Text(key, style: TextStyle(fontSize: 36.0)),
-  //       onPressed: () => handleKeyTap(key),
-  //     ),
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {
+    final double appBarHeight = MediaQuery.of(context).size.height * 0.1;
+    final double buttonPadding = MediaQuery.of(context).size.width * 0.1;
+    final double keypadSize = MediaQuery.of(context).size.width * 0.7;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -44,12 +37,12 @@ class _DtmfPageState extends State<DtmfPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 10 ),
+            SizedBox(height: appBarHeight),
             GridView.count(
               shrinkWrap: true,
               crossAxisCount: 3,
               childAspectRatio: 2,
-              padding: EdgeInsets.all(50),
+              padding: EdgeInsets.all(buttonPadding),
               mainAxisSpacing: 10,
               crossAxisSpacing: 10,
               children: <String>[
@@ -64,20 +57,21 @@ class _DtmfPageState extends State<DtmfPage> {
                     onPressed: () => handleKeyTap(key),
                     child: Text(key, style: TextStyle(fontSize: 20, color: Colors.black87)),
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.black, backgroundColor: Colors.grey.shade400, // text color
+                      foregroundColor: Colors.black,
+                      backgroundColor: Colors.grey.shade400,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(0),
-                      ), // shape of button
-                      elevation: 5, // elevation of button
+                      ),
+                      elevation: 5,
                     ),
                   ),
                 );
               }).toList(),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 135.0, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: buttonPadding * 3, vertical: buttonPadding),
               child: ElevatedButton(
-                child: Text('HIDE KEYPAD',style: TextStyle(color: Colors.black),),
+                child: Text('HIDE KEYPAD', style: TextStyle(color: Colors.black)),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -90,12 +84,12 @@ class _DtmfPageState extends State<DtmfPage> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 125.0, vertical: 250),
+              padding: EdgeInsets.symmetric(horizontal: buttonPadding, vertical: MediaQuery.of(context).size.height * 0.3),
               child: Container(
-                padding: EdgeInsets.all(16.0), // Add padding to the container
+                padding: EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade200, // Set box color to grey
-                  borderRadius: BorderRadius.circular(10.0), // Add border radius
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(10.0),
                 ),
                 child: Text(
                   'DTMF Input: $dtmfInput',
@@ -103,11 +97,9 @@ class _DtmfPageState extends State<DtmfPage> {
                 ),
               ),
             ),
-
           ],
         ),
       ),
-
     );
   }
 }
