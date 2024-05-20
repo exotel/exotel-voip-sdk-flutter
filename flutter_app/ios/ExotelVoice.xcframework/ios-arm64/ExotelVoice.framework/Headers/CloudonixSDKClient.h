@@ -16,8 +16,8 @@
 #ifndef __cloudonix__CloudonixSDKClient__
 #define __cloudonix__CloudonixSDKClient__
 
-#import "iOSDataTypes.h"
-#import "AudioSessionManager.h"
+#import <ExotelVoice/iOSDataTypes.h>
+#import <ExotelVoice/AudioSessionManager.h>
 
 /*!
  @protocol CloudonixSDKClientListener
