@@ -65,6 +65,9 @@ class ExotelSDKChannel {
             case "reset":
                 self.reset()
                 
+            case "stop":
+                self.stop()
+                
             case "dial":
                 let dialNumber: String = (call.arguments as! [String: String])["dialTo"]!
                 let contextMessage: String = (call.arguments as! [String: String])["message"]!
@@ -222,6 +225,24 @@ class ExotelSDKChannel {
         
         VoiceAppLogger.debug(TAG: TAG, message: "End: Reset in Sample App Service")
     }
+    
+    func stop(){
+        VoiceAppLogger.debug(TAG: TAG, message: "Stop Exotel SDK")
+        
+        if(nil == exotelVoiceClient || !(exotelVoiceClient?.isInitialized() ?? false)) {
+            VoiceAppLogger.debug(TAG: TAG, message: "SDK is not yet initialized")
+        }
+        do {
+            try exotelVoiceClient?.stop()
+        } catch let resetError as ExotelVoiceError {
+            VoiceAppLogger.debug(TAG: TAG, message: "Exception in stop: \(resetError.getErrorMessage())")
+        } catch let error {
+            VoiceAppLogger.debug(TAG: TAG, message: "\(error.localizedDescription)")
+        }
+        
+        VoiceAppLogger.debug(TAG: TAG, message: "End: Stop Exotel SDK")
+    }
+    
     
     func dial(destination: String, message: String) throws  {
         VoiceAppLogger.debug(TAG: TAG, message: "In Dial API in Sample Service, SDK state: \(exotelVoiceClient?.isInitialized() ?? false)")
@@ -405,6 +426,13 @@ extension ExotelSDKChannel: ExotelVoiceClientEventListener {
         VoiceAppLogger.info(TAG: self.TAG, message: "in \(#function)")
         DispatchQueue.main.async {
             self.channel.invokeMethod(MethodChannelInvokeMethod.ON_INITIALIZATION_FAILURE, arguments: self.createResponse(data: error.getErrorMessage()))
+        }
+    }
+    
+    func onDeinitialized() {
+        VoiceAppLogger.info(TAG: self.TAG, message: "in \(#function)")
+        DispatchQueue.main.async {
+            self.channel.invokeMethod(MethodChannelInvokeMethod.ON_DEINITIALIZED, arguments: nil)
         }
     }
     

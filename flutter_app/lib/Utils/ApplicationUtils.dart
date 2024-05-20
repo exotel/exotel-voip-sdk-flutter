@@ -322,6 +322,12 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   @override
+  void onDeinitialized() {
+    print('in onDeinitialized ');
+    navigateToStart();
+  }
+
+  @override
   void onAuthenticationFailure(String message) {
     stopLoadingDialog();
     showToast("Authentication fail");

@@ -8,8 +8,9 @@
 import Foundation
 
 class MethodChannelInvokeMethod {
-    static var ON_INITIALIZATION_SUCCESS = "on-inialization-success";
-    static var ON_INITIALIZATION_FAILURE = "on-inialization-failure";
+    static var ON_INITIALIZATION_SUCCESS = "on-initialization-success";
+    static var ON_INITIALIZATION_FAILURE = "on-initialization-failure";
+    static var ON_DEINITIALIZED = "on-deinitialized";
     static var ON_AUTHENTICATION_FAILURE = "on-authentication-failure";
     static var ON_INCOMING_CALL = "on-incoming-call";
     static var ON_CALL_INITIATED = "on-call-initiated";

@@ -1,5 +1,13 @@
 # Changelog
 
+# [1.0.4] 20-05-2024
+
+### iOS
+#### Added
+- [VST-695](https://exotel.atlassian.net/browse/VST-695):SDK API refactoring as per functionality
+  * added stop API for sdk de-initialization
+  * added onDeinitialized callback API to indicates de-initialization of the SDK
+  
 ## [v1.0.2] 17-04-2024
 
 #### Added 

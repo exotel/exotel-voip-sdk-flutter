@@ -8,6 +8,7 @@ abstract class ExotelVoiceClient {
   Future<String> getDeviceId();
   Future<void> initialize(String hostname, String subsriberName, String displayName, String accountSid,String subscriberToken);
   Future<void> reset();
+  Future<void> stop();
   Future<void> dial(String dialTo, String message);
   Future<void> mute();
   Future<void> unmute();
