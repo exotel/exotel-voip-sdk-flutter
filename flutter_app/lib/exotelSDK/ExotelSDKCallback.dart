@@ -3,6 +3,8 @@ abstract class ExotelSDKCallback {
 
   void onInitializationFailure(String errorMessage);
 
+  void onDeinitialized();
+
   void onAuthenticationFailure(String errorMessage);
 
   void onCallInitiated();

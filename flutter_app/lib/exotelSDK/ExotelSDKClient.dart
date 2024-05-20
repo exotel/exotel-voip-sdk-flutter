@@ -40,12 +40,16 @@ class ExotelSDKClient implements ExotelVoiceClient {
     String callingStatus = "blank";
     print("flutter method handler got call.method : ${call.method} , arguments : ${call.arguments.toString()}");
     switch (call.method) {
-      case "on-inialization-success":
+      case "on-initialization-success":
         mCallBack?.onInitializationSuccess();
         break;
-      case "on-inialization-failure":
+      case "on-initialization-failure":
         var message = call.arguments['data'];
         mCallBack?.onInitializationFailure(message);
+        break;
+      case "on-deinitialized":
+        var message = call.arguments['data'];
+        mCallBack?.onDeinitialized();
         break;
       case "on-authentication-failure":
         var message = call.arguments['data'];
@@ -127,8 +131,14 @@ class ExotelSDKClient implements ExotelVoiceClient {
 
   @override
   Future<void> reset() async{
-    log("login button function start");
+    log("going to reset SDK ");
       channel?.invokeMethod(MethodChannelInvokeMethod.RESET);
+  }
+
+  @override
+  Future<void> stop() async{
+    log("going to stop SDK ");
+    channel?.invokeMethod(MethodChannelInvokeMethod.STOP);
   }
 
   @override
