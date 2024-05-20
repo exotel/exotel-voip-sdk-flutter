@@ -1,8 +1,8 @@
 package com.exotel.voice_sample;
 
 public class MethodChannelInvokeMethod {
-    public static final String ON_INITIALIZATION_SUCCESS = "on-inialization-success";
-    public static final String ON_INITIALIZATION_FAILURE = "on-inialization-failure";
+    public static final String ON_INITIALIZATION_SUCCESS = "on-initialization-success";
+    public static final String ON_INITIALIZATION_FAILURE = "on-initialization-failure";
     public static final String ON_AUTHENTICATION_FAILURE= "on-authentication-failure";
     public static final String ON_INCOMING_CALL = "on-incoming-call";
     public static final String ON_CALL_INITIATED = "on-call-initiated";
