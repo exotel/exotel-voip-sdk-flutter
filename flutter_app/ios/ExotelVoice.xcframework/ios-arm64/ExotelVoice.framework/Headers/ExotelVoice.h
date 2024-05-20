@@ -12,6 +12,6 @@ FOUNDATION_EXPORT double ExotelVoiceVersionNumber;
 FOUNDATION_EXPORT const unsigned char ExotelVoiceVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <jetixiOS/PublicHeader.h>
-#import "CloudonixSDKClient.h"
-#import "iOSDataTypes.h"
-#import "AudioSessionManager.h"
+#import <ExotelVoice/CloudonixSDKClient.h>
+#import <ExotelVoice/iOSDataTypes.h>
+#import <ExotelVoice/AudioSessionManager.h>
