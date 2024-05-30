@@ -234,10 +234,6 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   void navigateToIncoming() {
     print("in navigateToIncoming");
-    showLocalNotification(
-      'Incoming call!',
-      '$mDestination',
-    );
     Navigator.pushNamed(
       context!,
       '/incoming',
@@ -257,6 +253,8 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   void navigateToStart() {
+    print("in navigateToStart()");
+
     navigatorKey.currentState!.pushNamedAndRemoveUntil(
       '/',
       (Route<dynamic> route) => false,
@@ -360,6 +358,10 @@ class ApplicationUtils implements ExotelSDKCallback {
     print("in onCallIncoming application utils");
     setCallId(callId);
     setDestination(destination);
+    showLocalNotification(
+      'Incoming call!',
+      '$mDestination',
+    );
     navigateToIncoming();
   }
 
@@ -582,7 +584,6 @@ class ApplicationUtils implements ExotelSDKCallback {
     mVersion = version;
   }
   void reset() {
-    MyBackgroundPlugin.hangup();
     MyBackgroundPlugin.reset();
   }
 
@@ -679,5 +680,20 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("RemoteMessage : $message");
   // Ensure Firebase is initialized
   await Firebase.initializeApp();
+  SharedPreferences sharedPreferences =
+  await SharedPreferences.getInstance();
+  String? sdkHostName = sharedPreferences
+      .getString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString());
+  String? subscriberToken = sharedPreferences.getString(
+      ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString());
+  String? mSubscriberName = sharedPreferences
+      .getString(ApplicationSharedPreferenceData.USER_NAME.toString());
+  String? mDisplayName = sharedPreferences
+      .getString(ApplicationSharedPreferenceData.DISPLAY_NAME.toString());
+  String? mAccountSid = sharedPreferences
+      .getString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
+  MyBackgroundPlugin.reInitialize(sdkHostName!, mSubscriberName!, mDisplayName!,
+      mAccountSid!, subscriberToken!);
   MyBackgroundPlugin.relaySessionData(message.data);
+  // MyBackgroundPlugin.sendMessage(message)
 }
