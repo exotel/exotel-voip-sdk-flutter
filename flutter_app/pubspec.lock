@@ -323,7 +323,7 @@ packages:
   my_background_plugin:
     dependency: "direct main"
     description:
-      path: my_background_plugin
+      path: "../my_background_plugin"
       relative: true
     source: path
     version: "0.0.1"

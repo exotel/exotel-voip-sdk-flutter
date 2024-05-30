@@ -52,7 +52,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.exotel.voice_sample.ExotelTranslatorService"
+        <service android:name="com.example.my_background_plugin.ExotelTranslatorService"
             android:enabled="true"
             android:exported="true"
             android:foregroundServiceType="microphone|phoneCall"/>
