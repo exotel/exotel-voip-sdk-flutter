@@ -137,6 +137,20 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
     }
 
     /**
+     * Stop  the exotel client sdk
+     */
+    void stop() {
+        VoiceAppLogger.info(TAG, "Stop sample application Service");
+
+        if (null == exotelVoiceClient || !exotelVoiceClient.isInitialized()) {
+            VoiceAppLogger.error(TAG, "SDK is not yet initialized");
+        } else {
+            exotelVoiceClient.stop();
+        }
+        VoiceAppLogger.debug(TAG, "End: Stop in sample App Service");
+    }
+
+    /**
      * reset the exotel client sdk
      */
     void reset() {
@@ -428,6 +442,17 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
 
         VoiceAppLogger.debug(TAG, "End: onStatusChange");
 
+    }
+
+    @Override
+    public void onDeInitialized() {
+        VoiceAppLogger.debug(TAG, "Start: onDeInitialized");
+        synchronized (statusListenerListMutex) {
+            for (VoiceAppStatusEvents statusEvents : voiceAppStatusListenerList) {
+                statusEvents.onDeInitialization();
+            }
+        }
+        VoiceAppLogger.debug(TAG, "Exit: onDeInitialized");
     }
 
     /**
