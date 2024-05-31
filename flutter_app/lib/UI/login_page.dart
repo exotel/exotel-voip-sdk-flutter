@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Utils/ApplicationUtils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../exotelSDK/ExotelSDKClient.dart';
 import 'home_page.dart';
 import '../main.dart';
 import '../Utils/ApplicationSharedPreferenceData.dart';
