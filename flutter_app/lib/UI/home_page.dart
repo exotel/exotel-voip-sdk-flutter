@@ -269,10 +269,10 @@ class _HomePageState extends State<HomePage> {
                           switch (result) {
                             case 'Button 1':
                             // Handle Button 1 press
-                              mApplicationUtil.reset();
+                              mApplicationUtil.stop();
                               SharedPreferences prefs = await SharedPreferences.getInstance();
                               await prefs.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), false);
-                              mApplicationUtil.navigateToStart();
+                              // mApplicationUtil.navigateToStart();
                               print('Button 1 pressed');
                               break;
                             case 'Button 2':
