@@ -324,6 +324,8 @@ class ApplicationUtils implements ExotelSDKCallback {
   @override
   void onDeinitialized() {
     print('in onDeinitialized ');
+    SharedPreferences.getInstance()
+        .then((value) => value.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), false));
     navigateToStart();
   }
 
@@ -573,8 +575,11 @@ class ApplicationUtils implements ExotelSDKCallback {
     // TODO: implement onUploadLogSuccess
   }
 
+  void stop() {
+    _exotelVoiceClient?.stop();
+  }
+
   void reset() {
-    _exotelVoiceClient?.hangup();
     _exotelVoiceClient?.reset();
   }
 

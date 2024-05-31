@@ -95,6 +95,8 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                                 result.error(ErrorType.INTERNAL_ERROR.name(),e.getMessage(),e );
                             }
                             break;
+                        case "stop":
+                            stop();
                         case "reset":
                             reset();
                         case "dial":
@@ -215,6 +217,18 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
         result.put("data",data);
         return result;
     }
+
+    private void stop() {
+        VoiceAppLogger.debug(TAG, "going to Stop sdk");
+        if (null != mService) {
+            VoiceAppLogger.debug(TAG, "Calling Stop of service");
+            mService.stop();
+        }
+        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
+        sharedPreferencesHelper.putBoolean(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(),false);
+
+        VoiceAppLogger.debug(TAG, "Stop Done");
+    }
     private void reset() {
         VoiceAppLogger.debug(TAG, "going to reset sdk");
         if (null != mService) {
@@ -230,6 +244,13 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
     public void onInitializationSuccess() {
         uiThreadHandler.post(()->{
             channel.invokeMethod(MethodChannelInvokeMethod.ON_INITIALIZATION_SUCCESS,null);
+        });
+    }
+
+    @Override
+    public void onDeInitialization() {
+        uiThreadHandler.post(()->{
+            channel.invokeMethod(MethodChannelInvokeMethod.ON_DEINITIALIZED,null);
         });
     }
 
