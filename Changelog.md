@@ -1,5 +1,14 @@
 # Changelog
 
+# [1.0.5] 31-05-2024
+
+### Android
+#### Added
+- [VST-695](https://exotel.atlassian.net/browse/VST-695):SDK API refactoring as per functionality
+  * added stop API for sdk de-initialization
+  * added onDeinitialized callback API to indicates de-initialization of the SDK
+  * fix few initialization and de-initialization issue
+
 # [1.0.4] 20-05-2024
 
 ### iOS
