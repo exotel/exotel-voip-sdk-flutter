@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+
 abstract class ExotelSDKCallback {
   void onInitializationSuccess();
 
@@ -26,4 +28,6 @@ abstract class ExotelSDKCallback {
   void onUploadLogSuccess();
 
   void onUploadLogFailure(String errorMessage);
+
+  void onVersionDetails(String version);
 }

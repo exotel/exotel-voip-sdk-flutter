@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/main.dart';
-import 'package:flutter_app/exotelSDK/ExotelSDKClient.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/UI/home_page.dart';
@@ -98,10 +97,10 @@ class _IncomingState extends State<Incoming> {
             ),
           ),
           Container(
-            width: MediaQuery.of(context).size.width * 0.4,
+            width: MediaQuery.of(context).size.width * 0.43,
             child: ElevatedButton(
               onPressed: () {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
+                WidgetsBinding.instance!.addPostFrameCallback((_) {
                   Navigator.pushNamed(
                     context,
                     '/dtmf',
@@ -109,14 +108,14 @@ class _IncomingState extends State<Incoming> {
                 });
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF969698), // Set the button color to blue
+                backgroundColor: Colors.grey,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(0),
                 ),
               ),
               child: const Text(
                 'SHOW KEYPAD',
-                style: TextStyle(color: Colors.black), // Set text color to white
+                style: TextStyle(color: Colors.black),
               ),
             ),
           ),
