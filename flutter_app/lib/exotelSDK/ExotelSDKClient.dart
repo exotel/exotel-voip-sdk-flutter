@@ -48,7 +48,6 @@ class ExotelSDKClient implements ExotelVoiceClient {
         mCallBack?.onInitializationFailure(message);
         break;
       case "on-deinitialized":
-        var message = call.arguments['data'];
         mCallBack?.onDeinitialized();
         break;
       case "on-authentication-failure":
