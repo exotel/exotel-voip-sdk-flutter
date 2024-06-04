@@ -1,5 +1,11 @@
 # Changelog
 
+# [1.0.6] 04-06-2024
+
+### Android
+#### Changed
+- android sdk upggraded to [1.0.47](https://github.com/exotel/exotel-voip-sdk-android/releases/tag/1.0.47) 
+
 # [1.0.5] 31-05-2024
 
 ### Android
