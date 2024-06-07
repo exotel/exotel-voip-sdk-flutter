@@ -1,4 +1,4 @@
-# my_background_plugin
+# exotel_plugin
 
 A new Flutter plugin project.
 

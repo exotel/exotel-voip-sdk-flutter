@@ -1,35 +1,43 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_app/exotelSDK/ExotelSDKCallback.dart';
+import 'ExotelSDKCallback.dart';
 import 'MethodChannelInvokeMethod.dart';
 import 'package:flutter/services.dart';
+import 'ExotelVoiceClient.dart';
 
-class MyBackgroundPlugin {
+class ExotelSDKClient implements ExotelVoiceClient {
   static const MethodChannel _channel = MethodChannel('exotel/android_plugin');
-  static  ExotelSDKCallback? _mCallBack;
-  static late MyBackgroundPlugin _instance;
-  static late BuildContext _context;
-
-  MyBackgroundPlugin._(); // Private constructor
-  void main() async {
-    WidgetsFlutterBinding.ensureInitialized();
-  }
+  static const EventChannel _eventChannel = EventChannel('exotel/android_plugin_event');
+  static ExotelSDKCallback? _mCallBack;
+  static ExotelSDKClient _instance = ExotelSDKClient._();
+  static BuildContext? _context;
+  static StreamSubscription? _eventSubscription;
+  ExotelSDKClient._(); // Private constructor
+  // void main() async {
+  //   WidgetsFlutterBinding.ensureInitialized();
+  // }
   static void setCallback(ExotelSDKCallback callback) {
     _mCallBack = callback;
   }
   static void initializeMethodChannel() {
     _channel.setMethodCallHandler(_flutterCallHandler);
-    print('MyBackgroundPlugin initialized');
+    print('ExotelSDKClient initialized');
+    _eventSubscription = _eventChannel.receiveBroadcastStream().listen(_handleEvent, onError: _handleError);
   }
 
   static void initializePlugin(BuildContext context) {
-    _instance = MyBackgroundPlugin._();
+    _instance = ExotelSDKClient._();
     _context = context;
   }
 
-  static MyBackgroundPlugin getInstance() {
+  static void initializeInstance() {
+    _instance = ExotelSDKClient._();
+  }
+
+  static ExotelSDKClient getInstance() {
     return _instance;
   }
 
@@ -41,12 +49,12 @@ class MyBackgroundPlugin {
     if (!isContextInitialized()) {
       throw Exception("Context is not initialized!");
     }
-    return _context;
+    return _context!;
   }
 
 
-
-  static Future<String> getDeviceId() async {
+  @override
+   Future<String> getDeviceId() async {
     try {
       return await _channel.invokeMethod(
           MethodChannelInvokeMethod.GET_DEVICE_ID);
@@ -60,7 +68,8 @@ class MyBackgroundPlugin {
     await _channel.invokeMethod('sendMessage', {'message': message});
   }
 
-  static Future<void> initialize(String hostname, String subsriberName, String displayName, String accountSid,String subscriberToken) async {
+  @override
+  Future<void> initialize(String hostname, String subsriberName, String displayName, String accountSid,String subscriberToken) async {
     var arg = {
       'host_name':hostname,
       'subscriber_name':subsriberName,
@@ -77,7 +86,6 @@ class MyBackgroundPlugin {
     }
   }
 
-  @override
   static Future<void> reInitialize(String hostname, String subsriberName, String displayName, String accountSid,String subscriberToken) async {
     var arg = {
       'host_name':hostname,
@@ -96,13 +104,13 @@ class MyBackgroundPlugin {
   }
 
   @override
-  static Future<void> reset() async{
+   Future<void> reset() async{
     print("login button function start");
     _channel.invokeMethod(MethodChannelInvokeMethod.RESET);
   }
 
   @override
-  static Future<void> dial(String dialTo, String message) async{
+   Future<void> dial(String dialTo, String message) async{
     print("call button function start");
     try {
       await _channel.invokeMethod(MethodChannelInvokeMethod.DIAL, {'dialTo':dialTo,'message':message});
@@ -114,7 +122,7 @@ class MyBackgroundPlugin {
   }
 
   @override
-  static Future<void> mute() async{
+   Future<void> mute() async{
     print("mute function start");
     _channel.invokeMethod(MethodChannelInvokeMethod.MUTE)
         .catchError((e){
@@ -123,7 +131,7 @@ class MyBackgroundPlugin {
   }
 
   @override
-  static Future<void> unmute() async{
+   Future<void> unmute() async{
     print("unmute function start");
     _channel.invokeMethod(MethodChannelInvokeMethod.UNMUTE)
         .catchError((e){
@@ -132,7 +140,7 @@ class MyBackgroundPlugin {
   }
 
   @override
-  static Future<void> enableSpeaker() async{
+   Future<void> enableSpeaker() async{
     print("enableSpeaker function start");
     _channel.invokeMethod(MethodChannelInvokeMethod.ENABLE_SPEAKER)
         .catchError((e){
@@ -141,7 +149,7 @@ class MyBackgroundPlugin {
   }
 
   @override
-  static Future<void> disableSpeaker() async{
+   Future<void> disableSpeaker() async{
     print("disableSpeaker function start");
     _channel.invokeMethod(MethodChannelInvokeMethod.DISABLE_SPEAKER)
         .catchError((e){
@@ -150,7 +158,7 @@ class MyBackgroundPlugin {
   }
 
   @override
-  static Future<void> enableBluetooth() async{
+   Future<void> enableBluetooth() async{
     print("enableBluetooth function start");
     _channel.invokeMethod(MethodChannelInvokeMethod.ENABLE_BLUETOOTH)
         .catchError((e){
@@ -160,7 +168,7 @@ class MyBackgroundPlugin {
   }
 
   @override
-  static Future<void> disableBluetooth() async{
+   Future<void> disableBluetooth() async{
     print("disableBluetooth function start");
     _channel.invokeMethod(MethodChannelInvokeMethod.DISABLE_BLUETOOTH)
         .catchError((e){
@@ -169,7 +177,7 @@ class MyBackgroundPlugin {
   }
 
   @override
-  static Future<void> hangup() async{
+   Future<void> hangup() async{
     print("hangup function start");
     _channel.invokeMethod(MethodChannelInvokeMethod.HANGUP)
         .catchError((e){
@@ -178,7 +186,7 @@ class MyBackgroundPlugin {
   }
 
   @override
-  static Future<void> answer() async{
+   Future<void> answer() async{
     print("answer function start");
     await _channel.invokeMethod(MethodChannelInvokeMethod.ANSWER)
         .catchError((e){
@@ -188,7 +196,7 @@ class MyBackgroundPlugin {
   }
 
   @override
-  static Future<void> sendDtmf(String digit) async{
+   Future<void> sendDtmf(String digit) async{
     print("sendDtmf function start");
     _channel.invokeMethod(MethodChannelInvokeMethod.SEND_DTMF,{'digit': digit})
         .catchError((e){
@@ -198,7 +206,7 @@ class MyBackgroundPlugin {
   }
 
   @override
-  static Future<void> postFeedback(int? rating, String? issue) async{
+   Future<void> postFeedback(int? rating, String? issue) async{
     print("lastCallFeedback function start");
     print(" rating : $rating issue: $issue");
     try {
@@ -210,7 +218,7 @@ class MyBackgroundPlugin {
   }
 
   @override
-  static Future<String> getVersionDetails() async{
+   Future<String> getVersionDetails() async{
     print("getVersionDetails function start");
     try {
       return await _channel.invokeMethod(MethodChannelInvokeMethod.GET_VERSION_DETAILS);
@@ -221,7 +229,7 @@ class MyBackgroundPlugin {
   }
 
   @override
-  static Future<void> uploadLogs(DateTime startDate, DateTime endDate, String description) async{
+   Future<void> uploadLogs(DateTime startDate, DateTime endDate, String description) async{
     print("uploadLogs function start");
 
     try {
@@ -239,7 +247,7 @@ class MyBackgroundPlugin {
   }
 
   @override
-  static void relaySessionData(Map<String, dynamic> data) {
+   void relaySessionData(Map<String, dynamic> data) {
     print('relaySessionData : ${data}');
     Map<String,String> sessionData = {
       "payload":data['payload'].toString(),
@@ -318,6 +326,103 @@ class MyBackgroundPlugin {
         print("No Method Handler found for ${call.method}");
         break;
     }
+  }
+
+
+  // static void _handleEvent(dynamic event) {
+  //   // Handle the event here
+  //   print('Received event: $event');
+  //   if (event['eventName'] == 'onInitializationSuccess') {
+  //     print("onInitializationSuccess method invoked from Java");
+  //     _mCallBack?.onInitializationSuccess();
+  //   }
+  // }
+
+  static void _handleEvent(dynamic event) {
+    // Ensure the event is in the expected format
+    if (event is Map) {
+      String? eventName = event['eventName'];
+      dynamic eventData = event['eventData'];
+      switch (eventName) {
+        case 'on-initialization-success':
+          print("onInitializationSuccess method invoked from Java");
+          _mCallBack?.onInitializationSuccess();
+          break;
+        case 'on-initialization-failure':
+          String? message = eventData['message'];
+          _mCallBack?.onInitializationFailure(message!);
+          break;
+        case 'on-authentication-failure':
+          String? message = eventData['message'];
+          _mCallBack?.onAuthenticationFailure(message!);
+          break;
+        case "on-call-initiated":
+          _mCallBack?.onCallInitiated();
+          break;
+        case "on-call-ringing":
+          _mCallBack?.onCallRinging();
+          break;
+        case "on-call-established":
+          _mCallBack?.onCallEstablished();
+          break;
+        case "on-call-ended":
+          _mCallBack?.onCallEnded();
+          break;
+        case "on-missed-call":
+          _mCallBack?.onMissedCall();
+          break;
+        case "on-media-disrupted":
+          _mCallBack?.onMediaDisrupted();
+          break;
+        case "on-renewing-media":
+          _mCallBack?.onRenewingMedia();
+          break;
+        case 'on-incoming-call':
+          String? callId = eventData['callId'];
+          String? destination = eventData['destination'];
+          _mCallBack?.onCallIncoming(callId!, destination!);
+          break;
+        case "on-upload-log-success":
+          _mCallBack?.onUploadLogSuccess();
+          break;
+        case "on-upload-log-failure":
+          String? message = eventData['message'];
+          _mCallBack?.onUploadLogFailure(message!);
+          break;
+        case "on-version-details":
+          String? version = eventData['version'];
+          _mCallBack?.onVersionDetails(version!);
+          break;
+        default:
+          print("No event handler found for $eventName");
+          break;
+      }
+    } else {
+      print("Received event is not a map: $event");
+    }
+  }
+
+
+  static void _handleError(dynamic error) {
+    // Handle errors here
+    print('Received error: $error');
+  }
+
+
+  @override
+  void registerPlatformChannel() {
+    // TODO: implement registerPlatformChannel
+  }
+
+  @override
+  void setExotelSDKCallback(ExotelSDKCallback callback) {
+    // TODO: implement setExotelSDKCallback
+  }
+
+  @override
+  Future<void> stop() {
+    // TODO: implement stop
+    throw UnimplementedError();
   }
 
 }

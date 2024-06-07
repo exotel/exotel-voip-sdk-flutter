@@ -1,4 +1,4 @@
-package com.exotel.voice_sample;
+package com.exotel.voice_plugin;
 
 
 import android.content.Context;
@@ -59,4 +59,3 @@ public class SharedPreferencesHelper {
     }
 
 }
-

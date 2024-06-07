@@ -1,6 +1,5 @@
 import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
-import 'package:my_background_plugin/my_background_plugin.dart';
-
+import 'package:exotel_plugin/ExotelSDKClient.dart';
 import 'Utils/ApplicationUtils.dart';
 import 'package:flutter/material.dart';
 import 'UI/login_page.dart';
@@ -37,18 +36,17 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    ExotelSDKClient.initializeMethodChannel(); // Initialize your plugin
+    ExotelSDKClient.initializePlugin(context);
   }
 
   @override
   Widget build(BuildContext context) {
     var mApplicationUtil = ApplicationUtils.getInstance(context);
-    MyBackgroundPlugin.setCallback(mApplicationUtil);
-    MyBackgroundPlugin.initializeMethodChannel(); // Initialize your plugin
-    MyBackgroundPlugin.initializePlugin(context);
-    mApplicationUtil.setupLocalNotification();
+    ExotelSDKClient.setCallback(mApplicationUtil);
+    initializeNotifications();
     PushNotificationService pushNotificationService = PushNotificationService.getInstance();
     pushNotificationService.initialize();
-
     return MaterialApp(
       navigatorKey: navigatorKey,
       initialRoute: '/',
@@ -59,6 +57,7 @@ class _MyAppState extends State<MyApp> {
         '/connected': (context) => Connected(),
         '/incoming': (context) => Incoming(),
         '/dtmf': (context) => DtmfPage(),
+
       },
       debugShowCheckedModeBanner: false,
       title: ' Exotel Sample App',

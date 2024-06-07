@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
-import 'package:my_background_plugin/my_background_plugin.dart';
+import 'package:exotel_plugin/ExotelSDKClient.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
-import 'package:flutter_app/exotelSDK/ExotelSDKCallback.dart';
+import 'package:exotel_plugin/ExotelSDKCallback.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -27,6 +27,43 @@ import 'package:flutter_app/UI/home_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Service/PushNotificationService.dart';
 import 'package:http/http.dart' as http;
+
+import '../firebase_options.dart';
+
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+Future<void> initializeNotifications() async {
+  const androidInitializationSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const iosInitializationSettings = DarwinInitializationSettings();
+  const initializationSettings = InitializationSettings(
+    android: androidInitializationSettings,
+    iOS: iosInitializationSettings,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+}
+
+Future<void> showNotification(String title, String body) async {
+  const androidNotificationDetails = AndroidNotificationDetails(
+    'your_channel_id',
+    'your_channel_name',
+    channelDescription: 'your_channel_description',
+    importance: Importance.max,
+    priority: Priority.high,
+  );
+  const iosNotificationDetails = DarwinNotificationDetails();
+  const notificationDetails = NotificationDetails(
+    android: androidNotificationDetails,
+    iOS: iosNotificationDetails,
+  );
+
+  await flutterLocalNotificationsPlugin.show(
+    0,
+    title,
+    body,
+    notificationDetails,
+  );
+}
 
 class ApplicationUtils implements ExotelSDKCallback {
   ApplicationUtils();
@@ -127,7 +164,7 @@ class ApplicationUtils implements ExotelSDKCallback {
     // var deviceId = await _getId();
     String? deviceId = "";
     try {
-      deviceId = await MyBackgroundPlugin.getDeviceId();
+      deviceId = await ExotelSDKClient.getInstance().getDeviceId();
     } catch (e) {
       print("Error while getting device id : ${e}");
       onInitializationFailure(e.toString());
@@ -254,10 +291,10 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   void navigateToStart() {
     print("in navigateToStart()");
-
-    navigatorKey.currentState!.pushNamedAndRemoveUntil(
+    Navigator.pushNamedAndRemoveUntil(
+      context!,
       '/',
-      (Route<dynamic> route) => false,
+          (route) => false,
     );
   }
 
@@ -364,10 +401,11 @@ class ApplicationUtils implements ExotelSDKCallback {
     print("in onCallIncoming application utils");
     setCallId(callId);
     setDestination(destination);
-    showLocalNotification(
-      'Incoming call!',
-      '$mDestination',
-    );
+    // showLocalNotification(
+    //   'Incoming call!',
+    //   '$mDestination',
+    // );
+    showNotification('Incoming call!', '$mDestination');
     navigateToIncoming();
   }
 
@@ -385,9 +423,13 @@ class ApplicationUtils implements ExotelSDKCallback {
     // Update the newCall with the formatted time
     newCall.timeFormatted = formattedTime;
 
-    // Add the new call to the list
-    Provider.of<CallList>(context!, listen: false).addCall(newCall);
+    // Ensure the context is still valid before adding the call
+    if (context != null) {
+      // Add the new call to the list
+      Provider.of<CallList>(context!, listen: false).addCall(newCall);
+    }
   }
+
 
   Future<void> sendDeviceToken(String? devicetoken, String? appHostname,
       String? subscriberName, String? accountSid) async {
@@ -427,8 +469,8 @@ class ApplicationUtils implements ExotelSDKCallback {
         String? subscriberToken = sharedPreferences.getString(
             ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString());
         String message = "Hello from flutter";
-        // MyBackgroundPlugin.sendMessage(message)
-        MyBackgroundPlugin.initialize(sdkHostName!, mSubscriberName!, mDisplayName!,
+        // ExotelSDKClient.getInstance().sendMessage(message)
+        ExotelSDKClient.getInstance().initialize(sdkHostName!, mSubscriberName!, mDisplayName!,
                 mAccountSid!, subscriberToken!)
             .catchError((e) {
           onInitializationFailure("Error while Inializing SDK");
@@ -458,7 +500,7 @@ class ApplicationUtils implements ExotelSDKCallback {
 
     setCallContext(dialTo, "")
     .then((value) {
-      MyBackgroundPlugin.dial(exophone!, message)
+      ExotelSDKClient.getInstance().dial(exophone!, message)
         .catchError((error){
           print("Error while dialing out : ${e.toString()}");
           onCallEnded();
@@ -590,7 +632,7 @@ class ApplicationUtils implements ExotelSDKCallback {
     mVersion = version;
   }
   void reset() {
-    MyBackgroundPlugin.reset();
+    ExotelSDKClient.getInstance().reset();
   }
 
   Future<void> requestPermissions() async {
@@ -608,98 +650,116 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   getVersionDetails() {
-    MyBackgroundPlugin.getVersionDetails();
+    ExotelSDKClient.getInstance().getVersionDetails();
   }
 
   void postFeedback(int? rating, String? issue) {
-    MyBackgroundPlugin.postFeedback(rating, issue);
+    ExotelSDKClient.getInstance().postFeedback(rating, issue);
   }
 
   void uploadLogs(DateTime startDate, DateTime endDate, String description) {
-    MyBackgroundPlugin.uploadLogs(startDate, endDate, description);
+    ExotelSDKClient.getInstance().uploadLogs(startDate, endDate, description);
   }
 
   void enableSpeaker() {
-    MyBackgroundPlugin.enableSpeaker();
+    ExotelSDKClient.getInstance().enableSpeaker();
   }
 
   void disableSpeaker() {
-    MyBackgroundPlugin.disableSpeaker();
+    ExotelSDKClient.getInstance().disableSpeaker();
   }
 
   void mute() {
-    MyBackgroundPlugin.mute();
+    ExotelSDKClient.getInstance().mute();
   }
 
   void unmute() {
-    MyBackgroundPlugin.unmute();
+    ExotelSDKClient.getInstance().unmute();
   }
 
   void enableBluetooth() {
-    MyBackgroundPlugin.enableBluetooth();
+    ExotelSDKClient.getInstance().enableBluetooth();
   }
 
   void disableBluetooth() {
-    MyBackgroundPlugin.disableBluetooth();
+    ExotelSDKClient.getInstance().disableBluetooth();
   }
 
   void hangup() {
-    MyBackgroundPlugin.hangup();
+    ExotelSDKClient.getInstance().hangup();
   }
 
   void sendDtmf(String digit) {
-    MyBackgroundPlugin.sendDtmf(digit);
+    ExotelSDKClient.getInstance().sendDtmf(digit);
   }
 
   void answer() {
-    MyBackgroundPlugin.answer();
+    ExotelSDKClient.getInstance().answer();
   }
 
-  Future<void> setupLocalNotification() async {
-    const androidInitializationSetting = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosInitializationSetting = DarwinInitializationSettings();
-    const initSettings = InitializationSettings(android: androidInitializationSetting,iOS: iosInitializationSetting);
-    await _flutterLocalNotificationsPlugin.initialize(initSettings);
-    var service = FlutterBackgroundService();
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-  }
-
-  void showLocalNotification(String title, String body) {
-
-    const androidNotificationDetail = AndroidNotificationDetails(
-      '0', // channel Id
-      'general',// channel Name
-      importance: Importance.max,
-      priority: Priority.high,
-    );
-    const DarwinNotificationDetails iOSPlatformChannelSpecifics =
-    DarwinNotificationDetails(threadIdentifier: 'thread_id');
-    const notificationDetails = NotificationDetails(
-      android: androidNotificationDetail,
-      iOS: iOSPlatformChannelSpecifics,
-    );
-    _flutterLocalNotificationsPlugin.show(0, title, body, notificationDetails);
-  }
+  // Future<void> setupLocalNotification() async {
+  //   const androidInitializationSetting = AndroidInitializationSettings('@mipmap/ic_launcher');
+  //   const iosInitializationSetting = DarwinInitializationSettings();
+  //   const initSettings = InitializationSettings(android: androidInitializationSetting, iOS: iosInitializationSetting);
+  //   await _flutterLocalNotificationsPlugin.initialize(initSettings);
+  //   var service = FlutterBackgroundService();
+  //   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  // }
+  //
+  // void showLocalNotification(String title, String body) {
+  //   const androidNotificationDetail = AndroidNotificationDetails(
+  //     '0', // channel Id
+  //     'general', // channel Name
+  //     importance: Importance.max,
+  //     priority: Priority.high,
+  //   );
+  //   const DarwinNotificationDetails iOSPlatformChannelSpecifics = DarwinNotificationDetails(threadIdentifier: 'thread_id');
+  //   const notificationDetails = NotificationDetails(
+  //     android: androidNotificationDetail,
+  //     iOS: iOSPlatformChannelSpecifics,
+  //   );
+  //   _flutterLocalNotificationsPlugin.show(0, title, body, notificationDetails);
+  // }
 }
+
+
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Handling a background message");
-  print("RemoteMessage : $message");
+  print("in firebaseMessagingBackgroundHandler");
+  print('Message data: ${message.data}');
+
   // Ensure Firebase is initialized
   await Firebase.initializeApp();
-  SharedPreferences sharedPreferences =
-  await SharedPreferences.getInstance();
-  String? sdkHostName = sharedPreferences
-      .getString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString());
-  String? subscriberToken = sharedPreferences.getString(
-      ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString());
-  String? mSubscriberName = sharedPreferences
-      .getString(ApplicationSharedPreferenceData.USER_NAME.toString());
-  String? mDisplayName = sharedPreferences
-      .getString(ApplicationSharedPreferenceData.DISPLAY_NAME.toString());
-  String? mAccountSid = sharedPreferences
-      .getString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
-  MyBackgroundPlugin.reInitialize(sdkHostName!, mSubscriberName!, mDisplayName!,
-      mAccountSid!, subscriberToken!);
-  MyBackgroundPlugin.relaySessionData(message.data);
-  // MyBackgroundPlugin.sendMessage(message)
+
+  // Initialize local notifications
+  await initializeNotifications();
+
+  // Show local notification
+  await showNotification('Incoming call!', '');
+
+  //initialize plugin instance
+  ExotelSDKClient.initializeInstance;
+
+  SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+  String? sdkHostName = sharedPreferences.getString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString());
+  String? subscriberToken = sharedPreferences.getString(ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString());
+  String? mSubscriberName = sharedPreferences.getString(ApplicationSharedPreferenceData.USER_NAME.toString());
+  String? mDisplayName = sharedPreferences.getString(ApplicationSharedPreferenceData.DISPLAY_NAME.toString());
+  String? mAccountSid = sharedPreferences.getString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
+
+  // Debug print statements to verify the values retrieved from SharedPreferences
+  print("SDK Hostname: $sdkHostName");
+  print("Subscriber Token: $subscriberToken");
+  print("Subscriber Name: $mSubscriberName");
+  print("Display Name: $mDisplayName");
+  print("Account SID: $mAccountSid");
+
+  // Check if all required values are non-null
+  if (sdkHostName != null && mSubscriberName != null && mDisplayName != null && mAccountSid != null && subscriberToken != null) {
+    ExotelSDKClient.reInitialize(sdkHostName, mSubscriberName, mDisplayName, mAccountSid, subscriberToken);
+    ExotelSDKClient.getInstance().relaySessionData(message.data);
+  } else {
+    print("Error: One or more required values from SharedPreferences are null.");
+  }
 }
+
+

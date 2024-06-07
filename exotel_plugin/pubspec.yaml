@@ -1,4 +1,4 @@
-name: my_background_plugin
+name: exotel_plugin
 description: "A new Flutter plugin project."
 version: 0.0.1
 homepage:
@@ -21,7 +21,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.example.my_background_plugin
-        pluginClass: MyBackgroundPlugin
+        package: com.exotel.voice_plugin
+        pluginClass: ExotelPlugin
       ios:
-        pluginClass: MyBackgroundPlugin
+        pluginClass: ExotelPlugin

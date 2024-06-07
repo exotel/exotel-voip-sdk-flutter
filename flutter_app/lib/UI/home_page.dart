@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
 import 'dart:convert';
-import '../exotelSDK/ExotelSDKCallback.dart';
+import 'package:exotel_plugin/ExotelSDKCallback.dart';
 import 'login_page.dart';
 import '../main.dart';
 import 'call_page.dart';

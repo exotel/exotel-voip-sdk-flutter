@@ -1,4 +1,4 @@
-package com.example.my_background_plugin;
+package com.exotel.voice_plugin;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.ServiceCompat;
@@ -104,7 +104,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
     private String mSubsriberToken;
     private String mDisplayName;
     private CallController callController;
-    private Call mCall;
+    private static Call mCall;
     private static final String CHANNEL_ID = "exotelVoiceSample";
     private Call mPreviousCall;
     private Handler uiThreadHandler = new Handler(Looper.getMainLooper());
@@ -112,6 +112,8 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 
     private Context context;
     private Activity activity;
+    private ExotelPlugin plugin = ChannelManager.getPlugin();
+
 
 
     public ExotelTranslatorService() {
@@ -130,7 +132,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         // Initialize MethodChannel with the given context
 //        if (context != null) {
 //            BinaryMessenger messenger = (BinaryMessenger) context;
-//            ChannelManager.getChannel() = new MethodChannel(messenger, "my_background_plugin"); // Replace "your_channel_name" with your actual ChannelManager.getChannel() name
+//            ChannelManager.getChannel() = new MethodChannel(messenger, "exotel_plugin"); // Replace "your_channel_name" with your actual ChannelManager.getChannel() name
 //
 //                  } else {
 //            System.out.println("Context is null. Unable to initialize MethodChannel.");
@@ -159,7 +161,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
     }
 
     Notification createNotification() {
-        Intent notificationIntent = new Intent(this, MyBackgroundPlugin.class);
+        Intent notificationIntent = new Intent(this, ExotelPlugin.class);
         PendingIntent pendingIntent;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             pendingIntent = PendingIntent.getActivity(this,
@@ -203,7 +205,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         VoiceAppLogger.debug(TAG, "in onStartCommand of ExotelTranslatorService");
         Notification notification = createNotification();
         makeServiceForeground(notification);
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
     @Override
     public void onDestroy() {
@@ -241,6 +243,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
                 mUserName = call.argument("subscriber_name");
                 mSubsriberToken = call.argument("subscriber_token");
                 mDisplayName = call.argument("display_name");
+                reInitialize();
                 break;
             case "reset":
                 reset();
@@ -510,11 +513,20 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         VoiceAppLogger.debug(TAG, "Getting version details in sample app service");
         String message = ExotelVoiceClientSDK.getVersion();
         VoiceAppLogger.debug(TAG, "Getting version details in sample app service: "+ message);
-        uiThreadHandler.post(()->{
+//        uiThreadHandler.post(()->{
+//            HashMap<String, Object> arguments = new HashMap<>();
+//            arguments.put("version", message);
+//            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_VERSION_DETAILS, arguments);
+//        });
+        if (plugin != null) {
+            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
             HashMap<String, Object> arguments = new HashMap<>();
             arguments.put("version", message);
-            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_VERSION_DETAILS, arguments);
-        });
+            plugin.sendEvent(MethodChannelInvokeMethod.ON_VERSION_DETAILS, arguments);
+        }
+        else {
+            VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
+        }
         return message;
     }
 
@@ -548,98 +560,165 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         String destination = call.getCallDetails().getRemoteId();
         VoiceAppLogger.debug(TAG, "in onCallIncoming(), callId = " + callId + "destination = " +destination);
         VoiceAppLogger.debug(TAG, "ChannelManager.getChannel() is: " + ChannelManager.getChannel() );
-        uiThreadHandler.post(()->{
+//        uiThreadHandler.post(()->{
+//            HashMap<String, Object> arguments = new HashMap<>();
+//            arguments.put("callId", callId);
+//            arguments.put("destination", destination);
+//
+//            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_INCOMING_CALL, arguments);
+//        });
+        if (plugin != null) {
+            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
             HashMap<String, Object> arguments = new HashMap<>();
             arguments.put("callId", callId);
             arguments.put("destination", destination);
-
-            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_INCOMING_CALL, arguments);
-        });
+            plugin.sendEvent(MethodChannelInvokeMethod.ON_INCOMING_CALL, arguments);
+        }
+        else {
+            VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
+        }
     }
 
     public void reInitialize() {
-//        try {
-//            initialize(mSDKHostName, mUserName, mAccountSid, mSubsriberToken, mDisplayName);
-//        } catch (Exception e) {
-//            VoiceAppLogger.error(TAG, "Exception in reinitialize: " + e.getMessage() );
-//        }
+        try {
+            initialize(mSDKHostName, mUserName, mAccountSid, mSubsriberToken, mDisplayName);
+        } catch (Exception e) {
+            VoiceAppLogger.error(TAG, "Exception in reinitialize: " + e.getMessage() );
+        }
     }
 
 
     @Override
     public void onCallInitiated(Call call) {
         mCall = call;
-        uiThreadHandler.post(()->{
-            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_CALL_INITIATED, null);
-        });
+//        uiThreadHandler.post(()->{
+//            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_CALL_INITIATED, null);
+//        });
+        if (plugin != null) {
+            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            plugin.sendEvent(MethodChannelInvokeMethod.ON_CALL_INITIATED, null);
+        }
+        else {
+            VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
+        }
     }
 
     @Override
     public void onCallRinging(Call call) {
         mCall = call;
         VoiceAppLogger.debug(TAG, "in onCallRinging(), ExotelTranslatorService");
-        uiThreadHandler.post(()->{
-            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_CALL_RINGING, null);
-        });
+//        uiThreadHandler.post(()->{
+//            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_CALL_RINGING, null);
+//        });
+        if (plugin != null) {
+            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            plugin.sendEvent(MethodChannelInvokeMethod.ON_CALL_RINGING, null);
+        }
+        else {
+            VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
+        }
     }
 
     @Override
     public void onCallEstablished(Call call) {
         mCall = call;
-        uiThreadHandler.post(()-> {
-            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_CALL_ESTABLISHED, null);
-        });
+//        uiThreadHandler.post(()-> {
+//            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_CALL_ESTABLISHED, null);
+//        });
+        if (plugin != null) {
+            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            plugin.sendEvent(MethodChannelInvokeMethod.ON_CALL_ESTABLISHED, null);
+        }
+        else {
+            VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
+        }
     }
 
     @Override
     public void onCallEnded(Call call) {
         mCall = null;
         mPreviousCall = call;
-        uiThreadHandler.post(()-> {
+//        uiThreadHandler.post(()-> {
+//            HashMap<String, String> arguments = new HashMap<>();
+//            arguments.put("direction", call.getCallDetails().getCallDirection().toString());
+//            arguments.put("end-reason", call.getCallDetails().getCallEndReason().toString());
+//            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_CALL_ENDED, null);
+//        });
+        if (plugin != null) {
+            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
             HashMap<String, String> arguments = new HashMap<>();
             arguments.put("direction", call.getCallDetails().getCallDirection().toString());
             arguments.put("end-reason", call.getCallDetails().getCallEndReason().toString());
-            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_CALL_ENDED, null);
-        });
-
+            plugin.sendEvent(MethodChannelInvokeMethod.ON_CALL_ENDED, null);
+        }
+        else {
+            VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
+        }
 
     }
 
     @Override
     public void onMissedCall(String s, Date date) {
-        uiThreadHandler.post(()->{
-            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_MISSED_CALL, null);
-        });
+//        uiThreadHandler.post(()->{
+//            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_MISSED_CALL, null);
+//        });
+        if (plugin != null) {
+            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            plugin.sendEvent(MethodChannelInvokeMethod.ON_MISSED_CALL, null);
+        }
+        else {
+            VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
+        }
     }
 
     @Override
     public void onMediaDisrupted(Call call) {
         mCall = call;
-        uiThreadHandler.post(()->{
-            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_MEDIA_DISTRUPTED, null);
-        });
+//        uiThreadHandler.post(()->{
+//            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_MEDIA_DISTRUPTED, null);
+//        });
+        if (plugin != null) {
+            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            plugin.sendEvent(MethodChannelInvokeMethod.ON_MEDIA_DISTRUPTED, null);
+        }
+        else {
+            VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
+        }
     }
 
     @Override
     public void onRenewingMedia(Call call) {
         mCall = call;
-        uiThreadHandler.post(()->{
-            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_RENEWING_MEDIA, null);
-        });
+//        uiThreadHandler.post(()->{
+//            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_RENEWING_MEDIA, null);
+//        });
+        if (plugin != null) {
+            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            plugin.sendEvent(MethodChannelInvokeMethod.ON_RENEWING_MEDIA, null);
+        }
+        else {
+            VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
+        }
     }
 
     @Override
     public void onInitializationSuccess() {
         VoiceAppLogger.debug(TAG, "Enter onInitializationSuccess()");
+//        uiThreadHandler.post(()->{
+//            ChannelManager.getChannel().invokeMethod("on-inialization-success", null);
+//        });
         if (ChannelManager.getChannel() != null) {
             VoiceAppLogger.error(TAG, "Channel is not null" + ChannelManager.getChannel());
-            uiThreadHandler.post(()->{
-                ChannelManager.getChannel().invokeMethod("on-inialization-success", null);
-            });
+            // Instead of using MethodChannel, send the event via EventChannel
+            if (plugin != null) {
+                VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+                plugin.sendEvent(MethodChannelInvokeMethod.ON_INITIALIZATION_SUCCESS, null);
+            }
         } else {
             VoiceAppLogger.error(TAG, "Channel is null. Unable to invoke method.");
         }
     }
+
     private void sendMessageToFlutter() {
         System.out.println("Sending message to Flutter");
         ChannelManager.getChannel().invokeMethod("receiveMessage", "Hello from Java");
@@ -647,9 +726,16 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 
     @Override
     public void onInitializationFailure(ExotelVoiceError exotelVoiceError) {
-        uiThreadHandler.post(()->{
-            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_INITIALIZATION_FAILURE,createResponse(exotelVoiceError.getErrorMessage()));
-        });
+//        uiThreadHandler.post(()->{
+//            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_INITIALIZATION_FAILURE,createResponse(exotelVoiceError.getErrorMessage()));
+//        });
+        if (plugin != null) {
+            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            plugin.sendEvent(MethodChannelInvokeMethod.ON_INITIALIZATION_FAILURE,createResponse(exotelVoiceError.getErrorMessage()));
+        }
+        else {
+            VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
+        }
     }
 
     @Override
@@ -667,27 +753,49 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 
     @Override
     public void onUploadLogSuccess() {
-        uiThreadHandler.post(()->{
-            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_UPLOAD_LOG_SUCCESS,null);
-        });
+//        uiThreadHandler.post(()->{
+//            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_UPLOAD_LOG_SUCCESS,null);
+//        });
+        if (plugin != null) {
+            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            plugin.sendEvent(MethodChannelInvokeMethod.ON_UPLOAD_LOG_SUCCESS,null);
+        }
+        else {
+            VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
+        }
     }
 
     @Override
     public void onUploadLogFailure(ExotelVoiceError exotelVoiceError) {
-        uiThreadHandler.post(()->{
-            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_UPLOAD_LOG_FAILURE,createResponse(exotelVoiceError.getErrorMessage()));
-        });
+//        uiThreadHandler.post(()->{
+//            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_UPLOAD_LOG_FAILURE,createResponse(exotelVoiceError.getErrorMessage()));
+//        });
+        if (plugin != null) {
+            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            plugin.sendEvent(MethodChannelInvokeMethod.ON_UPLOAD_LOG_FAILURE,createResponse(exotelVoiceError.getErrorMessage()));
+        }
+        else {
+            VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
+        }
     }
 
     @Override
     public void onAuthenticationFailure(ExotelVoiceError exotelVoiceError) {
-        uiThreadHandler.post(()->{
-            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_AUTHENTICATION_FAILURE,createResponse("Authentication failure"));
-        });
+//        uiThreadHandler.post(()->{
+//            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_AUTHENTICATION_FAILURE,createResponse("Authentication failure"));
+//        });
+        if (plugin != null) {
+            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            plugin.sendEvent(MethodChannelInvokeMethod.ON_AUTHENTICATION_FAILURE,createResponse("Authentication failure"));
+        }
+        else {
+            VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
+        }
     }
-    Map<String, String> createResponse(String data){
-        Map<String,String> result = new HashMap<>();
-        result.put("data",data);
+    Map<String, Object> createResponse(String data) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("data", data);
         return result;
     }
+
 }

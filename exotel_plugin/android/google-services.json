@@ -89,7 +89,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:1030927669521:android:b661376b510d854a7154b0",
         "android_client_info": {
-          "package_name": "com.example.my_background_plugin"
+          "package_name": "com.exotel.voice_plugin"
         }
       },
       "oauth_client": [
