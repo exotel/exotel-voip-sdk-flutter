@@ -1,4 +1,4 @@
-package com.exotel.voice_sample;
+package com.exotel.voice_plugin;
 
 public class MethodChannelInvokeMethod {
     public static final String ON_INITIALIZATION_SUCCESS = "on-initialization-success";

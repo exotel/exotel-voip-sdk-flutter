@@ -292,7 +292,7 @@ class _LoginPageState extends State<LoginPage> {
                       String hostname = hostnameController.text;
                       try {
                         mApplicationUtil.login(userId, password, accountSid, hostname);
-                        mApplicationUtil.showLoadingDialog("Logging In");
+                        mApplicationUtil.showLoadingDialog(" Logging In");
                         SharedPreferences prefs = await SharedPreferences.getInstance();
                         await prefs.setString(ApplicationSharedPreferenceData.USER_NAME.toString(), userId);
                         await prefs.setString(ApplicationSharedPreferenceData.PASSWORD.toString(), password);

@@ -1,4 +1,4 @@
-group 'com.example.my_background_plugin'
+group 'com.exotel.voice_plugin'
 version '1.0-SNAPSHOT'
 
 buildscript {
@@ -8,7 +8,7 @@ buildscript {
         mavenCentral()
         jcenter()
         flatDir {
-            dirs project(':my_background_plugin').file('exotel-voice-sdk')
+            dirs project(':exotel_plugin').file('exotel-voice-sdk')
         }
     }
 
@@ -28,7 +28,7 @@ rootProject.allprojects {
         mavenCentral()
         jcenter()
         flatDir {
-            dirs project(':my_background_plugin').file('exotel-voice-sdk')
+            dirs project(':exotel_plugin').file('exotel-voice-sdk')
         }
     }
 }
@@ -42,7 +42,7 @@ apply plugin: 'com.google.firebase.crashlytics'
 
 android {
     if (project.android.hasProperty("namespace")) {
-        namespace 'com.example.my_background_plugin'
+        namespace 'com.exotel.voice_plugin'
     }
 
     compileSdk 34
@@ -80,6 +80,8 @@ android {
         implementation 'com.google.code.gson:gson:[2.8.5]'
         implementation 'com.google.firebase:firebase-crashlytics:18.6.0'
         implementation 'com.google.firebase:firebase-analytics:21.5.0'
+        implementation 'com.google.code.gson:gson:2.8.8'
+
 
     }
 

@@ -1,4 +1,4 @@
-package com.exotel.voice_sample;
+package com.exotel.voice_plugin;
 
 
 public enum ApplicationSharedPreferenceData {
@@ -27,6 +27,8 @@ public enum ApplicationSharedPreferenceData {
 
     CONTEXT_MESSAGE,
 
-    CONTACT_DISPLAY_NAME
+    CONTACT_DISPLAY_NAME,
+
+    EVENT_QUEUE
 
 }

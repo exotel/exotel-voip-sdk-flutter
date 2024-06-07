@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:my_background_plugin/my_background_plugin.dart';
+import 'package:exotel_plugin/ExotelSDKClient.dart';
 
 class PushNotificationService {
   static final PushNotificationService _instance = PushNotificationService._internal();
@@ -25,7 +25,7 @@ class PushNotificationService {
       if (message.notification != null) {
         print('Message also contained a notification: ${message.notification}');
       }
-      MyBackgroundPlugin.relaySessionData(message.data);
+      ExotelSDKClient.getInstance().relaySessionData(message.data);
     }
     );
   }
