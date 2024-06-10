@@ -17,4 +17,5 @@ class MethodChannelInvokeMethod {
   static final GET_VERSION_DETAILS = "get-version-details";
   static final UPLOAD_LOGS = "upload-logs";
   static final RELAY_SESSION_DATA = "relay-session-data";
+  static final STOP = "stop";
 }

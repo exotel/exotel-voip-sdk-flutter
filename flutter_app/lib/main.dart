@@ -36,7 +36,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    ExotelSDKClient.initializeMethodChannel(); // Initialize your plugin
     ExotelSDKClient.initializePlugin(context);
   }
 
