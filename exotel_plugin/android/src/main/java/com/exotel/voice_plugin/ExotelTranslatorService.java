@@ -248,6 +248,9 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
             case "reset":
                 reset();
                 break;
+            case "stop":
+                stop();
+                break;
             case "dial":
                 String dialNumber = call.argument("dialTo");
                 VoiceAppLogger.debug(TAG, "Dial number = " + dialNumber);
@@ -383,6 +386,19 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         callController = exotelVoiceClient.getCallController();
         callController.setCallListener(this);
         VoiceAppLogger.debug(TAG, "Returning from initialize with params in sample service");
+    }
+
+    private void stop() {
+        VoiceAppLogger.debug(TAG, "going to Stop sdk");
+        if (null == exotelVoiceClient || !exotelVoiceClient.isInitialized()) {
+            VoiceAppLogger.error(TAG, "SDK is not yet initialized");
+        } else {
+//            exotelVoiceClient.stop();
+        }
+        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
+        sharedPreferencesHelper.putBoolean(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(),false);
+
+        VoiceAppLogger.debug(TAG, "Stop Done");
     }
 
     void reset() {
@@ -722,6 +738,13 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
     private void sendMessageToFlutter() {
         System.out.println("Sending message to Flutter");
         ChannelManager.getChannel().invokeMethod("receiveMessage", "Hello from Java");
+    }
+
+//    @Override
+    public void onDeInitialization() {
+        uiThreadHandler.post(()->{
+            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_DEINITIALIZED,null);
+        });
     }
 
     @Override

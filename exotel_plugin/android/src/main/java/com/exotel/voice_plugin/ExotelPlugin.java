@@ -117,25 +117,38 @@ public class ExotelPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
                     event.put("eventName", eventName);
                     event.put("eventData", eventData);
                     eventSink.success(event);
-                    System.out.println("eventName: "+ eventName);
-                    System.out.println("eventData: "+ eventData);
+                    System.out.println("eventName: " + eventName);
+                    System.out.println("eventData: " + eventData);
                 });
             } catch (Exception e) {
                 System.out.println("Error sending event: " + e.getMessage());
                 eventSink.error("EVENT_ERROR", e.getMessage(), null);
             }
         } else {
-            System.out.println("Engine not attached or EventSink is null. Queuing event.");
-            eventQueue.add(() -> sendEvent(eventName, eventData));
-            System.out.println("Queued eventName: "+ eventName);
-            System.out.println("Queued eventData: "+ eventData);
+            if ("on-incoming-call".equals(eventName) || "on-call-ended".equals(eventName)) {
+                System.out.println("Engine not attached or EventSink is null. Queuing event.");
+                eventQueue.add(() -> sendEvent(eventName, eventData));
+                System.out.println("Queued eventName: " + eventName);
+                System.out.println("Queued eventData: " + eventData);
+            }
         }
     }
 
     public static void processEventQueue() {
-        while (!eventQueue.isEmpty()) {
-            System.out.println("Processing event from queue.");
+        if (!eventQueue.isEmpty()) {
+            // Create a filtered queue to hold the last event
+            Queue<Runnable> filteredQueue = new LinkedList<>();
+            // Add all events from eventQueue to filteredQueue
+            filteredQueue.addAll(eventQueue);
+            // Clear the main queue
+            eventQueue.clear();
+            // Add only the last event from filteredQueue back to eventQueue
+            eventQueue.add(filteredQueue.poll());
+
+            // Process the last event
+            System.out.println("Processing last event from queue.");
             eventQueue.poll().run();
         }
     }
+
 }

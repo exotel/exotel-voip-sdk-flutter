@@ -164,7 +164,7 @@ class ApplicationUtils implements ExotelSDKCallback {
     // var deviceId = await _getId();
     String? deviceId = "";
     try {
-      deviceId = await ExotelSDKClient.getInstance().getDeviceId();
+      deviceId = await ExotelSDKClient().getDeviceId();
     } catch (e) {
       print("Error while getting device id : ${e}");
       onInitializationFailure(e.toString());
@@ -469,8 +469,8 @@ class ApplicationUtils implements ExotelSDKCallback {
         String? subscriberToken = sharedPreferences.getString(
             ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString());
         String message = "Hello from flutter";
-        // ExotelSDKClient.getInstance().sendMessage(message)
-        ExotelSDKClient.getInstance().initialize(sdkHostName!, mSubscriberName!, mDisplayName!,
+        // ExotelSDKClient().sendMessage(message)
+        ExotelSDKClient().initialize(sdkHostName!, mSubscriberName!, mDisplayName!,
                 mAccountSid!, subscriberToken!)
             .catchError((e) {
           onInitializationFailure("Error while Inializing SDK");
@@ -500,7 +500,7 @@ class ApplicationUtils implements ExotelSDKCallback {
 
     setCallContext(dialTo, "")
     .then((value) {
-      ExotelSDKClient.getInstance().dial(exophone!, message)
+      ExotelSDKClient().dial(exophone!, message)
         .catchError((error){
           print("Error while dialing out : ${e.toString()}");
           onCallEnded();
@@ -632,7 +632,7 @@ class ApplicationUtils implements ExotelSDKCallback {
     mVersion = version;
   }
   void reset() {
-    ExotelSDKClient.getInstance().reset();
+    ExotelSDKClient().reset();
   }
 
   Future<void> requestPermissions() async {
@@ -650,51 +650,51 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   getVersionDetails() {
-    ExotelSDKClient.getInstance().getVersionDetails();
+    ExotelSDKClient().getVersionDetails();
   }
 
   void postFeedback(int? rating, String? issue) {
-    ExotelSDKClient.getInstance().postFeedback(rating, issue);
+    ExotelSDKClient().postFeedback(rating, issue);
   }
 
   void uploadLogs(DateTime startDate, DateTime endDate, String description) {
-    ExotelSDKClient.getInstance().uploadLogs(startDate, endDate, description);
+    ExotelSDKClient().uploadLogs(startDate, endDate, description);
   }
 
   void enableSpeaker() {
-    ExotelSDKClient.getInstance().enableSpeaker();
+    ExotelSDKClient().enableSpeaker();
   }
 
   void disableSpeaker() {
-    ExotelSDKClient.getInstance().disableSpeaker();
+    ExotelSDKClient().disableSpeaker();
   }
 
   void mute() {
-    ExotelSDKClient.getInstance().mute();
+    ExotelSDKClient().mute();
   }
 
   void unmute() {
-    ExotelSDKClient.getInstance().unmute();
+    ExotelSDKClient().unmute();
   }
 
   void enableBluetooth() {
-    ExotelSDKClient.getInstance().enableBluetooth();
+    ExotelSDKClient().enableBluetooth();
   }
 
   void disableBluetooth() {
-    ExotelSDKClient.getInstance().disableBluetooth();
+    ExotelSDKClient().disableBluetooth();
   }
 
   void hangup() {
-    ExotelSDKClient.getInstance().hangup();
+    ExotelSDKClient().hangup();
   }
 
   void sendDtmf(String digit) {
-    ExotelSDKClient.getInstance().sendDtmf(digit);
+    ExotelSDKClient().sendDtmf(digit);
   }
 
   void answer() {
-    ExotelSDKClient.getInstance().answer();
+    ExotelSDKClient().answer();
   }
 
   // Future<void> setupLocalNotification() async {
@@ -737,7 +737,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await showNotification('Incoming call!', '');
 
   //initialize plugin instance
-  ExotelSDKClient.initializeInstance;
+  ExotelSDKClient.initializeMethodChannel();
 
   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
   String? sdkHostName = sharedPreferences.getString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString());
@@ -756,7 +756,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Check if all required values are non-null
   if (sdkHostName != null && mSubscriberName != null && mDisplayName != null && mAccountSid != null && subscriberToken != null) {
     ExotelSDKClient.reInitialize(sdkHostName, mSubscriberName, mDisplayName, mAccountSid, subscriberToken);
-    ExotelSDKClient.getInstance().relaySessionData(message.data);
+    ExotelSDKClient().relaySessionData(message.data);
   } else {
     print("Error: One or more required values from SharedPreferences are null.");
   }

@@ -25,7 +25,7 @@ class PushNotificationService {
       if (message.notification != null) {
         print('Message also contained a notification: ${message.notification}');
       }
-      ExotelSDKClient.getInstance().relaySessionData(message.data);
+      ExotelSDKClient().relaySessionData(message.data);
     }
     );
   }
