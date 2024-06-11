@@ -136,19 +136,28 @@ public class ExotelPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
 
     public static void processEventQueue() {
         if (!eventQueue.isEmpty()) {
-            // Create a filtered queue to hold the last event
-            Queue<Runnable> filteredQueue = new LinkedList<>();
-            // Add all events from eventQueue to filteredQueue
-            filteredQueue.addAll(eventQueue);
-            // Clear the main queue
-            eventQueue.clear();
-            // Add only the last event from filteredQueue back to eventQueue
-            eventQueue.add(filteredQueue.poll());
+            // Create a variable to hold the last event
+            Runnable lastEvent = null;
 
-            // Process the last event
-            System.out.println("Processing last event from queue.");
-            eventQueue.poll().run();
+            // Iterate through the eventQueue to find the last event
+            while (!eventQueue.isEmpty()) {
+                lastEvent = eventQueue.poll();
+            }
+
+            // If we found an event, add it back to the queue and process it
+            if (lastEvent != null) {
+                // Clear the main queue to ensure it's empty
+                eventQueue.clear();
+
+                // Add only the last event back to the queue
+                eventQueue.add(lastEvent);
+
+                // Process the last event
+                System.out.println("Processing last event from queue.");
+                eventQueue.poll().run();
+            }
         }
     }
+
 
 }

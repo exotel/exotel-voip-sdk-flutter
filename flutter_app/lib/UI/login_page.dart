@@ -10,9 +10,6 @@ import '../main.dart';
 import '../Utils/ApplicationSharedPreferenceData.dart';
 
 class LoginPage extends StatefulWidget {
-  final Function(String, String, String, String) onLoggedin;
-
-  const LoginPage({Key? key, required this.onLoggedin}) : super(key: key);
   @override
   _LoginPageState createState() => _LoginPageState();
 }
