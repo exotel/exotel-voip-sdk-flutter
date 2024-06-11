@@ -41,6 +41,8 @@ Future<void> initializeNotifications() async {
   );
 
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
 }
 
 Future<void> showNotification(String title, String body) async {
@@ -257,6 +259,14 @@ class ApplicationUtils implements ExotelSDKCallback {
       context!,
       '/home',
           (route) => false,
+    );
+  }
+
+  void navigateToLogin() {
+    print("in navigateToLogin()");
+    navigatorKey.currentState!.pushNamedAndRemoveUntil(
+      '/login',
+          (Route<dynamic> route) => false,
     );
   }
 
@@ -633,6 +643,9 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
   void reset() {
     ExotelSDKClient().reset();
+  }
+  void stop() {
+    ExotelSDKClient().stop();
   }
 
   Future<void> requestPermissions() async {

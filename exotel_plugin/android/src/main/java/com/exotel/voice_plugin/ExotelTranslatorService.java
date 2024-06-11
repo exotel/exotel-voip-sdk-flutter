@@ -393,12 +393,22 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         if (null == exotelVoiceClient || !exotelVoiceClient.isInitialized()) {
             VoiceAppLogger.error(TAG, "SDK is not yet initialized");
         } else {
-//            exotelVoiceClient.stop();
+            exotelVoiceClient.stop();
         }
         SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
         sharedPreferencesHelper.putBoolean(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(),false);
 
         VoiceAppLogger.debug(TAG, "Stop Done");
+    }
+    @Override
+    public void onDeInitialized() {
+        VoiceAppLogger.debug(TAG, "Start: onDeInitialized");
+//        synchronized (statusListenerListMutex) {
+//            for (VoiceAppStatusEvents statusEvents : voiceAppStatusListenerList) {
+//                statusEvents.onDeInitialization();
+//            }
+//        }
+        VoiceAppLogger.debug(TAG, "Exit: onDeInitialized");
     }
 
     void reset() {
@@ -740,7 +750,6 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         ChannelManager.getChannel().invokeMethod("receiveMessage", "Hello from Java");
     }
 
-//    @Override
     public void onDeInitialization() {
         uiThreadHandler.post(()->{
             ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_DEINITIALIZED,null);

@@ -50,6 +50,7 @@ class _MyAppState extends State<MyApp> {
       navigatorKey: navigatorKey,
       initialRoute: '/',
       routes: {
+        '/login': (context) => LoginPage(),
         '/home': (context) => HomePage(),
         '/call': (context) => CallPage(),
         '/ringing': (context) => Ringing(),
@@ -73,14 +74,7 @@ class _MyAppState extends State<MyApp> {
               return Text('Error: ${snapshot.error}');
             } else {
               mApplicationUtil.requestPermissions(); // Request permissions at app launch
-              return (snapshot.data ?? false) ? const HomePage() : LoginPage(
-                onLoggedin: (userId, password, accountSid, hostname) {
-                  Navigator.pushReplacementNamed(
-                    context,
-                    '/home',
-                  );
-                },
-              );
+              return (snapshot.data ?? false) ? const HomePage() : LoginPage();
             }
           }
         },

@@ -77,7 +77,7 @@ public class VoiceAppLogger {
         String time = timeformat.format(date);
         text = time + "-" + text;
 //        FirebaseCrashlytics.getInstance().log(text);
-        appendLog(text);
+//        appendLog(text);
     }
 
     static void error(String tag, String message) {
@@ -94,9 +94,9 @@ public class VoiceAppLogger {
 //        appendLog(text);
     }
 
-//    static void setContext(Context ctx) {
-//        context = ctx;
-//    }
+    static void setContext(Context ctx) {
+        context = ctx;
+    }
 //
 //    /*static void appendLog(String text)
 //    {
