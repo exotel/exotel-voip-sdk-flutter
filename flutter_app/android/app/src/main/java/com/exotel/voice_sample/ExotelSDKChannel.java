@@ -97,8 +97,10 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                             break;
                         case "stop":
                             stop();
+                            break;
                         case "reset":
                             reset();
+                            break;
                         case "dial":
                             String dialNumber = call.argument("dialTo");
                             VoiceAppLogger.debug(TAG, "Dial number = " + dialNumber);
