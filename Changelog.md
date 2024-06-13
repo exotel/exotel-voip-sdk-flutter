@@ -1,12 +1,20 @@
 # Changelog
 
-# [1.0.6] 04-06-2024
+## [1.0.7] 13-06-2024
+
+### Android
+#### Changed
+- minor code fix
+- android sdk upggraded to [1.0.48](https://github.com/exotel/exotel-voip-sdk-android/releases/tag/1.0.47)
+
+
+## [1.0.6] 04-06-2024
 
 ### Android
 #### Changed
 - android sdk upggraded to [1.0.47](https://github.com/exotel/exotel-voip-sdk-android/releases/tag/1.0.47) 
 
-# [1.0.5] 31-05-2024
+## [1.0.5] 31-05-2024
 
 ### Android
 #### Added
@@ -15,7 +23,7 @@
   * added onDeinitialized callback API to indicates de-initialization of the SDK
   * fix few initialization and de-initialization issue
 
-# [1.0.4] 20-05-2024
+## [1.0.4] 20-05-2024
 
 ### iOS
 #### Added

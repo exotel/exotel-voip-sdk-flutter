@@ -1,4 +1,4 @@
-SDK_VERSION:=1.0.6
+SDK_VERSION:=1.0.7
 
 clean:
 	rm -rf SDK/*
