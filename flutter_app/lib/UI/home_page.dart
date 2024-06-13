@@ -270,8 +270,6 @@ class _HomePageState extends State<HomePage> {
                             case 'Button 1':
                             // Handle Button 1 press
                               mApplicationUtil.stop();
-                              SharedPreferences prefs = await SharedPreferences.getInstance();
-                              await prefs.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), false);
                               // mApplicationUtil.navigateToStart();
                               print('Button 1 pressed');
                               break;
@@ -420,11 +418,6 @@ class _DialTabContentState extends State<DialTabContent> {
             child: GestureDetector(
               onTap:() {
             String dialTo = dialNumberController.text;
-            navigatorKey.currentState!.pushNamedAndRemoveUntil(
-              '/ringing',
-                  (Route<dynamic> route) => false,
-              arguments: {'state': "Connecting...."},
-            );
             mApplicationUtil.setDialTo(dialTo);
             mApplicationUtil.makeIPCall(dialTo,"test:1234");
             },

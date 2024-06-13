@@ -318,6 +318,8 @@ class ApplicationUtils implements ExotelSDKCallback {
   void onInitializationFailure(String message) {
     stopLoadingDialog();
     showToast(message);
+    SharedPreferences.getInstance()
+        .then((value) => value.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), false));
     navigateToStart();
   }
 
@@ -333,6 +335,8 @@ class ApplicationUtils implements ExotelSDKCallback {
   void onAuthenticationFailure(String message) {
     stopLoadingDialog();
     showToast("Authentication fail");
+    SharedPreferences.getInstance()
+        .then((value) => value.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), false));
     navigateToStart();
   }
 
@@ -547,7 +551,11 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   @override
   void onCallInitiated() {
-    // TODO: implement onCallInitiated
+    navigatorKey.currentState!.pushNamedAndRemoveUntil(
+      '/ringing',
+          (Route<dynamic> route) => false,
+      arguments: {'state': "Connecting...."},
+    );
   }
 
   @override
