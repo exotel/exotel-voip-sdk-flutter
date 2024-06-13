@@ -5,7 +5,7 @@
 ### Android
 #### Changed
 - minor code fix
-- android sdk upggraded to [1.0.48](https://github.com/exotel/exotel-voip-sdk-android/releases/tag/1.0.47)
+- android sdk upggraded to [1.0.48](https://github.com/exotel/exotel-voip-sdk-android/releases/tag/1.0.48)
 
 
 ## [1.0.6] 04-06-2024
