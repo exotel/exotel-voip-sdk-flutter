@@ -19,9 +19,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  TextEditingController userIdController = TextEditingController(text: ''); //adding text for temporary purpose
-  TextEditingController passwordController = TextEditingController(text: '');
-  TextEditingController displayNameController = TextEditingController(text: '');
+  TextEditingController userIdController = TextEditingController(text: '1234567892'); //adding text for temporary purpose
+  TextEditingController passwordController = TextEditingController(text: 'exotel321');
+  TextEditingController displayNameController = TextEditingController(text: '1234567892');
   TextEditingController accountSidController = TextEditingController(text: 'exotel1810');
   TextEditingController hostnameController = TextEditingController(text: "https://bellatrix.apac-sg.exotel.in/v1");
   bool showAdvancedSettings = false;
