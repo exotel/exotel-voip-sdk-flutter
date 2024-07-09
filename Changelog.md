@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.9] 09-07-2024
+
+#### Changed
+- [VST-778](https://exotel.atlassian.net/browse/VST-778): Duplicate event fixed in switch case of setmethodhandler
+
 ## [1.0.8] 19-06-2024
 
 ### Android
