@@ -111,13 +111,13 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                                 VoiceAppLogger.debug(TAG, "Dial message = " + contextMessage);
                                 try {
                                     mCall = mService.dial(dialNumber, contextMessage);
+                                    if (mCall != null) {
+                                    sendSuccess(result, true);
+                                    } else {
+                                        sendError(result,ErrorType.INTERNAL_ERROR.name(), "Outgoing call not initiated", new NullPointerException ("call instance is null"));
+                                    }
                                 } catch (Exception e) {
                                     sendError(result, ErrorType.INTERNAL_ERROR.name(), "Outgoing call Failed", e);
-                                }
-                                if (mCall != null) {
-                                    sendSuccess(result, true);
-                                } else {
-                                    sendError(result,ErrorType.INTERNAL_ERROR.name(), "Outgoing call not initiated", new NullPointerException ("call instance is null"));
                                 }
                                 break;
                             case "mute":
@@ -212,16 +212,15 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                                 break;
                             default:
                                 System.out.println("FAIL");
-                                result.notImplemented();
                                 replySent = true;
+                                result.notImplemented();
                                 break;
 
                         }
                     } catch (Exception e) {
                         // Ensure that any unexpected errors are caught and reported
-                        if (!replySent) {
-                            sendError(result,ErrorType.INTERNAL_ERROR.name(), e.getMessage(), e);
-                        }
+                        ¯sendError(result,ErrorType.INTERNAL_ERROR.name(), e.getMessage(), e);
+                        
                     }
                 }
         );
@@ -229,13 +228,20 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
     }
 
     private void sendSuccess(MethodChannel.Result result, Object response) {
-        result.success(response);
-        replySent = true;
+        if(!replySent) {
+            replySent = true;
+            result.success(response);
+        }
+        
     }
 
     private void sendError(MethodChannel.Result result, String errorCode, String errorMessage, Exception e) {
-        result.error(errorCode, errorMessage, e);
-        replySent = true;
+        
+        if(!replySent) {
+            replySent = true;
+            result.error(errorCode, errorMessage, e);
+        }
+        
     }
 
     Map<String, String> createResponse(String data){
