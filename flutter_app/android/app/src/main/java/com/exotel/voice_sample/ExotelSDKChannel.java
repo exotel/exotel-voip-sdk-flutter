@@ -217,7 +217,7 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
                         }
                     } catch (Exception e) {
                         // Ensure that any unexpected errors are caught and reported
-                        ¯sendError(result,ErrorType.INTERNAL_ERROR.name(), e.getMessage(), e);
+                        sendError(result,ErrorType.INTERNAL_ERROR.name(), e.getMessage(), e);
                         
                     }
                 }
