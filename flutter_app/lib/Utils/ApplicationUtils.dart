@@ -315,6 +315,13 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   @override
+  void onDestroyMediaSession() {
+    print("in onDestroyMediaSession of flutter applications utils");
+    stop();
+    reinitialize();
+  }
+
+  @override
   void onInitializationFailure(String message) {
     stopLoadingDialog();
     showToast(message);
@@ -438,6 +445,20 @@ class ApplicationUtils implements ExotelSDKCallback {
       print("Error ${e.toString()}");
       onInitializationFailure("Error while sending token");
     }
+  }
+
+  Future<void> reinitialize() async {
+    SharedPreferences sharedPreferences =
+        await SharedPreferences.getInstance();
+    String? sdkHostName = sharedPreferences
+        .getString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString());
+    String? subscriberToken = sharedPreferences.getString(
+        ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString());
+    _exotelVoiceClient?.initialize(sdkHostName!, mSubscriberName!, mDisplayName!,
+        mAccountSid!, subscriberToken!)
+        .catchError((e) {
+      onInitializationFailure("Error while Inializing SDK");
+    });
   }
 
   void makeIPCall(String dialTo, String message) {

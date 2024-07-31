@@ -1,6 +1,8 @@
 abstract class ExotelSDKCallback {
   void onInitializationSuccess();
 
+  void onDestroyMediaSession();
+
   void onInitializationFailure(String errorMessage);
 
   void onDeinitialized();
