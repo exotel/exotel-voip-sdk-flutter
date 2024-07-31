@@ -445,6 +445,20 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
     }
 
     @Override
+    public void onDestroyMediaSession() {
+        VoiceAppLogger.debug(TAG, "Start: onDestroyMediaSession");
+
+        synchronized (statusListenerListMutex) {
+            for (VoiceAppStatusEvents statusEvents : voiceAppStatusListenerList) {
+                statusEvents.onDestroyMediaSession();
+            }
+        }
+
+        VoiceAppLogger.debug(TAG, "End: onDestroyMediaSession");
+
+    }
+
+    @Override
     public void onDeInitialized() {
         VoiceAppLogger.debug(TAG, "Start: onDeInitialized");
         synchronized (statusListenerListMutex) {

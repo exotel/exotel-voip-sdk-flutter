@@ -283,6 +283,12 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
             channel.invokeMethod(MethodChannelInvokeMethod.ON_INITIALIZATION_SUCCESS,null);
         });
     }
+    @Override
+    public void onDestroyMediaSession() {
+        uiThreadHandler.post(()->{
+            channel.invokeMethod(MethodChannelInvokeMethod.ON_DESTROY_MEDIA_SESSION,null);
+        });
+    }
 
     @Override
     public void onDeInitialization() {

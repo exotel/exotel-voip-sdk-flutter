@@ -43,6 +43,9 @@ class ExotelSDKClient implements ExotelVoiceClient {
       case "on-initialization-success":
         mCallBack?.onInitializationSuccess();
         break;
+      case "on-destroy-media-session":
+        mCallBack?.onDestroyMediaSession();
+        break;
       case "on-initialization-failure":
         var message = call.arguments['data'];
         mCallBack?.onInitializationFailure(message);

@@ -421,6 +421,13 @@ extension ExotelSDKChannel: ExotelVoiceClientEventListener {
             self.channel.invokeMethod(MethodChannelInvokeMethod.ON_INITIALIZATION_SUCCESS, arguments: nil)
         }
     }
+
+    func onDestroyMediaSession() {
+            VoiceAppLogger.info(TAG: self.TAG, message: "in \(#function)")
+            DispatchQueue.main.async {
+                self.channel.invokeMethod(MethodChannelInvokeMethod.ON_DESTROY_MEDIA_SESSION, arguments: nil)
+            }
+        }
     
     func onInitializationFailure(error: any ExotelVoice.ExotelVoiceError) {
         VoiceAppLogger.info(TAG: self.TAG, message: "in \(#function)")
@@ -434,6 +441,10 @@ extension ExotelSDKChannel: ExotelVoiceClientEventListener {
         DispatchQueue.main.async {
             self.channel.invokeMethod(MethodChannelInvokeMethod.ON_DEINITIALIZED, arguments: nil)
         }
+    }
+    
+    func onAlreadyIntialized() {
+        VoiceAppLogger.info(TAG: self.TAG, message: "in \(#function)")
     }
     
     func onLog(level: ExotelVoice.LogLevel, tag: String, message: String) {
