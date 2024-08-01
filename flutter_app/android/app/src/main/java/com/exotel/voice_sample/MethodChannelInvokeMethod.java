@@ -15,4 +15,5 @@ public class MethodChannelInvokeMethod {
     public static final String ON_RENEWING_MEDIA = "on-renewing-media";
     public static final String ON_UPLOAD_LOG_SUCCESS = "on-upload-log-success";
     public static final String ON_UPLOAD_LOG_FAILURE = "on-upload-log-failure";
+    public static final String ON_DESTROY_MEDIA_SESSION = "on-destroy-media-session";
 }
