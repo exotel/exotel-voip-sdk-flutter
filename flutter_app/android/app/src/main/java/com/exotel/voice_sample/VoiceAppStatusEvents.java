@@ -8,5 +8,6 @@ public interface VoiceAppStatusEvents {
     void onInitializationFailure(ExotelVoiceError var1);
 
     void onAuthFailure();
+    void onDestroyMediaSession();
 
 }
