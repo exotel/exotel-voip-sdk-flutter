@@ -315,6 +315,9 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   @override
+  void onDestroyMediaSession() {}
+
+  @override
   void onInitializationFailure(String message) {
     stopLoadingDialog();
     showToast(message);
