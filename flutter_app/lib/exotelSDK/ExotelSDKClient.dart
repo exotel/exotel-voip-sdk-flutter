@@ -93,7 +93,10 @@ class ExotelSDKClient implements ExotelVoiceClient {
         var level = call.arguments["level"];
         String tag = call.arguments["tag"];
         String message = call.arguments["message"];
-      break;
+        break;
+      case "on-destroy-media-session":
+        mCallBack?.onDestroyMediaSession();
+        break;
       default:
         print("No Method Hander found for ${call.method}");
         break;
