@@ -101,6 +101,11 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
 
         VoiceAppLogger.debug(TAG, "Hostname: " + hostname + " SubscriberName: "
                 + subscriberName + " AccountSID: " + accountSid + " SubscriberToken: " + subscriberToken);
+        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
+        sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString(), subscriberToken);
+        sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.APP_HOSTNAME.toString(), hostname);
+        sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.USER_NAME.toString(), subscriberName);
+        sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString(), accountSid);
         if (null == displayName || displayName.trim().isEmpty()) {
             displayName = subscriberName;
         } else {
