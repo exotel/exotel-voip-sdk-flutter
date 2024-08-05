@@ -501,12 +501,16 @@ public class ExotelSDKChannel implements VoiceAppStatusEvents,CallEvents, LogUpl
 
     public void onUploadLogSuccess() {
         VoiceAppLogger.getSignedUrlForLogUpload();
-        channel.invokeMethod(MethodChannelInvokeMethod.ON_UPLOAD_LOG_SUCCESS,null);
+        uiThreadHandler.post(()->{
+            channel.invokeMethod(MethodChannelInvokeMethod.ON_UPLOAD_LOG_SUCCESS,null);
+        });
     }
 
     @Override
     public void onUploadLogFailure(ExotelVoiceError error) {
-        channel.invokeMethod(MethodChannelInvokeMethod.ON_UPLOAD_LOG_FAILURE,createResponse(error.getErrorMessage()));
+        uiThreadHandler.post(()->{
+            channel.invokeMethod(MethodChannelInvokeMethod.ON_UPLOAD_LOG_FAILURE,createResponse(error.getErrorMessage()));
+        });
     }
 
 
