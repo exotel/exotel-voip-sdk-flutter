@@ -2,6 +2,9 @@ package com.exotel.voice_plugin;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.ServiceCompat;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import androidx.core.content.ContextCompat;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -204,7 +207,15 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
     public int onStartCommand(Intent intent, int flags, int startId) {
         VoiceAppLogger.debug(TAG, "in onStartCommand of ExotelTranslatorService");
         Notification notification = createNotification();
-        makeServiceForeground(notification);
+//        makeServiceForeground(notification);
+//        return START_NOT_STICKY;
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED) {
+            makeServiceForeground(notification);
+        } else {
+            // Handle the case where permissions are not granted
+            stopSelf();
+        }
         return START_NOT_STICKY;
     }
     @Override
@@ -613,6 +624,10 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         }
     }
 
+    @Override
+    public void onDestroyMediaSession() {
+     VoiceAppLogger.error(TAG, "in onDestroyMediaSession()" );
+    }
 
     @Override
     public void onCallInitiated(Call call) {
@@ -810,6 +825,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
             VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
         }
     }
+
 
     @Override
     public void onAuthenticationFailure(ExotelVoiceError exotelVoiceError) {

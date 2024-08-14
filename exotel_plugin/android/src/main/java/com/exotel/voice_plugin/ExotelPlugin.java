@@ -5,8 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import androidx.core.content.ContextCompat;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -62,8 +66,16 @@ public class ExotelPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
     @Override
     public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
         isEngineAttached = true;
+        activity = binding.getActivity();  // Update the activity reference
         System.out.println("ExotelPlugin onAttachedToActivity: isEngineAttached = " + isEngineAttached);
         System.out.println("eventQueue: "+ eventQueue);
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            Intent serviceIntent = new Intent(context, ExotelTranslatorService.class);
+            ContextCompat.startForegroundService(context, serviceIntent);
+        } else {
+            // Handle permission not granted scenario
+            System.out.println("Permission not granted to start the service.");
+        }
         new Handler(Looper.getMainLooper()).postDelayed(() -> processEventQueue(), 5000);
     }
 
