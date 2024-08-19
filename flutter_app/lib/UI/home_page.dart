@@ -331,7 +331,6 @@ class _HomePageState extends State<HomePage> {
                                   }
                                 },
                               ),
-
                             ],
                           ),
                         )
@@ -377,65 +376,72 @@ class DialTabContent extends StatefulWidget {
 
 class _DialTabContentState extends State<DialTabContent> {
   TextEditingController dialNumberController = TextEditingController(text: "8123674275");
+
   @override
   Widget build(BuildContext context) {
     var mApplicationUtil = ApplicationUtils.getInstance(context);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 0), // Added horizontal and vertical padding
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          const Padding(
-            padding: EdgeInsets.only(top: 80.0, bottom: 12.0),
-            child: Text('Dial To', style: TextStyle(fontSize: 20.0)),
-          ),
-          TextField(
-            controller: dialNumberController,
-            decoration: InputDecoration(
-              labelText: 'Enter Number',
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(5),
-                borderSide: const BorderSide(
-                  color: Color(0xFF0800AF), // Set the border color to blue
-                  width: 2.0, // Set the border width
+      child: SingleChildScrollView( // Wrap the Column with SingleChildScrollView
+        child: Column(
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                const Padding(
+                  padding: EdgeInsets.only(top: 80.0, bottom: 12.0),
+                  child: Text('Dial To', style: TextStyle(fontSize: 20.0)),
                 ),
-              ),
-              filled: true, // Don't forget this
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 30.0, bottom: 12.0),
-            child: GestureDetector(
-              onTap:() {
-                String dialTo = dialNumberController.text;
-                navigatorKey.currentState!.pushNamedAndRemoveUntil(
-                  '/ringing',
-                      (Route<dynamic> route) => false,
-                  arguments: {'state': "Connecting...."},
-                );
-                print("Navigating to /ringing with state: Connecting...");
-                mApplicationUtil.setDialTo(dialTo);
-                mApplicationUtil.makeIPCall(dialTo,"test:1234");
-              },
-              child: ClipOval(
-                child: Image.asset(
-                  'assets/call_icon.PNG', // Replace with your icon path
-                  width: 55.0, // Set your desired width
-                  height: 55.0, // Set your desired height
-                  fit: BoxFit.cover,
+                TextField(
+                  controller: dialNumberController,
+                  decoration: InputDecoration(
+                    labelText: 'Enter Number',
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF0800AF), // Set the border color to blue
+                        width: 2.0, // Set the border width
+                      ),
+                    ),
+                    filled: true,
+                  ),
                 ),
-              ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 30.0, bottom: 12.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      String dialTo = dialNumberController.text;
+                      navigatorKey.currentState!.pushNamedAndRemoveUntil(
+                        '/ringing',
+                            (Route<dynamic> route) => false,
+                        arguments: {'state': "Connecting...."},
+                      );
+                      print("Navigating to /ringing with state: Connecting...");
+                      mApplicationUtil.setDialTo(dialTo);
+                      mApplicationUtil.makeIPCall(dialTo,"test:1234");
+                    },
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/call_icon.PNG', // Replace with your icon path
+                        width: 55.0, // Set your desired width
+                        height: 55.0, // Set your desired height
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
 
-//contacts page content
 
 class ContactsTabContent extends StatefulWidget {
   const ContactsTabContent({Key? key}) : super(key: key);
@@ -491,7 +497,7 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
     }
   }
 
-  Future<String?> _getJsonData() async{
+  Future<String?> _getJsonData() async {
     String? jsonData;
     jsonData = await mApplicationUtil.mJsonData;
     return jsonData;
@@ -515,12 +521,9 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
       future: _fetchAndParseJsonData,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          // Show circular progress indicator for 2 seconds
-          Future.delayed(Duration(seconds: 2), () {
-            // After 2 seconds, trigger a rebuild
-            setState(() {});
-          });
-          return Center(child: CircularProgressIndicator());
+          return Center(
+            child: CircularProgressIndicator(color: Color(0xFF0800AF)),
+          );
         }
         return _buildContent();
       },
@@ -538,13 +541,28 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
           child: TextField(
             controller: searchController,
             decoration: InputDecoration(
-              labelText: "Search",
+              labelText: "Search Contacts",
+              labelStyle: TextStyle(color: Colors.black),
+              prefixIcon: Icon(Icons.search, color: Colors.black),
               suffixIcon: IconButton(
-                icon: Icon(Icons.clear),
+                icon: Icon(Icons.clear, color: Colors.black),
                 onPressed: () {
                   searchController.clear();
+                  setState(() {}); // Trigger rebuild to update filteredContacts
                 },
               ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+                borderSide: const BorderSide(
+                  color: Color(0xFF0800AF), // Set the border color to blue
+                  width: 2.0, // Set the border width
+                ),              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+                borderSide: const BorderSide(
+                  color: Color(0xFF0800AF), // Set the border color to blue
+                  width: 2.0, // Set the border width
+                ),              ),
             ),
             onChanged: (value) {
               setState(() {}); // Trigger rebuild to update filteredContacts
@@ -552,7 +570,14 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
           ),
         ),
         Expanded(
-          child: ListView.builder(
+          child: groupedContacts.isEmpty
+              ? Center(
+            child: Text(
+              "No contacts available",
+              style: TextStyle(fontSize: 18, color: Colors.grey),
+            ),
+          )
+              : ListView.builder(
             itemCount: groupedContacts.keys.length,
             itemBuilder: (context, index) {
               var group = groupedContacts.keys.elementAt(index);
@@ -561,37 +586,44 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
                 final String query = searchController.text.toLowerCase();
                 return contact.name.toLowerCase().contains(query);
               }).toList();
-              return ExpansionTile(
-                title: Text(group, style: TextStyle(fontWeight: FontWeight.bold),),
-                children: filteredContacts.map<Widget>((contact) {
-                  return ListTile(
-                    title: Text(contact.name),
-                    subtitle: Text('Number: ${contact.number}'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        GestureDetector(
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  elevation: 3.0,
+                  child: ExpansionTile(
+                    title: Text(
+                      group,
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                    ),
+                    children: filteredContacts.map<Widget>((contact) {
+                      return ListTile(
+                        title: Text(contact.name, style: TextStyle(fontWeight: FontWeight.w500)),
+                        subtitle: Text('Number: ${contact.number}'),
+                        trailing: GestureDetector(
                           onTap: () {
                             String dialTo = contact.number;
                             print("DialTo is:  $dialTo");
                             mApplicationUtil.setDialTo(dialTo);
-                            mApplicationUtil.makeIPCall(dialTo,"");
+                            mApplicationUtil.makeIPCall(dialTo, "");
                             print("Calling ${contact.name}");
                           },
                           child: ClipOval(
                             child: Image.asset(
                               'assets/call_icon.PNG', // Replace with your icon path
-                              width: 35.0, // Set your desired width
-                              height: 35.0, // Set your desired height
+                              width: 45.0, // Set your desired width
+                              height: 45.0, // Set your desired height
                               fit: BoxFit.cover,
                             ),
                           ),
                         ),
-                        SizedBox(width: 15),
-                      ],
-                    ),
-                  );
-                }).toList(),
+                      );
+                    }).toList(),
+                  ),
+                ),
               );
             },
           ),
@@ -599,8 +631,6 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
       ],
     );
   }
-
-
 }
 
 class Contact {
@@ -629,7 +659,6 @@ class Contact {
 
 
 
-//recent calls page content
 class RecentCallsTabContent extends StatefulWidget {
   @override
   State<RecentCallsTabContent> createState() => _RecentCallsTabContentState();
@@ -638,6 +667,7 @@ class RecentCallsTabContent extends StatefulWidget {
 class _RecentCallsTabContentState extends State<RecentCallsTabContent> {
   @override
   Widget build(BuildContext context) {
+    var mApplicationUtil = ApplicationUtils.getInstance(context);
     return Consumer<CallList>(
       builder: (context, callList, child) {
         return ListView.builder(
@@ -645,11 +675,19 @@ class _RecentCallsTabContentState extends State<RecentCallsTabContent> {
           itemBuilder: (context, index) {
             final call = callList.recentCalls[index];
             return ListTile(
+              leading: Icon(
+                call.isIncoming ? Icons.call_received : Icons.call_made,
+                color: call.isIncoming ? Colors.green : Colors.blue,
+              ),
               title: Text(call.number),
-              subtitle: Text('Status: ${call.status}, Time: ${call.timeFormatted}'),
+              subtitle: Text('Status: ${call.isIncoming ? 'Incoming' : 'Outgoing'}, Time: ${call.timeFormatted}'),
               trailing: GestureDetector(
                 onTap: () {
-                  // Handle tap
+                  String dialTo = call.number;
+                  print("DialTo is:  $dialTo");
+                  mApplicationUtil.setDialTo(dialTo);
+                  mApplicationUtil.makeIPCall(dialTo, "");
+                  print("Calling ${call.number}");
                 },
                 child: ClipOval(
                   child: Image.asset(
@@ -670,12 +708,14 @@ class _RecentCallsTabContentState extends State<RecentCallsTabContent> {
 
 class Call {
   final String number;
-  late final String timeFormatted;
+  final String timeFormatted;
+  final bool isIncoming; // true if incoming, false if outgoing
   final String status;
 
   Call({
     required this.number,
     required this.timeFormatted,
+    required this.isIncoming,
     required this.status,
   });
 
@@ -683,6 +723,7 @@ class Call {
     return {
       'number': number,
       'timeFormatted': timeFormatted,
+      'isIncoming': isIncoming,
       'status': status,
     };
   }
@@ -691,15 +732,20 @@ class Call {
     return Call(
       number: json['number'],
       timeFormatted: json['timeFormatted'],
+      isIncoming: json['isIncoming'],
       status: json['status'],
     );
   }
 }
-
 class CallList extends ChangeNotifier {
   List<Call> _recentCalls = [];
 
   List<Call> get recentCalls => _recentCalls;
+
+  CallList() {
+    // Load the recent calls when the class is first created
+    loadRecentCalls();
+  }
 
   Future<void> loadRecentCalls() async {
     final prefs = await SharedPreferences.getInstance();

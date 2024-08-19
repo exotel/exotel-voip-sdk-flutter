@@ -52,10 +52,25 @@ public class ExotelPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
             context = flutterPluginBinding.getApplicationContext();
             exotelTranslatorService.setContext(context);
             System.out.println("ExotelPlugin initialized in java");
-            System.out.println("ExotelPlugin onAttachedToEngine: Context initialized: " + (context != null) + channel);
-            Intent serviceIntent = new Intent(context, ExotelTranslatorService.class);
-            context.startForegroundService(serviceIntent);
+            System.out.println("ExotelPlugin onAttachedToEngine: Context initialized: " + (context != null));
+
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(context, Manifest.permission.FOREGROUND_SERVICE_MICROPHONE) == PackageManager.PERMISSION_GRANTED) {
+                startExotelTranslatorService();
+            } else {
+                // Handle permission request, if needed.
+                System.out.println("Permissions not granted to start the service.");
+            }
         }
+    }
+
+    private void startExotelTranslatorService() {
+        if (exotelTranslatorService == null) {
+            exotelTranslatorService = new ExotelTranslatorService();
+            exotelTranslatorService.setContext(context);
+        }
+        Intent serviceIntent = new Intent(context, ExotelTranslatorService.class);
+        context.startForegroundService(serviceIntent);
     }
 
     @Override
@@ -66,12 +81,12 @@ public class ExotelPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
     @Override
     public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
         isEngineAttached = true;
-        activity = binding.getActivity();  // Update the activity reference
         System.out.println("ExotelPlugin onAttachedToActivity: isEngineAttached = " + isEngineAttached);
-        System.out.println("eventQueue: "+ eventQueue);
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            Intent serviceIntent = new Intent(context, ExotelTranslatorService.class);
-            ContextCompat.startForegroundService(context, serviceIntent);
+        System.out.println("eventQueue: " + eventQueue);
+
+        if (ContextCompat.checkSelfPermission(binding.getActivity(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(binding.getActivity(), Manifest.permission.FOREGROUND_SERVICE_MICROPHONE) == PackageManager.PERMISSION_GRANTED) {
+            startExotelTranslatorService();
         } else {
             // Handle permission not granted scenario
             System.out.println("Permission not granted to start the service.");

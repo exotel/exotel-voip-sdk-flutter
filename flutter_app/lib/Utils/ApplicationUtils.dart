@@ -21,7 +21,7 @@ import 'package:flutter_app/main.dart';
 
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
-
+import 'package:flutter_app/UI/home_page.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/UI/home_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -285,7 +285,7 @@ class ApplicationUtils implements ExotelSDKCallback {
       context!,
       '/incoming',
     );
-    recentCallsPage(mDestination!, 'INCOMING');
+    onCallEnd(mDestination!, true);
   }
 
   void navigateToRinging() {
@@ -296,7 +296,7 @@ class ApplicationUtils implements ExotelSDKCallback {
       '/ringing',
       arguments: {'dialTo': mDialTo, 'state': "Ringing"},
     );
-    recentCallsPage(mDialTo!, 'OUTGOING');
+    onCallEnd(mDialTo!, false);
   }
 
   void navigateToStart() {
@@ -391,6 +391,7 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   @override
   void onCallRinging() {
+    print('in onCallRinging ');
     navigateToRinging();
   }
 
@@ -419,25 +420,42 @@ class ApplicationUtils implements ExotelSDKCallback {
     navigateToIncoming();
   }
 
-  void recentCallsPage(String number, String status) {
-    DateTime time = DateTime.now();
-    final newCall = Call(
-      timeFormatted: '$time',
+  // void recentCallsPage(String number, String status) {
+  //   DateTime time = DateTime.now();
+  //   final newCall = Call(
+  //     timeFormatted: '$time',
+  //     number: number,
+  //     status: status,
+  //   );
+  //
+  //   // Format the time
+  //   final formattedTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(time);
+  //
+  //   // Update the newCall with the formatted time
+  //   newCall.timeFormatted = formattedTime;
+  //
+  //   // Ensure the context is still valid before adding the call
+  //   if (context != null) {
+  //     // Add the new call to the list
+  //     Provider.of<CallList>(context!, listen: false).addCall(newCall);
+  //   }
+  // }
+
+  // Somewhere on another page, when the call ends:
+  void onCallEnd(String number, bool isIncoming) {
+    final now = DateTime.now();
+    final formattedTime = DateFormat('yyyy-MM-dd HH:mm').format(now); // Format the time
+
+    final call = Call(
       number: number,
-      status: status,
+      timeFormatted: formattedTime,
+      isIncoming: isIncoming,
+      status: 'Completed',
     );
 
-    // Format the time
-    final formattedTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(time);
-
-    // Update the newCall with the formatted time
-    newCall.timeFormatted = formattedTime;
-
-    // Ensure the context is still valid before adding the call
-    if (context != null) {
-      // Add the new call to the list
-      Provider.of<CallList>(context!, listen: false).addCall(newCall);
-    }
+    // Access the CallList provider to add the new call
+    final callList = Provider.of<CallList>(context!, listen: false);
+    callList.addCall(call);
   }
 
 

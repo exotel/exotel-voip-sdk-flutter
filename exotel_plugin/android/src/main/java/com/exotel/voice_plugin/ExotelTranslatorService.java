@@ -206,18 +206,26 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         VoiceAppLogger.debug(TAG, "in onStartCommand of ExotelTranslatorService");
+
+        // Create the notification for the foreground service
         Notification notification = createNotification();
-//        makeServiceForeground(notification);
-//        return START_NOT_STICKY;
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                == PackageManager.PERMISSION_GRANTED) {
-            makeServiceForeground(notification);
+
+        // Move startForeground to the very beginning
+        startForeground(NOTIFICATION_ID, notification);
+
+        // Ensure permissions are granted
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE_MICROPHONE) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            // Continue with service operations
         } else {
             // Handle the case where permissions are not granted
+            VoiceAppLogger.debug(TAG, "Required permissions not granted. Stopping service.");
             stopSelf();
         }
+
         return START_NOT_STICKY;
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -556,7 +564,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 //            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_VERSION_DETAILS, arguments);
 //        });
         if (plugin != null) {
-            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            VoiceAppLogger.debug(TAG, "plugin is not null " + plugin);
             HashMap<String, Object> arguments = new HashMap<>();
             arguments.put("version", message);
             plugin.sendEvent(MethodChannelInvokeMethod.ON_VERSION_DETAILS, arguments);
@@ -605,7 +613,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 //            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_INCOMING_CALL, arguments);
 //        });
         if (plugin != null) {
-            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            VoiceAppLogger.debug(TAG, "plugin is not null " + plugin);
             HashMap<String, Object> arguments = new HashMap<>();
             arguments.put("callId", callId);
             arguments.put("destination", destination);
@@ -626,7 +634,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 
     @Override
     public void onDestroyMediaSession() {
-     VoiceAppLogger.error(TAG, "in onDestroyMediaSession()" );
+     VoiceAppLogger.debug(TAG, "in onDestroyMediaSession()" );
     }
 
     @Override
@@ -636,7 +644,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 //            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_CALL_INITIATED, null);
 //        });
         if (plugin != null) {
-            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            VoiceAppLogger.debug(TAG, "plugin is not null " + plugin);
             plugin.sendEvent(MethodChannelInvokeMethod.ON_CALL_INITIATED, null);
         }
         else {
@@ -652,7 +660,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 //            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_CALL_RINGING, null);
 //        });
         if (plugin != null) {
-            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            VoiceAppLogger.debug(TAG, "plugin is not null " + plugin);
             plugin.sendEvent(MethodChannelInvokeMethod.ON_CALL_RINGING, null);
         }
         else {
@@ -667,7 +675,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 //            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_CALL_ESTABLISHED, null);
 //        });
         if (plugin != null) {
-            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            VoiceAppLogger.debug(TAG, "plugin is not null " + plugin);
             plugin.sendEvent(MethodChannelInvokeMethod.ON_CALL_ESTABLISHED, null);
         }
         else {
@@ -686,7 +694,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 //            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_CALL_ENDED, null);
 //        });
         if (plugin != null) {
-            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            VoiceAppLogger.debug(TAG, "plugin is not null " + plugin);
             HashMap<String, String> arguments = new HashMap<>();
             arguments.put("direction", call.getCallDetails().getCallDirection().toString());
             arguments.put("end-reason", call.getCallDetails().getCallEndReason().toString());
@@ -704,7 +712,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 //            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_MISSED_CALL, null);
 //        });
         if (plugin != null) {
-            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            VoiceAppLogger.debug(TAG, "plugin is not null " + plugin);
             plugin.sendEvent(MethodChannelInvokeMethod.ON_MISSED_CALL, null);
         }
         else {
@@ -719,7 +727,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 //            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_MEDIA_DISTRUPTED, null);
 //        });
         if (plugin != null) {
-            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            VoiceAppLogger.debug(TAG, "plugin is not null " + plugin);
             plugin.sendEvent(MethodChannelInvokeMethod.ON_MEDIA_DISTRUPTED, null);
         }
         else {
@@ -734,7 +742,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 //            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_RENEWING_MEDIA, null);
 //        });
         if (plugin != null) {
-            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            VoiceAppLogger.debug(TAG, "plugin is not null " + plugin);
             plugin.sendEvent(MethodChannelInvokeMethod.ON_RENEWING_MEDIA, null);
         }
         else {
@@ -752,7 +760,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
             VoiceAppLogger.error(TAG, "Channel is not null" + ChannelManager.getChannel());
             // Instead of using MethodChannel, send the event via EventChannel
             if (plugin != null) {
-                VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+                VoiceAppLogger.debug(TAG, "plugin is not null " + plugin);
                 plugin.sendEvent(MethodChannelInvokeMethod.ON_INITIALIZATION_SUCCESS, null);
             }
         } else {
@@ -777,7 +785,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 //            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_INITIALIZATION_FAILURE,createResponse(exotelVoiceError.getErrorMessage()));
 //        });
         if (plugin != null) {
-            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            VoiceAppLogger.debug(TAG, "plugin is not null " + plugin);
             plugin.sendEvent(MethodChannelInvokeMethod.ON_INITIALIZATION_FAILURE,createResponse(exotelVoiceError.getErrorMessage()));
         }
         else {
@@ -804,7 +812,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 //            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_UPLOAD_LOG_SUCCESS,null);
 //        });
         if (plugin != null) {
-            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            VoiceAppLogger.debug(TAG, "plugin is not null " + plugin);
             plugin.sendEvent(MethodChannelInvokeMethod.ON_UPLOAD_LOG_SUCCESS,null);
         }
         else {
@@ -818,7 +826,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 //            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_UPLOAD_LOG_FAILURE,createResponse(exotelVoiceError.getErrorMessage()));
 //        });
         if (plugin != null) {
-            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            VoiceAppLogger.debug(TAG, "plugin is not null " + plugin);
             plugin.sendEvent(MethodChannelInvokeMethod.ON_UPLOAD_LOG_FAILURE,createResponse(exotelVoiceError.getErrorMessage()));
         }
         else {
@@ -826,14 +834,13 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         }
     }
 
-
     @Override
     public void onAuthenticationFailure(ExotelVoiceError exotelVoiceError) {
 //        uiThreadHandler.post(()->{
 //            ChannelManager.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_AUTHENTICATION_FAILURE,createResponse("Authentication failure"));
 //        });
         if (plugin != null) {
-            VoiceAppLogger.error(TAG, "plugin is not null" + plugin);
+            VoiceAppLogger.debug(TAG, "plugin is not null " + plugin);
             plugin.sendEvent(MethodChannelInvokeMethod.ON_AUTHENTICATION_FAILURE,createResponse("Authentication failure"));
         }
         else {
