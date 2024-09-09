@@ -2,8 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
 import 'dart:convert';
-import '../exotelSDK/ExotelSDKCallback.dart';
-import '../exotelSDK/ExotelSDKClient.dart';
+import 'package:exotel_plugin/ExotelSDKCallback.dart';
 import 'login_page.dart';
 import '../main.dart';
 import 'call_page.dart';
@@ -14,7 +13,6 @@ import '../firebase_options.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -23,12 +21,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
-
   @override
   void initState() {
     super.initState();
-
   }
 
   @override
@@ -36,7 +31,8 @@ class _HomePageState extends State<HomePage> {
     var mApplicationUtil = ApplicationUtils.getInstance(context);
     return FutureBuilder<SharedPreferences>(
       future: SharedPreferences.getInstance(),
-      builder: (BuildContext context, AsyncSnapshot<SharedPreferences> snapshot) {
+      builder:
+          (BuildContext context, AsyncSnapshot<SharedPreferences> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return CircularProgressIndicator();
         } else {
@@ -44,338 +40,372 @@ class _HomePageState extends State<HomePage> {
             return Text('Error: ${snapshot.error}');
           } else {
             final prefs = snapshot.data;
-            final String? userId =  prefs?.getString(ApplicationSharedPreferenceData.USER_NAME.toString());
-            final String? displayName = prefs?.getString(ApplicationSharedPreferenceData.DISPLAY_NAME.toString());
-            final String? accountSid = prefs?.getString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
-            final String? hostname = prefs?.getString(ApplicationSharedPreferenceData.APP_HOSTNAME.toString());
-            final String? password = prefs?.getString(ApplicationSharedPreferenceData.PASSWORD.toString());
-            TextEditingController dialNumberController = TextEditingController(text: "1234567890");
+            final String? userId = prefs?.getString(
+                ApplicationSharedPreferenceData.USER_NAME.toString());
+            final String? displayName = prefs?.getString(
+                ApplicationSharedPreferenceData.DISPLAY_NAME.toString());
+            final String? accountSid = prefs?.getString(
+                ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
+            final String? hostname = prefs?.getString(
+                ApplicationSharedPreferenceData.APP_HOSTNAME.toString());
+            final String? password = prefs?.getString(
+                ApplicationSharedPreferenceData.PASSWORD.toString());
 
-
-    // Future<String?> getStatus() async{
-    //   String? status;
-    //   status = await mApplicationUtil.mStatus;
-    //   return status;
-    // }
+            // Future<String?> getStatus() async{
+            //   String? status;
+            //   status = await mApplicationUtil.mStatus;
+            //   return status;
+            // }
             Future<String?> getStatus() async {
               String? status = await mApplicationUtil.mStatus;
               if (status == null) {
                 // If mStatus is not ready, invoke the initialization method
-                mApplicationUtil.login(userId!, password!, accountSid!, hostname!);
+                mApplicationUtil.login(
+                    userId!, password!, accountSid!, hostname!);
                 // After initialization, get the status again
                 status = await mApplicationUtil.mStatus;
               }
               return status;
             }
 
-    Future<void> showVersionDialog() async {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return FutureBuilder<String>(
-            future: mApplicationUtil.getVersionDetails(),
-            builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return AlertDialog(
-                  title: Text('Loading...'),
-                  content: CircularProgressIndicator(),
-                );
-              } else {
-                return AlertDialog(
-                  title: Text('SDK Details'),
-                  content: Text('${snapshot.data}'),
-                  actions: <Widget>[
-                    TextButton(
-                      child: Text('OK'),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ],
-                );
-              }
-            },
-          );
-        },
-      );
-    }
+            Future<void> showVersionDialog() async {
+              String? version = await mApplicationUtil.mVersion;
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('SDK Details'),
+                      content: Text('$version'),
+                      actions: <Widget>[
+                        TextButton(
+                          child: Text('OK'),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  });
+            }
 
-    void showDropdownDialog(BuildContext context) {
-      int? dropdownValue1 = 5;
-      String? dropdownValue2 = "NO_ISSUE";
+            void showDropdownDialog(BuildContext context) {
+              int? dropdownValue1 = 5;
+              String? dropdownValue2 = "NO_ISSUE";
 
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
-            builder: (context, setState) {
-              return AlertDialog(
-                title: Text('Last Call Feedback'),
-                content: SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: MediaQuery.of(context).size.height * 0.2, // 20% of screen height
-                      minWidth: MediaQuery.of(context).size.width * 0.5, // 50% of screen width
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return StatefulBuilder(
+                    builder: (context, setState) {
+                      return AlertDialog(
+                        title: Text('Last Call Feedback'),
+                        content: SingleChildScrollView(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: MediaQuery.of(context).size.height *
+                                  0.2, // 20% of screen height
+                              minWidth: MediaQuery.of(context).size.width *
+                                  0.5, // 50% of screen width
+                            ),
+                            child: Column(
+                              children: <Widget>[
+                                Text(
+                                    'Rating:'), // Heading for the first dropdown
+                                DropdownButton<int?>(
+                                  value: dropdownValue1,
+                                  onChanged: (int? newValue) {
+                                    setState(() {
+                                      dropdownValue1 = newValue;
+                                    });
+                                  },
+                                  items: <int?>[
+                                    1,
+                                    2,
+                                    3,
+                                    4,
+                                    5
+                                  ].map<DropdownMenuItem<int?>>((int? value) {
+                                    return DropdownMenuItem<int?>(
+                                      value: value,
+                                      child: Text('${value ?? 3}'),
+                                    );
+                                  }).toList(),
+                                ),
+                                SizedBox(
+                                    height: MediaQuery.of(context).size.height *
+                                        0.03), // 3% of screen height
+                                Text(
+                                    'Issue:'), // Heading for the second dropdown
+                                DropdownButton<String?>(
+                                  value: dropdownValue2,
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      dropdownValue2 = newValue;
+                                    });
+                                  },
+                                  items: <String>[
+                                    "NO_ISSUE",
+                                    "ECHO",
+                                    "NO_AUDIO",
+                                    "HIGH_LATENCY",
+                                    "CHOPPY_AUDIO",
+                                    "BACKGROUND_NOISE"
+                                  ].map<DropdownMenuItem<String?>>(
+                                      (String? value) {
+                                    return DropdownMenuItem<String?>(
+                                      value: value,
+                                      child: Text(value ?? "NO_ISSUE"),
+                                    );
+                                  }).toList(),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text('CANCEL'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          TextButton(
+                            child: Text('OK'),
+                            onPressed: () {
+                              mApplicationUtil.postFeedback(
+                                  dropdownValue1, dropdownValue2);
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              );
+            }
+
+            void showAccountDetails() {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('Account Details'),
+                    content: Text(
+                        'Subscriber Name: $userId \n \n Account SID: $accountSid \n \n Base URL: $hostname'),
+                    actions: <Widget>[
+                      TextButton(
+                        child: Text('OK'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
+
+            void showReportProblem(BuildContext context) {
+              final TextEditingController controller = TextEditingController();
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('Description'),
+                    content: TextField(
+                      controller: controller,
+                      decoration: InputDecoration(hintText: ""),
                     ),
+                    actions: <Widget>[
+                      TextButton(
+                        child: Text('CANCEL'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                      TextButton(
+                        child: Text('OK'),
+                        onPressed: () {
+                          String description = controller.text;
+                          final Duration day = Duration(days: 1);
+                          final int uploadLogNumDays = 7;
+                          final DateTime endDate = DateTime.now();
+                          final DateTime startDate =
+                              endDate.subtract(day * uploadLogNumDays);
+                          print(
+                              'User input: $description, startDate: $startDate, endDate: $endDate');
+                          try {
+                            mApplicationUtil.uploadLogs(
+                                startDate, endDate, description);
+                          } catch (e) {
+                            mApplicationUtil.showToast("Upload Error");
+                          }
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
+
+            return DefaultTabController(
+              length: 3,
+              child: Scaffold(
+                appBar: AppBar(
+                  title: Padding(
+                    padding: const EdgeInsets.all(8.0),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Text('Rating:'), // Heading for the first dropdown
-                        DropdownButton<int?>(
-                          value: dropdownValue1,
-                          onChanged: (int? newValue) {
-                            setState(() {
-                              dropdownValue1 = newValue;
-                            });
-                          },
-                          items: <int?>[1, 2, 3, 4, 5]
-                              .map<DropdownMenuItem<int?>>((int? value) {
-                            return DropdownMenuItem<int?>(
-                              value: value,
-                              child: Text('${value ?? 3}'),
-                            );
-                          }).toList(),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              const Text(
+                                'Exotel Voice Application',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              PopupMenuButton<String>(
+                                icon: const Icon(Icons.more_vert,
+                                    color: Colors.white),
+                                onSelected: (String result) async {
+                                  switch (result) {
+                                    case 'Button 1':
+                                      // Handle Button 1 press
+                                      mApplicationUtil.stop();
+                                      SharedPreferences prefs =
+                                          await SharedPreferences.getInstance();
+                                      await prefs.setBool(
+                                          ApplicationSharedPreferenceData
+                                              .IS_LOGGED_IN
+                                              .toString(),
+                                          false);
+                                      mApplicationUtil.navigateToLogin();
+                                      print('Button 1 pressed');
+                                      break;
+                                    case 'Button 2':
+                                      // Handle Button 2 press
+                                      showReportProblem(context);
+                                      print('Button 2 pressed');
+                                      break;
+                                    case 'Button 3':
+                                      showVersionDialog();
+                                      print('Button 3 pressed');
+                                      break;
+                                    case 'Button 4':
+                                      // Handle Button 4 press
+                                      showDropdownDialog(context);
+                                      print('Button 4 pressed');
+                                      break;
+                                    case 'Button 5':
+                                      showAccountDetails();
+                                      print('Button 5 pressed');
+                                      break;
+                                  }
+                                },
+                                itemBuilder: (BuildContext context) =>
+                                    <PopupMenuEntry<String>>[
+                                  const PopupMenuItem<String>(
+                                    value: 'Button 1',
+                                    child: Text('Logout'),
+                                  ),
+                                  const PopupMenuItem<String>(
+                                    value: 'Button 2',
+                                    child: Text('Report Problem'),
+                                  ),
+                                  const PopupMenuItem<String>(
+                                    value: 'Button 3',
+                                    child: Text('SDK Details'),
+                                  ),
+                                  const PopupMenuItem<String>(
+                                    value: 'Button 4',
+                                    child: Text('Last Call Feedback'),
+                                  ),
+                                  const PopupMenuItem<String>(
+                                    value: 'Button 5',
+                                    child: Text('Account Details'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                        SizedBox(height: MediaQuery.of(context).size.height * 0.03), // 3% of screen height
-                        Text('Issue:'), // Heading for the second dropdown
-                        DropdownButton<String?>(
-                          value: dropdownValue2,
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              dropdownValue2 = newValue;
-                            });
-                          },
-                          items: <String>[
-                            "NO_ISSUE",
-                            "ECHO",
-                            "NO_AUDIO",
-                            "HIGH_LATENCY",
-                            "CHOPPY_AUDIO",
-                            "BACKGROUND_NOISE"
-                          ].map<DropdownMenuItem<String?>>((String? value) {
-                            return DropdownMenuItem<String?>(
-                              value: value,
-                              child: Text(value ?? "NO_ISSUE"),
-                            );
-                          }).toList(),
-                        ),
+                        Padding(
+                          padding: EdgeInsets.only(
+                              bottom: MediaQuery.of(context).size.height *
+                                  0.005), // 1.5% of screen height
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(
+                                '$userId', // Replace with actual user id
+                                style: TextStyle(color: Color(0xFFBCBCBE)),
+                              ),
+                              FutureBuilder<String?>(
+                                future: getStatus(),
+                                builder: (BuildContext context,
+                                    AsyncSnapshot<String?> snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return CircularProgressIndicator();
+                                  } else {
+                                    String status =
+                                        snapshot.data ?? "In progress";
+                                    return Text(
+                                      '$status',
+                                      style: status == "Ready"
+                                          ? TextStyle(color: Color(0xFF47FF00))
+                                          : TextStyle(color: Colors.red),
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        )
                       ],
                     ),
                   ),
-                ),
-                actions: <Widget>[
-                  TextButton(
-                    child: Text('CANCEL'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                  TextButton(
-                    child: Text('OK'),
-                    onPressed: () {
-                      mApplicationUtil.postFeedback(dropdownValue1, dropdownValue2);
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      );
-    }
-
-    void showAccountDetails() {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Account Details'),
-            content: Text('Subscriber Name: $userId \n \n Account SID: $accountSid \n \n Base URL: $hostname'),
-            actions: <Widget>[
-              TextButton(
-                child: Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-    }
-
-    void showReportProblem(BuildContext context) {
-      final TextEditingController controller = TextEditingController();
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Description'),
-            content: TextField(
-              controller: controller,
-              decoration: InputDecoration(hintText: ""),
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: Text('CANCEL'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              TextButton(
-                child: Text('OK'),
-                onPressed: () {
-                  String description = controller.text;
-                  final Duration day = Duration(days: 1);
-                  final int uploadLogNumDays = 7;
-                  final DateTime endDate = DateTime.now();
-                  final DateTime startDate = endDate.subtract(day * uploadLogNumDays);
-                  print('User input: $description, startDate: $startDate, endDate: $endDate');
-                  try {
-                    mApplicationUtil.uploadLogs(startDate, endDate, description);
-                  } catch (e) {
-                    mApplicationUtil.showToast("Upload Error");
-                  }
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-    }
-
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      const Text(
-                        'Exotel Voice Application',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert, color: Colors.white),
-                        onSelected: (String result) async {
-                          switch (result) {
-                            case 'Button 1':
-                            // Handle Button 1 press
-                              mApplicationUtil.stop();
-                              // mApplicationUtil.navigateToStart();
-                              print('Button 1 pressed');
-                              break;
-                            case 'Button 2':
-                            // Handle Button 2 press
-                              showReportProblem(context);
-                              print('Button 2 pressed');
-                              break;
-                            case 'Button 3':
-                              showVersionDialog();
-                              print('Button 3 pressed');
-                              break;
-                            case 'Button 4':
-                            // Handle Button 4 press
-                              showDropdownDialog(context);
-                              print('Button 4 pressed');
-                              break;
-                            case 'Button 5':
-                              showAccountDetails();
-                              print('Button 5 pressed');
-                              break;
-                          }
-                        },
-                        itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                          const PopupMenuItem<String>(
-                            value: 'Button 1',
-                            child: Text('Logout'),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'Button 2',
-                            child: Text('Report Problem'),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'Button 3',
-                            child: Text('SDK Details'),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'Button 4',
-                            child: Text('Last Call Feedback'),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'Button 5',
-                            child: Text('Account Details'),
-                          ),
-                        ],
-                      ),
+                  bottom: const TabBar(
+                    indicatorColor: Colors
+                        .white, // Color of the line under the selected tab
+                    labelColor: Colors.white, // Color of the selected tab text
+                    unselectedLabelColor:
+                        Colors.grey, // Color of the unselected tab text
+                    tabs: [
+                      Tab(
+                          child: Text('Dial',
+                              style: TextStyle(
+                                  fontSize:
+                                      18.0))), // Set your desired font size
+                      Tab(
+                          child: Text('Contacts',
+                              style: TextStyle(fontSize: 18.0))),
+                      Tab(
+                          child: Text('Recent Calls',
+                              style: TextStyle(fontSize: 15.0))),
                     ],
                   ),
+                  backgroundColor: const Color(0xFF0800AF),
+                  toolbarHeight: 90, // Adjust the value as needed
                 ),
-                Padding(
-                  padding: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.005), // 1.5% of screen height
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(
-                        '$userId', // Replace with actual user id
-                        style: TextStyle(color: Color(0xFFBCBCBE)),
-                      ),
-                      FutureBuilder<String?>(
-                        future: getStatus(),
-                        builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return CircularProgressIndicator();
-                          } else {
-                            String status = snapshot.data ?? "In progress";
-                            return Text(
-                              '$status',
-                              style: status == "Ready" ? TextStyle(color: Color(0xFF47FF00)) : TextStyle(color: Colors.red),
-                            );
-                          }
-                        },
-                      ),
-
-                    ],
-                  ),
-                )
-              ],
-            ),
-          ),
-          bottom: const TabBar(
-            indicatorColor: Colors.white, // Color of the line under the selected tab
-            labelColor: Colors.white, // Color of the selected tab text
-            unselectedLabelColor: Colors.grey, // Color of the unselected tab text
-            tabs: [
-              Tab(child: Text('Dial', style: TextStyle(fontSize: 18.0))), // Set your desired font size
-              Tab(child: Text('Contacts', style: TextStyle(fontSize: 18.0))),
-              Tab(child: Text('Recent Calls', style: TextStyle(fontSize: 15.0))),
-            ],
-          ),
-          backgroundColor: const Color(0xFF0800AF),
-        ),
-        body: TabBarView(
-          children: [
-            DialTabContent(),
-            ContactsTabContent(),
-            RecentCallsTabContent(),
-          ],
-        ),
-      ),
+                body: TabBarView(
+                  children: [
+                    DialTabContent(),
+                    ContactsTabContent(),
+                    RecentCallsTabContent(),
+                  ],
+                ),
+              ),
+            );
+          }
+        }
+      },
     );
   }
-}
-},
-);
-}
-
 }
 
 //dial tab content
@@ -385,60 +415,77 @@ class DialTabContent extends StatefulWidget {
 }
 
 class _DialTabContentState extends State<DialTabContent> {
-   TextEditingController dialNumberController = TextEditingController(text: "1234567890");
+  TextEditingController dialNumberController =
+      TextEditingController(text: "8123674275");
+
   @override
   Widget build(BuildContext context) {
     var mApplicationUtil = ApplicationUtils.getInstance(context);
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 0), // Added horizontal and vertical padding
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          const Padding(
-            padding: EdgeInsets.only(top: 80.0, bottom: 12.0),
-            child: Text('Dial To', style: TextStyle(fontSize: 20.0)),
-          ),
-          TextField(
-            controller: dialNumberController,
-            decoration: InputDecoration(
-              labelText: 'Enter Number',
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(5),
-                borderSide: const BorderSide(
-                  color: Color(0xFF0800AF), // Set the border color to blue
-                  width: 2.0, // Set the border width
+      padding: const EdgeInsets.symmetric(
+          horizontal: 25.0,
+          vertical: 0), // Added horizontal and vertical padding
+      child: SingleChildScrollView(
+        // Wrap the Column with SingleChildScrollView
+        child: Column(
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                const Padding(
+                  padding: EdgeInsets.only(top: 80.0, bottom: 12.0),
+                  child: Text('Dial To', style: TextStyle(fontSize: 20.0)),
                 ),
-              ),
-              filled: true, // Don't forget this
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 30.0, bottom: 12.0),
-            child: GestureDetector(
-              onTap:() {
-            String dialTo = dialNumberController.text;
-            mApplicationUtil.setDialTo(dialTo);
-            mApplicationUtil.makeIPCall(dialTo,"test:1234");
-            },
-              child: ClipOval(
-                child: Image.asset(
-                  'assets/call_icon.PNG', // Replace with your icon path
-                  width: 55.0, // Set your desired width
-                  height: 55.0, // Set your desired height
-                  fit: BoxFit.cover,
+                TextField(
+                  controller: dialNumberController,
+                  decoration: InputDecoration(
+                    labelText: 'Enter Number',
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20.0, vertical: 10.0),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5),
+                      borderSide: const BorderSide(
+                        color:
+                            Color(0xFF0800AF), // Set the border color to blue
+                        width: 2.0, // Set the border width
+                      ),
+                    ),
+                    filled: true,
+                  ),
                 ),
-              ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 30.0, bottom: 12.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      String dialTo = dialNumberController.text;
+                      navigatorKey.currentState!.pushNamedAndRemoveUntil(
+                        '/ringing',
+                        (Route<dynamic> route) => false,
+                        arguments: {'state': "Connecting...."},
+                      );
+                      print("Navigating to /ringing with state: Connecting...");
+                      mApplicationUtil.setDialTo(dialTo);
+                      mApplicationUtil.makeIPCall(dialTo, "test:1234");
+                    },
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/call_icon.PNG', // Replace with your icon path
+                        width: 55.0, // Set your desired width
+                        height: 55.0, // Set your desired height
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
-
-
-//contacts page content
 
 class ContactsTabContent extends StatefulWidget {
   const ContactsTabContent({Key? key}) : super(key: key);
@@ -487,14 +534,15 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
       });
       // Store the contacts in shared preferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('contacts', jsonEncode(contacts.map((contact) => contact.toJson()).toList()));
+      await prefs.setString('contacts',
+          jsonEncode(contacts.map((contact) => contact.toJson()).toList()));
     } catch (error) {
       // Handle error
       print('Error: $error');
     }
   }
 
-  Future<String?> _getJsonData() async{
+  Future<String?> _getJsonData() async {
     String? jsonData;
     jsonData = await mApplicationUtil.mJsonData;
     return jsonData;
@@ -507,7 +555,9 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
     for (var response in responses) {
       final String group = response['data']['group'];
       final List<dynamic> contactsJson = response['data']['contacts'];
-      contacts.addAll(contactsJson.map<Contact>((json) => Contact.fromJson(json, group)).toList());
+      contacts.addAll(contactsJson
+          .map<Contact>((json) => Contact.fromJson(json, group))
+          .toList());
     }
     return contacts;
   }
@@ -518,12 +568,9 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
       future: _fetchAndParseJsonData,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          // Show circular progress indicator for 2 seconds
-          Future.delayed(Duration(seconds: 2), () {
-            // After 2 seconds, trigger a rebuild
-            setState(() {});
-          });
-          return Center(child: CircularProgressIndicator());
+          return Center(
+            child: CircularProgressIndicator(color: Color(0xFF0800AF)),
+          );
         }
         return _buildContent();
       },
@@ -541,12 +588,29 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
           child: TextField(
             controller: searchController,
             decoration: InputDecoration(
-              labelText: "Search",
+              labelText: "Search Contacts",
+              labelStyle: TextStyle(color: Colors.black),
+              prefixIcon: Icon(Icons.search, color: Colors.black),
               suffixIcon: IconButton(
-                icon: Icon(Icons.clear),
+                icon: Icon(Icons.clear, color: Colors.black),
                 onPressed: () {
                   searchController.clear();
+                  setState(() {}); // Trigger rebuild to update filteredContacts
                 },
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+                borderSide: const BorderSide(
+                  color: Color(0xFF0800AF), // Set the border color to blue
+                  width: 2.0, // Set the border width
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+                borderSide: const BorderSide(
+                  color: Color(0xFF0800AF), // Set the border color to blue
+                  width: 2.0, // Set the border width
+                ),
               ),
             ),
             onChanged: (value) {
@@ -555,55 +619,72 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
           ),
         ),
         Expanded(
-          child: ListView.builder(
-            itemCount: groupedContacts.keys.length,
-            itemBuilder: (context, index) {
-              var group = groupedContacts.keys.elementAt(index);
-              var contacts = groupedContacts[group]!;
-              var filteredContacts = contacts.where((contact) {
-                final String query = searchController.text.toLowerCase();
-                return contact.name.toLowerCase().contains(query);
-              }).toList();
-              return ExpansionTile(
-                title: Text(group, style: TextStyle(fontWeight: FontWeight.bold),),
-                children: filteredContacts.map<Widget>((contact) {
-                  return ListTile(
-                    title: Text(contact.name),
-                    subtitle: Text('Number: ${contact.number}'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            String dialTo = contact.number;
-                            print("DialTo is:  $dialTo");
-                            mApplicationUtil.setDialTo(dialTo);
-                            mApplicationUtil.makeIPCall(dialTo,"");
-                            print("Calling ${contact.name}");
-                          },
-                          child: ClipOval(
-                            child: Image.asset(
-                              'assets/call_icon.PNG', // Replace with your icon path
-                              width: 35.0, // Set your desired width
-                              height: 35.0, // Set your desired height
-                              fit: BoxFit.cover,
-                            ),
-                          ),
+          child: groupedContacts.isEmpty
+              ? Center(
+                  child: Text(
+                    "No contacts available",
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: groupedContacts.keys.length,
+                  itemBuilder: (context, index) {
+                    var group = groupedContacts.keys.elementAt(index);
+                    var contacts = groupedContacts[group]!;
+                    var filteredContacts = contacts.where((contact) {
+                      final String query = searchController.text.toLowerCase();
+                      return contact.name.toLowerCase().contains(query);
+                    }).toList();
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 4.0, horizontal: 8.0),
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
                         ),
-                        SizedBox(width: 15),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              );
-            },
-          ),
+                        elevation: 3.0,
+                        child: ExpansionTile(
+                          title: Text(
+                            group,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black),
+                          ),
+                          children: filteredContacts.map<Widget>((contact) {
+                            return ListTile(
+                              title: Text(contact.name,
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w500)),
+                              subtitle: Text('Number: ${contact.number}'),
+                              trailing: GestureDetector(
+                                onTap: () {
+                                  String dialTo = contact.number;
+                                  print("DialTo is:  $dialTo");
+                                  mApplicationUtil.setDialTo(dialTo);
+                                  mApplicationUtil.makeIPCall(dialTo, "");
+                                  print("Calling ${contact.name}");
+                                },
+                                child: ClipOval(
+                                  child: Image.asset(
+                                    'assets/call_icon.PNG', // Replace with your icon path
+                                    width: 45.0, // Set your desired width
+                                    height: 45.0, // Set your desired height
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    );
+                  },
+                ),
         ),
       ],
     );
   }
-
-
 }
 
 class Contact {
@@ -622,17 +703,12 @@ class Contact {
   }
 
   Map<String, dynamic> toJson() => {
-    'contact_name': name,
-    'contact_number': number,
-    'group': group,
-  };
+        'contact_name': name,
+        'contact_number': number,
+        'group': group,
+      };
 }
 
-
-
-
-
-//recent calls page content
 class RecentCallsTabContent extends StatefulWidget {
   @override
   State<RecentCallsTabContent> createState() => _RecentCallsTabContentState();
@@ -641,6 +717,7 @@ class RecentCallsTabContent extends StatefulWidget {
 class _RecentCallsTabContentState extends State<RecentCallsTabContent> {
   @override
   Widget build(BuildContext context) {
+    var mApplicationUtil = ApplicationUtils.getInstance(context);
     return Consumer<CallList>(
       builder: (context, callList, child) {
         return ListView.builder(
@@ -648,11 +725,20 @@ class _RecentCallsTabContentState extends State<RecentCallsTabContent> {
           itemBuilder: (context, index) {
             final call = callList.recentCalls[index];
             return ListTile(
+              leading: Icon(
+                call.isIncoming ? Icons.call_received : Icons.call_made,
+                color: call.isIncoming ? Colors.green : Colors.blue,
+              ),
               title: Text(call.number),
-              subtitle: Text('Status: ${call.status}, Time: ${call.timeFormatted}'),
+              subtitle: Text(
+                  'Status: ${call.isIncoming ? 'Incoming' : 'Outgoing'}, Time: ${call.timeFormatted}'),
               trailing: GestureDetector(
                 onTap: () {
-                  // Handle tap
+                  String dialTo = call.number;
+                  print("DialTo is:  $dialTo");
+                  mApplicationUtil.setDialTo(dialTo);
+                  mApplicationUtil.makeIPCall(dialTo, "");
+                  print("Calling ${call.number}");
                 },
                 child: ClipOval(
                   child: Image.asset(
@@ -673,12 +759,14 @@ class _RecentCallsTabContentState extends State<RecentCallsTabContent> {
 
 class Call {
   final String number;
-  late final String timeFormatted;
+  final String timeFormatted;
+  final bool isIncoming; // true if incoming, false if outgoing
   final String status;
 
   Call({
     required this.number,
     required this.timeFormatted,
+    required this.isIncoming,
     required this.status,
   });
 
@@ -686,6 +774,7 @@ class Call {
     return {
       'number': number,
       'timeFormatted': timeFormatted,
+      'isIncoming': isIncoming,
       'status': status,
     };
   }
@@ -694,6 +783,7 @@ class Call {
     return Call(
       number: json['number'],
       timeFormatted: json['timeFormatted'],
+      isIncoming: json['isIncoming'],
       status: json['status'],
     );
   }
@@ -704,12 +794,18 @@ class CallList extends ChangeNotifier {
 
   List<Call> get recentCalls => _recentCalls;
 
+  CallList() {
+    // Load the recent calls when the class is first created
+    loadRecentCalls();
+  }
+
   Future<void> loadRecentCalls() async {
     final prefs = await SharedPreferences.getInstance();
     final String? recentCallsJson = prefs.getString('recentCalls');
     if (recentCallsJson != null) {
       final List<dynamic> recentCallsList = jsonDecode(recentCallsJson);
-      _recentCalls = recentCallsList.map((callJson) => Call.fromJson(callJson)).toList();
+      _recentCalls =
+          recentCallsList.map((callJson) => Call.fromJson(callJson)).toList();
       notifyListeners();
     }
   }
@@ -722,7 +818,8 @@ class CallList extends ChangeNotifier {
 
   Future<void> saveRecentCalls() async {
     final prefs = await SharedPreferences.getInstance();
-    final String recentCallsJson = jsonEncode(_recentCalls.map((call) => call.toJson()).toList());
+    final String recentCallsJson =
+        jsonEncode(_recentCalls.map((call) => call.toJson()).toList());
     await prefs.setString('recentCalls', recentCallsJson);
   }
 }

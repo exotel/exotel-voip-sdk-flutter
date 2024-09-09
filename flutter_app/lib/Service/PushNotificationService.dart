@@ -1,20 +1,19 @@
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_app/exotelSDK/ExotelVoiceClient.dart';
-import 'package:flutter_app/exotelSDK/ExotelVoiceClientFactory.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:exotel_plugin/ExotelSDKClient.dart';
 
 class PushNotificationService {
   static final PushNotificationService _instance = PushNotificationService._internal();
-
+  BuildContext? context;
   FirebaseMessaging? _fcm;
-  ExotelVoiceClient? _exotelVoiceClient;
   static PushNotificationService getInstance() {
     return _instance;
   }
   PushNotificationService._internal(){
     _fcm = FirebaseMessaging.instance;
-    _exotelVoiceClient = ExotelVoiceClientFactory.getExotelVoiceClient();
+    // _exotelVoiceClient = ExotelVoiceClientFactory.getExotelVoiceClient();
   }
 
   Future initialize() async {
@@ -26,7 +25,7 @@ class PushNotificationService {
       if (message.notification != null) {
         print('Message also contained a notification: ${message.notification}');
       }
-      _exotelVoiceClient?.relaySessionData(message.data);
+      ExotelSDKClient().relaySessionData(message.data);
     }
     );
   }
