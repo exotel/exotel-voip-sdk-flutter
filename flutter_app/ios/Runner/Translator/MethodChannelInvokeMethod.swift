@@ -23,4 +23,5 @@ class MethodChannelInvokeMethod {
     static var ON_UPLOAD_LOG_SUCCESS = "on-upload-log-success";
     static var ON_UPLOAD_LOG_FAILURE = "on-upload-log-failure";
     static var ON_LOG = "on-log";
+    static var ON_DESTROY_MEDIA_SESSION = "on-destroy-media-session";
 }

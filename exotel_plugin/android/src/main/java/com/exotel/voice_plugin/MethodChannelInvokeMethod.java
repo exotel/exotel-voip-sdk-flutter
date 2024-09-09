@@ -2,6 +2,7 @@ package com.exotel.voice_plugin;
 
 public class MethodChannelInvokeMethod {
     public static final String ON_INITIALIZATION_SUCCESS = "on-initialization-success";
+    public static final String ON_DEINITIALIZED = "on-deinitialized";
     public static final String ON_INITIALIZATION_FAILURE = "on-initialization-failure";
     public static final String ON_DEINITIALIZED = "on-deinitialized";
 
@@ -17,5 +18,5 @@ public class MethodChannelInvokeMethod {
     public static final String ON_UPLOAD_LOG_SUCCESS = "on-upload-log-success";
     public static final String ON_UPLOAD_LOG_FAILURE = "on-upload-log-failure";
     public static final String ON_VERSION_DETAILS = "on-version-details";
-
+    public static final String ON_DESTROY_MEDIA_SESSION = "on-destroy-media-session";
 }

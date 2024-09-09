@@ -100,6 +100,11 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
 
         VoiceAppLogger.debug(TAG, "Hostname: " + hostname + " SubscriberName: "
                 + subscriberName + " AccountSID: " + accountSid + " SubscriberToken: " + subscriberToken);
+        SharedPreferencesHelper sharedPreferencesHelper = SharedPreferencesHelper.getInstance(context);
+        sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString(), subscriberToken);
+        sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.APP_HOSTNAME.toString(), hostname);
+        sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.USER_NAME.toString(), subscriberName);
+        sharedPreferencesHelper.putString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString(), accountSid);
         if (null == displayName || displayName.trim().isEmpty()) {
             displayName = subscriberName;
         } else {
@@ -133,6 +138,20 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
 
         /* End */
         VoiceAppLogger.debug(TAG, "Returning from initialize with params in sample service");
+    }
+
+    /**
+     * Stop  the exotel client sdk
+     */
+    void stop() {
+        VoiceAppLogger.info(TAG, "Stop sample application Service");
+
+        if (null == exotelVoiceClient || !exotelVoiceClient.isInitialized()) {
+            VoiceAppLogger.error(TAG, "SDK is not yet initialized");
+        } else {
+            exotelVoiceClient.stop();
+        }
+        VoiceAppLogger.debug(TAG, "End: Stop in sample App Service");
     }
 
     /**
@@ -408,6 +427,31 @@ public class VoiceAppService implements ExotelVoiceClientEventListener, CallList
 
         VoiceAppLogger.debug(TAG, "End: onStatusChange");
 
+    }
+
+    @Override
+    public void onDestroyMediaSession() {
+        VoiceAppLogger.debug(TAG, "Start: onDestroyMediaSession");
+
+        synchronized (statusListenerListMutex) {
+            for (VoiceAppStatusEvents statusEvents : voiceAppStatusListenerList) {
+                statusEvents.onDestroyMediaSession();
+            }
+        }
+
+        VoiceAppLogger.debug(TAG, "End: onDestroyMediaSession");
+
+    }
+
+    @Override
+    public void onDeInitialized() {
+        VoiceAppLogger.debug(TAG, "Start: onDeInitialized");
+        synchronized (statusListenerListMutex) {
+            for (VoiceAppStatusEvents statusEvents : voiceAppStatusListenerList) {
+                statusEvents.onDeInitialization();
+            }
+        }
+        VoiceAppLogger.debug(TAG, "Exit: onDeInitialized");
     }
 
     /**

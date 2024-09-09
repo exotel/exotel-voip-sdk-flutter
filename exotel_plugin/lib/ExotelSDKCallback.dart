@@ -30,4 +30,5 @@ abstract class ExotelSDKCallback {
   void onUploadLogFailure(String errorMessage);
 
   void onVersionDetails(String version);
+  void onDestroyMediaSession();
 }
