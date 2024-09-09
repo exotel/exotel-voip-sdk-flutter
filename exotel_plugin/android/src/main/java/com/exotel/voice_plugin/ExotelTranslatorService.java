@@ -635,6 +635,16 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
     @Override
     public void onDestroyMediaSession() {
      VoiceAppLogger.debug(TAG, "in onDestroyMediaSession()" );
+        if (ChannelManager.getChannel() != null) {
+            VoiceAppLogger.error(TAG, "Channel is not null" + ChannelManager.getChannel());
+            // Instead of using MethodChannel, send the event via EventChannel
+            if (plugin != null) {
+                VoiceAppLogger.debug(TAG, "plugin is not null " + plugin);
+                plugin.sendEvent(MethodChannelInvokeMethod.ON_DESTROY_MEDIA_SESSION, null);
+            }
+        } else {
+            VoiceAppLogger.error(TAG, "Channel is null. Unable to invoke method.");
+        }
     }
 
     @Override
