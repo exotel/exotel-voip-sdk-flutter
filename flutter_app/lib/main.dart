@@ -1,18 +1,15 @@
 import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
-import 'package:flutter_app/exotelSDK/ExotelVoiceClient.dart';
-
+import 'package:exotel_plugin/ExotelSDKClient.dart';
 import 'Utils/ApplicationUtils.dart';
 import 'package:flutter/material.dart';
 import 'UI/login_page.dart';
 import 'UI/home_page.dart';
-import 'exotelSDK/ExotelSDKClient.dart';
 import 'UI/call_page.dart';
 import 'callStates/connected.dart';
 import 'callStates/ringing.dart';
 import 'callStates/dtmf_page.dart';
 import 'callStates/incoming.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'exotelSDK/ExotelVoiceClientFactory.dart';
 import 'firebase_options.dart';
 import 'Service/PushNotificationService.dart';
 import 'package:provider/provider.dart';
@@ -28,29 +25,39 @@ void main() async {
   ));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    ExotelSDKClient.initializePlugin(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    ExotelVoiceClient exotelVoiceClient = ExotelVoiceClientFactory.getExotelVoiceClient();
     var mApplicationUtil = ApplicationUtils.getInstance(context);
-    mApplicationUtil.setupLocalNotification();
-    exotelVoiceClient.setExotelSDKCallback(mApplicationUtil);
-    exotelVoiceClient.registerPlatformChannel();
+    ExotelSDKClient.setCallback(mApplicationUtil);
+    initializeNotifications();
     PushNotificationService pushNotificationService = PushNotificationService.getInstance();
     pushNotificationService.initialize();
-
     return MaterialApp(
       navigatorKey: navigatorKey,
       initialRoute: '/',
       routes: {
+        '/login': (context) => LoginPage(),
         '/home': (context) => HomePage(),
         '/call': (context) => CallPage(),
         '/ringing': (context) => Ringing(),
         '/connected': (context) => Connected(),
         '/incoming': (context) => Incoming(),
         '/dtmf': (context) => DtmfPage(),
+
       },
       debugShowCheckedModeBanner: false,
       title: ' Exotel Sample App',
@@ -67,14 +74,7 @@ class MyApp extends StatelessWidget {
               return Text('Error: ${snapshot.error}');
             } else {
               mApplicationUtil.requestPermissions(); // Request permissions at app launch
-              return (snapshot.data ?? false) ? const HomePage() : LoginPage(
-                onLoggedin: (userId, password, accountSid, hostname) {
-                  Navigator.pushReplacementNamed(
-                    context,
-                    '/home',
-                  );
-                },
-              );
+              return (snapshot.data ?? false) ? const HomePage() : LoginPage();
             }
           }
         },
