@@ -371,7 +371,9 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   @override
-  void onDestroyMediaSession() {}
+  void onDestroyMediaSession() {
+    print("in onDestroyMediaSession");
+  }
 
   @override
   void onInitializationFailure(String message) {

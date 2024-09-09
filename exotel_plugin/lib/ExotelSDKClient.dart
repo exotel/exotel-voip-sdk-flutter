@@ -333,6 +333,9 @@ class ExotelSDKClient implements ExotelVoiceClient {
         var version = call.arguments['version'];
         _mCallBack?..onVersionDetails(version);
         break;
+      case "on-destroy-media-session":
+        _mCallBack?.onDestroyMediaSession();
+        break;
       case 'receiveMessage':
         print('Received message: ${call.arguments}');
         break;
@@ -410,6 +413,9 @@ class ExotelSDKClient implements ExotelVoiceClient {
         case "on-version-details":
           String? version = eventData['version'];
           _mCallBack?.onVersionDetails(version!);
+          break;
+        case "on-destroy-media-session":
+          _mCallBack?.onDestroyMediaSession();
           break;
         default:
           print("No event handler found for $eventName");
