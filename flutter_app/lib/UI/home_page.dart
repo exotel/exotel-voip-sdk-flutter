@@ -13,7 +13,6 @@ import '../firebase_options.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -22,12 +21,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
-
   @override
   void initState() {
     super.initState();
-
   }
 
   @override
@@ -35,7 +31,8 @@ class _HomePageState extends State<HomePage> {
     var mApplicationUtil = ApplicationUtils.getInstance(context);
     return FutureBuilder<SharedPreferences>(
       future: SharedPreferences.getInstance(),
-      builder: (BuildContext context, AsyncSnapshot<SharedPreferences> snapshot) {
+      builder:
+          (BuildContext context, AsyncSnapshot<SharedPreferences> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return CircularProgressIndicator();
         } else {
@@ -43,12 +40,16 @@ class _HomePageState extends State<HomePage> {
             return Text('Error: ${snapshot.error}');
           } else {
             final prefs = snapshot.data;
-            final String? userId =  prefs?.getString(ApplicationSharedPreferenceData.USER_NAME.toString());
-            final String? displayName = prefs?.getString(ApplicationSharedPreferenceData.DISPLAY_NAME.toString());
-            final String? accountSid = prefs?.getString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
-            final String? hostname = prefs?.getString(ApplicationSharedPreferenceData.APP_HOSTNAME.toString());
-            final String? password = prefs?.getString(ApplicationSharedPreferenceData.PASSWORD.toString());
-
+            final String? userId = prefs?.getString(
+                ApplicationSharedPreferenceData.USER_NAME.toString());
+            final String? displayName = prefs?.getString(
+                ApplicationSharedPreferenceData.DISPLAY_NAME.toString());
+            final String? accountSid = prefs?.getString(
+                ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
+            final String? hostname = prefs?.getString(
+                ApplicationSharedPreferenceData.APP_HOSTNAME.toString());
+            final String? password = prefs?.getString(
+                ApplicationSharedPreferenceData.PASSWORD.toString());
 
             // Future<String?> getStatus() async{
             //   String? status;
@@ -59,7 +60,8 @@ class _HomePageState extends State<HomePage> {
               String? status = await mApplicationUtil.mStatus;
               if (status == null) {
                 // If mStatus is not ready, invoke the initialization method
-                mApplicationUtil.login(userId!, password!, accountSid!, hostname!);
+                mApplicationUtil.login(
+                    userId!, password!, accountSid!, hostname!);
                 // After initialization, get the status again
                 status = await mApplicationUtil.mStatus;
               }
@@ -69,22 +71,21 @@ class _HomePageState extends State<HomePage> {
             Future<void> showVersionDialog() async {
               String? version = await mApplicationUtil.mVersion;
               showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text('SDK Details'),
-                    content: Text('$version'),
-                    actions: <Widget>[
-                      TextButton(
-                        child: Text('OK'),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  );
-                }
-               );
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('SDK Details'),
+                      content: Text('$version'),
+                      actions: <Widget>[
+                        TextButton(
+                          child: Text('OK'),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  });
             }
 
             void showDropdownDialog(BuildContext context) {
@@ -101,12 +102,15 @@ class _HomePageState extends State<HomePage> {
                         content: SingleChildScrollView(
                           child: ConstrainedBox(
                             constraints: BoxConstraints(
-                              minHeight: MediaQuery.of(context).size.height * 0.2, // 20% of screen height
-                              minWidth: MediaQuery.of(context).size.width * 0.5, // 50% of screen width
+                              minHeight: MediaQuery.of(context).size.height *
+                                  0.2, // 20% of screen height
+                              minWidth: MediaQuery.of(context).size.width *
+                                  0.5, // 50% of screen width
                             ),
                             child: Column(
                               children: <Widget>[
-                                Text('Rating:'), // Heading for the first dropdown
+                                Text(
+                                    'Rating:'), // Heading for the first dropdown
                                 DropdownButton<int?>(
                                   value: dropdownValue1,
                                   onChanged: (int? newValue) {
@@ -114,16 +118,24 @@ class _HomePageState extends State<HomePage> {
                                       dropdownValue1 = newValue;
                                     });
                                   },
-                                  items: <int?>[1, 2, 3, 4, 5]
-                                      .map<DropdownMenuItem<int?>>((int? value) {
+                                  items: <int?>[
+                                    1,
+                                    2,
+                                    3,
+                                    4,
+                                    5
+                                  ].map<DropdownMenuItem<int?>>((int? value) {
                                     return DropdownMenuItem<int?>(
                                       value: value,
                                       child: Text('${value ?? 3}'),
                                     );
                                   }).toList(),
                                 ),
-                                SizedBox(height: MediaQuery.of(context).size.height * 0.03), // 3% of screen height
-                                Text('Issue:'), // Heading for the second dropdown
+                                SizedBox(
+                                    height: MediaQuery.of(context).size.height *
+                                        0.03), // 3% of screen height
+                                Text(
+                                    'Issue:'), // Heading for the second dropdown
                                 DropdownButton<String?>(
                                   value: dropdownValue2,
                                   onChanged: (String? newValue) {
@@ -138,7 +150,8 @@ class _HomePageState extends State<HomePage> {
                                     "HIGH_LATENCY",
                                     "CHOPPY_AUDIO",
                                     "BACKGROUND_NOISE"
-                                  ].map<DropdownMenuItem<String?>>((String? value) {
+                                  ].map<DropdownMenuItem<String?>>(
+                                      (String? value) {
                                     return DropdownMenuItem<String?>(
                                       value: value,
                                       child: Text(value ?? "NO_ISSUE"),
@@ -159,7 +172,8 @@ class _HomePageState extends State<HomePage> {
                           TextButton(
                             child: Text('OK'),
                             onPressed: () {
-                              mApplicationUtil.postFeedback(dropdownValue1, dropdownValue2);
+                              mApplicationUtil.postFeedback(
+                                  dropdownValue1, dropdownValue2);
                               Navigator.of(context).pop();
                             },
                           ),
@@ -177,7 +191,8 @@ class _HomePageState extends State<HomePage> {
                 builder: (BuildContext context) {
                   return AlertDialog(
                     title: Text('Account Details'),
-                    content: Text('Subscriber Name: $userId \n \n Account SID: $accountSid \n \n Base URL: $hostname'),
+                    content: Text(
+                        'Subscriber Name: $userId \n \n Account SID: $accountSid \n \n Base URL: $hostname'),
                     actions: <Widget>[
                       TextButton(
                         child: Text('OK'),
@@ -216,10 +231,13 @@ class _HomePageState extends State<HomePage> {
                           final Duration day = Duration(days: 1);
                           final int uploadLogNumDays = 7;
                           final DateTime endDate = DateTime.now();
-                          final DateTime startDate = endDate.subtract(day * uploadLogNumDays);
-                          print('User input: $description, startDate: $startDate, endDate: $endDate');
+                          final DateTime startDate =
+                              endDate.subtract(day * uploadLogNumDays);
+                          print(
+                              'User input: $description, startDate: $startDate, endDate: $endDate');
                           try {
-                            mApplicationUtil.uploadLogs(startDate, endDate, description);
+                            mApplicationUtil.uploadLogs(
+                                startDate, endDate, description);
                           } catch (e) {
                             mApplicationUtil.showToast("Upload Error");
                           }
@@ -251,19 +269,25 @@ class _HomePageState extends State<HomePage> {
                                 style: TextStyle(color: Colors.white),
                               ),
                               PopupMenuButton<String>(
-                                icon: const Icon(Icons.more_vert, color: Colors.white),
+                                icon: const Icon(Icons.more_vert,
+                                    color: Colors.white),
                                 onSelected: (String result) async {
                                   switch (result) {
                                     case 'Button 1':
-                                    // Handle Button 1 press
+                                      // Handle Button 1 press
                                       mApplicationUtil.stop();
-                                      SharedPreferences prefs = await SharedPreferences.getInstance();
-                                      await prefs.setBool(ApplicationSharedPreferenceData.IS_LOGGED_IN.toString(), false);
+                                      SharedPreferences prefs =
+                                          await SharedPreferences.getInstance();
+                                      await prefs.setBool(
+                                          ApplicationSharedPreferenceData
+                                              .IS_LOGGED_IN
+                                              .toString(),
+                                          false);
                                       mApplicationUtil.navigateToLogin();
                                       print('Button 1 pressed');
                                       break;
                                     case 'Button 2':
-                                    // Handle Button 2 press
+                                      // Handle Button 2 press
                                       showReportProblem(context);
                                       print('Button 2 pressed');
                                       break;
@@ -272,7 +296,7 @@ class _HomePageState extends State<HomePage> {
                                       print('Button 3 pressed');
                                       break;
                                     case 'Button 4':
-                                    // Handle Button 4 press
+                                      // Handle Button 4 press
                                       showDropdownDialog(context);
                                       print('Button 4 pressed');
                                       break;
@@ -282,7 +306,8 @@ class _HomePageState extends State<HomePage> {
                                       break;
                                   }
                                 },
-                                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                itemBuilder: (BuildContext context) =>
+                                    <PopupMenuEntry<String>>[
                                   const PopupMenuItem<String>(
                                     value: 'Button 1',
                                     child: Text('Logout'),
@@ -309,7 +334,9 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.005), // 1.5% of screen height
+                          padding: EdgeInsets.only(
+                              bottom: MediaQuery.of(context).size.height *
+                                  0.005), // 1.5% of screen height
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
@@ -319,14 +346,19 @@ class _HomePageState extends State<HomePage> {
                               ),
                               FutureBuilder<String?>(
                                 future: getStatus(),
-                                builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
-                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                builder: (BuildContext context,
+                                    AsyncSnapshot<String?> snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
                                     return CircularProgressIndicator();
                                   } else {
-                                    String status = snapshot.data ?? "In progress";
+                                    String status =
+                                        snapshot.data ?? "In progress";
                                     return Text(
                                       '$status',
-                                      style: status == "Ready" ? TextStyle(color: Color(0xFF47FF00)) : TextStyle(color: Colors.red),
+                                      style: status == "Ready"
+                                          ? TextStyle(color: Color(0xFF47FF00))
+                                          : TextStyle(color: Colors.red),
                                     );
                                   }
                                 },
@@ -338,18 +370,27 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   bottom: const TabBar(
-                    indicatorColor: Colors.white, // Color of the line under the selected tab
+                    indicatorColor: Colors
+                        .white, // Color of the line under the selected tab
                     labelColor: Colors.white, // Color of the selected tab text
-                    unselectedLabelColor: Colors.grey, // Color of the unselected tab text
+                    unselectedLabelColor:
+                        Colors.grey, // Color of the unselected tab text
                     tabs: [
-                      Tab(child: Text('Dial', style: TextStyle(fontSize: 18.0))), // Set your desired font size
-                      Tab(child: Text('Contacts', style: TextStyle(fontSize: 18.0))),
-                      Tab(child: Text('Recent Calls', style: TextStyle(fontSize: 15.0))),
+                      Tab(
+                          child: Text('Dial',
+                              style: TextStyle(
+                                  fontSize:
+                                      18.0))), // Set your desired font size
+                      Tab(
+                          child: Text('Contacts',
+                              style: TextStyle(fontSize: 18.0))),
+                      Tab(
+                          child: Text('Recent Calls',
+                              style: TextStyle(fontSize: 15.0))),
                     ],
                   ),
                   backgroundColor: const Color(0xFF0800AF),
                   toolbarHeight: 90, // Adjust the value as needed
-
                 ),
                 body: TabBarView(
                   children: [
@@ -365,7 +406,6 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
-
 }
 
 //dial tab content
@@ -375,15 +415,19 @@ class DialTabContent extends StatefulWidget {
 }
 
 class _DialTabContentState extends State<DialTabContent> {
-  TextEditingController dialNumberController = TextEditingController(text: "8123674275");
+  TextEditingController dialNumberController =
+      TextEditingController(text: "8123674275");
 
   @override
   Widget build(BuildContext context) {
     var mApplicationUtil = ApplicationUtils.getInstance(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 0), // Added horizontal and vertical padding
-      child: SingleChildScrollView( // Wrap the Column with SingleChildScrollView
+      padding: const EdgeInsets.symmetric(
+          horizontal: 25.0,
+          vertical: 0), // Added horizontal and vertical padding
+      child: SingleChildScrollView(
+        // Wrap the Column with SingleChildScrollView
         child: Column(
           children: [
             Column(
@@ -397,11 +441,13 @@ class _DialTabContentState extends State<DialTabContent> {
                   controller: dialNumberController,
                   decoration: InputDecoration(
                     labelText: 'Enter Number',
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20.0, vertical: 10.0),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5),
                       borderSide: const BorderSide(
-                        color: Color(0xFF0800AF), // Set the border color to blue
+                        color:
+                            Color(0xFF0800AF), // Set the border color to blue
                         width: 2.0, // Set the border width
                       ),
                     ),
@@ -415,12 +461,12 @@ class _DialTabContentState extends State<DialTabContent> {
                       String dialTo = dialNumberController.text;
                       navigatorKey.currentState!.pushNamedAndRemoveUntil(
                         '/ringing',
-                            (Route<dynamic> route) => false,
+                        (Route<dynamic> route) => false,
                         arguments: {'state': "Connecting...."},
                       );
                       print("Navigating to /ringing with state: Connecting...");
                       mApplicationUtil.setDialTo(dialTo);
-                      mApplicationUtil.makeIPCall(dialTo,"test:1234");
+                      mApplicationUtil.makeIPCall(dialTo, "test:1234");
                     },
                     child: ClipOval(
                       child: Image.asset(
@@ -440,8 +486,6 @@ class _DialTabContentState extends State<DialTabContent> {
     );
   }
 }
-
-
 
 class ContactsTabContent extends StatefulWidget {
   const ContactsTabContent({Key? key}) : super(key: key);
@@ -490,7 +534,8 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
       });
       // Store the contacts in shared preferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('contacts', jsonEncode(contacts.map((contact) => contact.toJson()).toList()));
+      await prefs.setString('contacts',
+          jsonEncode(contacts.map((contact) => contact.toJson()).toList()));
     } catch (error) {
       // Handle error
       print('Error: $error');
@@ -510,7 +555,9 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
     for (var response in responses) {
       final String group = response['data']['group'];
       final List<dynamic> contactsJson = response['data']['contacts'];
-      contacts.addAll(contactsJson.map<Contact>((json) => Contact.fromJson(json, group)).toList());
+      contacts.addAll(contactsJson
+          .map<Contact>((json) => Contact.fromJson(json, group))
+          .toList());
     }
     return contacts;
   }
@@ -556,13 +603,15 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
                 borderSide: const BorderSide(
                   color: Color(0xFF0800AF), // Set the border color to blue
                   width: 2.0, // Set the border width
-                ),              ),
+                ),
+              ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10.0),
                 borderSide: const BorderSide(
                   color: Color(0xFF0800AF), // Set the border color to blue
                   width: 2.0, // Set the border width
-                ),              ),
+                ),
+              ),
             ),
             onChanged: (value) {
               setState(() {}); // Trigger rebuild to update filteredContacts
@@ -572,61 +621,66 @@ class _ContactsTabContentState extends State<ContactsTabContent> {
         Expanded(
           child: groupedContacts.isEmpty
               ? Center(
-            child: Text(
-              "No contacts available",
-              style: TextStyle(fontSize: 18, color: Colors.grey),
-            ),
-          )
+                  child: Text(
+                    "No contacts available",
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                )
               : ListView.builder(
-            itemCount: groupedContacts.keys.length,
-            itemBuilder: (context, index) {
-              var group = groupedContacts.keys.elementAt(index);
-              var contacts = groupedContacts[group]!;
-              var filteredContacts = contacts.where((contact) {
-                final String query = searchController.text.toLowerCase();
-                return contact.name.toLowerCase().contains(query);
-              }).toList();
+                  itemCount: groupedContacts.keys.length,
+                  itemBuilder: (context, index) {
+                    var group = groupedContacts.keys.elementAt(index);
+                    var contacts = groupedContacts[group]!;
+                    var filteredContacts = contacts.where((contact) {
+                      final String query = searchController.text.toLowerCase();
+                      return contact.name.toLowerCase().contains(query);
+                    }).toList();
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-                child: Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  elevation: 3.0,
-                  child: ExpansionTile(
-                    title: Text(
-                      group,
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-                    ),
-                    children: filteredContacts.map<Widget>((contact) {
-                      return ListTile(
-                        title: Text(contact.name, style: TextStyle(fontWeight: FontWeight.w500)),
-                        subtitle: Text('Number: ${contact.number}'),
-                        trailing: GestureDetector(
-                          onTap: () {
-                            String dialTo = contact.number;
-                            print("DialTo is:  $dialTo");
-                            mApplicationUtil.setDialTo(dialTo);
-                            mApplicationUtil.makeIPCall(dialTo, "");
-                            print("Calling ${contact.name}");
-                          },
-                          child: ClipOval(
-                            child: Image.asset(
-                              'assets/call_icon.PNG', // Replace with your icon path
-                              width: 45.0, // Set your desired width
-                              height: 45.0, // Set your desired height
-                              fit: BoxFit.cover,
-                            ),
-                          ),
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 4.0, horizontal: 8.0),
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
                         ),
-                      );
-                    }).toList(),
-                  ),
+                        elevation: 3.0,
+                        child: ExpansionTile(
+                          title: Text(
+                            group,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black),
+                          ),
+                          children: filteredContacts.map<Widget>((contact) {
+                            return ListTile(
+                              title: Text(contact.name,
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w500)),
+                              subtitle: Text('Number: ${contact.number}'),
+                              trailing: GestureDetector(
+                                onTap: () {
+                                  String dialTo = contact.number;
+                                  print("DialTo is:  $dialTo");
+                                  mApplicationUtil.setDialTo(dialTo);
+                                  mApplicationUtil.makeIPCall(dialTo, "");
+                                  print("Calling ${contact.name}");
+                                },
+                                child: ClipOval(
+                                  child: Image.asset(
+                                    'assets/call_icon.PNG', // Replace with your icon path
+                                    width: 45.0, // Set your desired width
+                                    height: 45.0, // Set your desired height
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
         ),
       ],
     );
@@ -649,15 +703,11 @@ class Contact {
   }
 
   Map<String, dynamic> toJson() => {
-    'contact_name': name,
-    'contact_number': number,
-    'group': group,
-  };
+        'contact_name': name,
+        'contact_number': number,
+        'group': group,
+      };
 }
-
-
-
-
 
 class RecentCallsTabContent extends StatefulWidget {
   @override
@@ -680,7 +730,8 @@ class _RecentCallsTabContentState extends State<RecentCallsTabContent> {
                 color: call.isIncoming ? Colors.green : Colors.blue,
               ),
               title: Text(call.number),
-              subtitle: Text('Status: ${call.isIncoming ? 'Incoming' : 'Outgoing'}, Time: ${call.timeFormatted}'),
+              subtitle: Text(
+                  'Status: ${call.isIncoming ? 'Incoming' : 'Outgoing'}, Time: ${call.timeFormatted}'),
               trailing: GestureDetector(
                 onTap: () {
                   String dialTo = call.number;
@@ -737,6 +788,7 @@ class Call {
     );
   }
 }
+
 class CallList extends ChangeNotifier {
   List<Call> _recentCalls = [];
 
@@ -752,7 +804,8 @@ class CallList extends ChangeNotifier {
     final String? recentCallsJson = prefs.getString('recentCalls');
     if (recentCallsJson != null) {
       final List<dynamic> recentCallsList = jsonDecode(recentCallsJson);
-      _recentCalls = recentCallsList.map((callJson) => Call.fromJson(callJson)).toList();
+      _recentCalls =
+          recentCallsList.map((callJson) => Call.fromJson(callJson)).toList();
       notifyListeners();
     }
   }
@@ -765,7 +818,8 @@ class CallList extends ChangeNotifier {
 
   Future<void> saveRecentCalls() async {
     final prefs = await SharedPreferences.getInstance();
-    final String recentCallsJson = jsonEncode(_recentCalls.map((call) => call.toJson()).toList());
+    final String recentCallsJson =
+        jsonEncode(_recentCalls.map((call) => call.toJson()).toList());
     await prefs.setString('recentCalls', recentCallsJson);
   }
 }

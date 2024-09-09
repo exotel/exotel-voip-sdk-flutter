@@ -1,7 +1,7 @@
-JETIX=../jetix generate-sdk
 PWD=$(shell pwd)
 EXOTEL_SDK_PATH := $(PWD)/exotel-voice-sdk
-EXOTEL_SDK_VERSION := 1.0.44
+get_latest_version_cmd := 	curl --silent https://github.com/exotel/exotel-voip-sdk-android/releases | grep -o '\/tag\/.*' | awk -F'[<>]' '{print $$2}' | head -n 1
+EXOTEL_SDK_VERSION := $(shell $(get_latest_version_cmd))
 GIT_URL := https://github.com/exotel/exotel-voip-sdk-android/releases/download/$(EXOTEL_SDK_VERSION)/exotel-voice-$(EXOTEL_SDK_VERSION)-release.aar
 EXOTEL_SDK_FILE := exotel-voice-$(EXOTEL_SDK_VERSION)-release.aar
 
