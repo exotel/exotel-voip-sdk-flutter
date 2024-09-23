@@ -371,7 +371,10 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   @override
-  void onDestroyMediaSession() {}
+  void onDestroyMediaSession() {
+    print('in onDestroyMediaSession, stopping sdk ');
+    stop();
+  }
 
   @override
   void onInitializationFailure(String message) {
@@ -678,6 +681,7 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   void stop() {
+    print('in stop function flutter app');
     ExotelSDKClient().stop();
   }
 
