@@ -680,6 +680,7 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   void stop() {
+    print('in stop function flutter app');
     ExotelSDKClient().stop();
   }
 
