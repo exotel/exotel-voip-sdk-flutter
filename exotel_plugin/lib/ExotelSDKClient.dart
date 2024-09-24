@@ -339,6 +339,8 @@ class ExotelSDKClient implements ExotelVoiceClient {
       case 'receiveMessage':
         print('Received message: ${call.arguments}');
         break;
+      case 'on-destroy-media-session':
+        _mCallBack?..onDestroyMediaSession();
       default:
         print("No Method Handler found for ${call.method}");
         break;
