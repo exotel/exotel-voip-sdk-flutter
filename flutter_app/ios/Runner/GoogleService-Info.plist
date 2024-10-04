@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>ANDROID_CLIENT_ID</key>
+    <string>1030927669521-h0rpd7h1lrkhbl78jnmg4obt8j5r8co4.apps.googleusercontent.com</string>
+    <key>API_KEY</key>
+    <string>AIzaSyC079uir1m8ChXKnb3na0BHRYGAzvKupnk</string>
+    <key>GCM_SENDER_ID</key>
+    <string>1030927669521</string>
+    <key>PLIST_VERSION</key>
+    <string>1</string>
+    <key>BUNDLE_ID</key>
+    <string>com.exotel.flutterApp</string>
+    <key>PROJECT_ID</key>
+    <string>voice-app-sample</string>
+    <key>STORAGE_BUCKET</key>
+    <string>voice-app-sample.appspot.com</string>
+    <key>IS_ADS_ENABLED</key>
+    <false></false>
+    <key>IS_ANALYTICS_ENABLED</key>
+    <false></false>
+    <key>IS_APPINVITE_ENABLED</key>
+    <true></true>
+    <key>IS_GCM_ENABLED</key>
+    <true></true>
+    <key>IS_SIGNIN_ENABLED</key>
+    <true></true>
+    <key>GOOGLE_APP_ID</key>
+    <string>1:1030927669521:ios:fdc264a242238c857154b0</string>
+</dict>
+</plist>

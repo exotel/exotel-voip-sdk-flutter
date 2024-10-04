@@ -25,4 +25,5 @@ class MethodChannelInvokeMethod {
     static var ON_VERSION_DETAILS = "on-version-details";
     static var ON_LOG = "on-log";
     static var ON_DESTROY_MEDIA_SESSION = "on-destroy-media-session";
+    static var ON_DETACH_ENGINE = "on-detach-engine";
 }

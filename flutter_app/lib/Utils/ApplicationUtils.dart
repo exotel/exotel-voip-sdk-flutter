@@ -376,6 +376,12 @@ class ApplicationUtils implements ExotelSDKCallback {
   }
 
   @override
+  void onDetachEngine() {
+    print('in onDetachEngine, hanging up ');
+    hangup();
+  }
+
+  @override
   void onInitializationFailure(String message) {
     stopLoadingDialog();
     showToast(message);
@@ -532,6 +538,24 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   void makeIPCall(String dialTo, String message) {
     makeCall("sip:${dialTo}", message);
+  }
+
+  Future<void> reinitialize() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    String? sdkHostName = sharedPreferences
+        .getString(ApplicationSharedPreferenceData.SDK_HOSTNAME.toString());
+    String? subscriberToken = sharedPreferences
+        .getString(ApplicationSharedPreferenceData.SUBSCRIBER_TOKEN.toString());
+    String? mSubscriberName = sharedPreferences
+        .getString(ApplicationSharedPreferenceData.USER_NAME.toString());
+    String? mDisplayName = sharedPreferences
+        .getString(ApplicationSharedPreferenceData.DISPLAY_NAME.toString());
+    String? mAccountSid = sharedPreferences
+        .getString(ApplicationSharedPreferenceData.ACCOUNT_SID.toString());
+
+    ExotelSDKClient()
+        .initialize(sdkHostName!, mSubscriberName!, mDisplayName!,
+        mAccountSid!, subscriberToken!);
   }
 
   Future<void> makeCall(String dialTo, String message) async {
