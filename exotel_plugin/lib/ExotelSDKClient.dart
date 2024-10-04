@@ -341,6 +341,8 @@ class ExotelSDKClient implements ExotelVoiceClient {
         break;
       case 'on-destroy-media-session':
         _mCallBack?..onDestroyMediaSession();
+      case 'on-detach-engine':
+        _mCallBack?..onDetachEngine();
       default:
         print("No Method Handler found for ${call.method}");
         break;

@@ -6,8 +6,32 @@ public class ExotelPlugin: NSObject, FlutterPlugin {
     private let TAG = "ExotelPlugin"
     var methodDelegate: ExotelSDKChannel?
     public static var methodChannel: FlutterMethodChannel!
+    var backgroundTask: UIBackgroundTaskIdentifier = .invalid
 
-    // Registering the plugin
+    override init() {
+        super.init()
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appDidEnterBackground),
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appWillTerminate),
+            name: UIApplication.willTerminateNotification,
+            object: nil
+        )
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        VoiceAppLogger.debug(TAG: TAG, message: "in deinit")
+//        methodDelegate?.onDetach()
+    }
+
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "exotel/ios_plugin", binaryMessenger: registrar.messenger())
         
@@ -21,19 +45,25 @@ public class ExotelPlugin: NSObject, FlutterPlugin {
         sdkChannel.setMethodChannel(ios_channel: channel) // Set the method channel on the SDK delegate
     }
 
-    // Function to return the method channel
+    
     public static func getChannel() -> FlutterMethodChannel {
         return methodChannel
     }
 
-    // Handling method calls from Flutter
+    
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         methodDelegate?.handleMethodCall(call, result: result)
     }
     
-    // Cleanup resources if needed (e.g., method channels) when the plugin is deallocated
-    deinit {
-        VoiceAppLogger.debug(TAG: TAG, message: "in deinit")
+    @objc private func appDidEnterBackground() {
+        VoiceAppLogger.debug(TAG: TAG, message: "App entered background")
 //        methodDelegate?.stop()
     }
+
+    @objc private func appWillTerminate() {
+        VoiceAppLogger.debug(TAG: TAG, message: "Performing tasks before termination.")
+//        ExotelPlugin.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_DETACH_ENGINE, arguments: nil)
+//        methodDelegate?.hangup()
+    }
+
 }
