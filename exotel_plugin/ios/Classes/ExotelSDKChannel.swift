@@ -421,6 +421,13 @@ class ExotelSDKChannel {
         ]
         return response;
     }
+    
+    func onDetach() {
+        VoiceAppLogger.debug(TAG: TAG, message: "in func onDetach")
+//        DispatchQueue.main.async {
+//            ExotelPlugin.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_DETACH_ENGINE, arguments: nil)
+//        }
+    }
 }
     
 extension ExotelSDKChannel: ExotelVoiceClientEventListener {
@@ -485,6 +492,8 @@ extension ExotelSDKChannel: ExotelVoiceClientEventListener {
         }
         
     }
+    
+    func onInitializationDelay() {}
     
     func onUploadLogFailure(error: any ExotelVoice.ExotelVoiceError) {
         VoiceAppLogger.info(TAG: self.TAG, message: "in \(#function)")
