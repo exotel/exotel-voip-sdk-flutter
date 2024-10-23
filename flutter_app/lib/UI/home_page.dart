@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
 import 'dart:convert';
 import 'package:exotel_plugin/ExotelSDKCallback.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'login_page.dart';
 import '../main.dart';
 import 'call_page.dart';
@@ -416,7 +417,7 @@ class DialTabContent extends StatefulWidget {
 
 class _DialTabContentState extends State<DialTabContent> {
   TextEditingController dialNumberController =
-      TextEditingController(text: "8123674275");
+      TextEditingController(text: "");
 
   @override
   Widget build(BuildContext context) {
@@ -458,15 +459,28 @@ class _DialTabContentState extends State<DialTabContent> {
                   padding: const EdgeInsets.only(top: 30.0, bottom: 12.0),
                   child: GestureDetector(
                     onTap: () {
-                      String dialTo = dialNumberController.text;
-                      navigatorKey.currentState!.pushNamedAndRemoveUntil(
-                        '/ringing',
-                        (Route<dynamic> route) => false,
-                        arguments: {'state': "Connecting...."},
-                      );
-                      print("Navigating to /ringing with state: Connecting...");
-                      mApplicationUtil.setDialTo(dialTo);
-                      mApplicationUtil.makeIPCall(dialTo, "test:1234");
+                      String dialTo = dialNumberController.text.trim().replaceAll(' ', '');
+                      if (dialTo == mApplicationUtil.mSubscriberName) {
+                        Fluttertoast.showToast(
+                          msg: "You cannot dial to yourself.",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.black,
+                          textColor: Colors.white,
+                          fontSize: 16.0,
+                        );
+                      } else {
+                        navigatorKey.currentState!.pushNamedAndRemoveUntil(
+                          '/ringing',
+                              (Route<dynamic> route) => false,
+                          arguments: {'state': "Connecting...."},
+                        );
+                        print(
+                            "Navigating to /ringing with state: Connecting...");
+                        mApplicationUtil.setDialTo(dialTo);
+                        mApplicationUtil.makeIPCall(dialTo, "test:1234");
+                      }
                     },
                     child: ClipOval(
                       child: Image.asset(
