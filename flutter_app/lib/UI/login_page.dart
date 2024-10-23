@@ -15,10 +15,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  TextEditingController userIdController = TextEditingController(text: ''); //adding text for temporary purpose
+  TextEditingController userIdController = TextEditingController(text: '');
   TextEditingController passwordController = TextEditingController(text: '');
   TextEditingController displayNameController = TextEditingController(text: '');
-  TextEditingController accountSidController = TextEditingController(text: 'exotel1810');
+  TextEditingController accountSidController = TextEditingController(text: 'exotel675');
   TextEditingController hostnameController = TextEditingController(text: "https://bellatrix.apac-sg.exotel.in/v1");
   bool showAdvancedSettings = false;
   bool _obscurePassword = true;
@@ -43,22 +43,6 @@ class _LoginPageState extends State<LoginPage> {
     hostnameController.dispose();
     super.dispose();
   }
-
-  // void logInButton() async{
-  //   log("login button function start");
-  //   String response = "";
-  //   try {
-  //     // [sdk-initialization-flow] send message from flutter to android for exotel client SDK initialization
-  //     final String value = await FlutterChannelHandler.logIn();
-  //     //loading UI
-  //     response = value;
-  //     log(response);
-  //   } catch (e) {
-  //     response = "Failed to Invoke: '${e.toString()}'.";
-  //     log(response);
-  //   }
-  //
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -279,9 +263,9 @@ class _LoginPageState extends State<LoginPage> {
                   width: MediaQuery.of(context).size.width * 0.4, // 40% of screen width
                   child: ElevatedButton(
                     onPressed: () async {
-                      String userId = userIdController.text;
+                      String userId = userIdController.text.trim().replaceAll(' ', '');
                       String password = passwordController.text;
-                      String? displayName = displayNameController.text;
+                      String? displayName = displayNameController.text.trim().replaceAll(' ', '');
                       if (displayName == null || displayName.isEmpty) {
                         displayName = userIdController.text;
                       }
