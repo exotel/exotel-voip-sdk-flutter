@@ -116,6 +116,7 @@ class ExotelSDKClient implements ExotelVoiceClient {
   @override
   Future<void> stop() async{
     print("going to stop SDK ");
+    // await Future.delayed(Duration(seconds: 2)); // Adjust the delay duration as needed
     _channel?.invokeMethod(MethodChannelInvokeMethod.STOP);
   }
 
