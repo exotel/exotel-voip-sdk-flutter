@@ -35,6 +35,7 @@ class PushNotificationService {
       print("getting apns token");
       String? apnsToken = await _fcm?.getAPNSToken();
       print("apnsToken : ${apnsToken}");
+      return apnsToken;
     }
     String? token = await _fcm?.getToken();
     print('Token: $token');
