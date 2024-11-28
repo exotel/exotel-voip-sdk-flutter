@@ -63,8 +63,7 @@ class ExotelSDKChannel {
                 VoiceAppLogger.debug(TAG: self.TAG, message: "mSubsriberToken : \(self.mSubsriberToken!)")
                 VoiceAppLogger.debug(TAG: self.TAG, message: "mDisplayName : \(self.mDisplayName!)")
                 
-                let subcriberToken = self.createJSON(from: self.mSubsriberToken!)
-                self.initialize(hostname: self.mSDKHostName!, subscriberName: self.mUserName!, accountSid: self.mAccountSid!, subscriberToken: self.jsonToString(json: subcriberToken), displayName: self.mDisplayName!)
+                self.initialize(hostname: self.mSDKHostName!, subscriberName: self.mUserName!, accountSid: self.mAccountSid!, subscriberToken: self.mSubsriberToken!, displayName: self.mDisplayName!)
                 
             case "reset":
                 self.reset()
@@ -164,37 +163,7 @@ class ExotelSDKChannel {
             return
        
     }
-    
-    func createJSON(from jsonString: String) -> [String: String] {
-        var jsonObj: [String: String] = [:]
-        let trimmedString = jsonString.trimmingCharacters(in: .init(charactersIn: "{}"))
-        let keyValuePairs = trimmedString.split(separator: ",")
-        
-        for pair in keyValuePairs {
-            let components = pair.split(separator: ":", maxSplits: 1)
-            
-            if components.count == 2 {
-                let key = components[0].trimmingCharacters(in: .whitespaces)
-                let value = components[1].trimmingCharacters(in: .whitespaces).trimmingCharacters(in: .init(charactersIn: "\"'"))
-                
-                jsonObj[String(key)] = String(value)
-            }
-        }
-        return jsonObj
-    }
-    
-    func jsonToString(json:[String:Any]) -> String {
-        do {
-            let dataFromJson =  try JSONSerialization.data(withJSONObject: json, options:.prettyPrinted) // first of all convert json to the data
-            let convertedString = String(data: dataFromJson, encoding:.utf8) // the data will be converted to the string
-            debugPrint(convertedString ?? "defaultvalue")
-            return convertedString!
-        } catch let myJSONError {
-            debugPrint(myJSONError)
-        }
-        return String()
-    }
-    
+
     func initialize(hostname: String, subscriberName: String, accountSid: String, subscriberToken: String, displayName: String) {
         DispatchQueue.main.async {
             

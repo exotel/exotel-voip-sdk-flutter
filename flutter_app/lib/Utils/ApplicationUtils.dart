@@ -204,7 +204,8 @@ class ApplicationUtils implements ExotelSDKCallback {
         // Successful POST request, handle the response here
         final responseData = jsonDecode(response.body);
         print("Got response body for login : ${responseData}");
-        String subscriberToken = responseData['subscriber_token'].toString();
+        String subscriberToken = jsonEncode(responseData['subscriber_token']);
+        print("Subscriber Token is $subscriberToken");
         String sdkHostName = responseData['host_name'];
         String exophone = responseData['exophone'];
         mDisplayName = responseData['contact_display_name'];
