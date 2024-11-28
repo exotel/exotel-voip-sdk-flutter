@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.0.9] 28-11-2024
+- [VST-894] integrated plugin, with subscriber token fix for ios
+
 ## [1.0.9] 09-07-2024
 
 #### Changed
