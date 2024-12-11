@@ -370,8 +370,15 @@ class ExotelSDKClient implements ExotelVoiceClient {
           _mCallBack?.onInitializationSuccess();
           break;
         case 'on-initialization-failure':
-          String? message = eventData['message'];
-          _mCallBack?.onInitializationFailure(message!);
+          String? message = eventData != null && eventData is Map && eventData.containsKey('message')
+              ? eventData['message']
+              : null; // Assign null if message doesn't exist
+          if (message != null) {
+            _mCallBack?.onInitializationFailure(message); // Use message directly if not null
+          } else {
+            print('Initialization failed but no message provided in eventData: $eventData');
+            _mCallBack?.onInitializationFailure('Unknown error occurred'); // Fallback message
+          }
           break;
         case "on-deinitialized":
           String? message = eventData['data'];
