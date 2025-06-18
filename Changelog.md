@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.0.11] 18-06-2025
+- [VST-1030](https://exotel.atlassian.net/browse/VST-1030): removed microphone service to fix crash
+
 ## [1.0.10] 28-11-2024
 - [VST-907] integrated plugin, with Handle Permission Denial Callback fix
 
