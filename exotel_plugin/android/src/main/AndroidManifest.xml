@@ -50,7 +50,7 @@
     <service android:name="com.exotel.voice_plugin.ExotelTranslatorService"
         android:enabled="true"
         android:exported="true"
-        android:foregroundServiceType="microphone|phoneCall"/>
+        android:foregroundServiceType="phoneCall"/>
     <!--
 Don't delete the meta-data below.
          This is used by the Flutter tool to generate GeneratedPluginRegistrant.java
