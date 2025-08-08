@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
 import 'dart:convert';
 import 'package:exotel_plugin/ExotelSDKCallback.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'login_page.dart';
 import '../main.dart';
 import 'call_page.dart';
 import '../Utils/ApplicationUtils.dart';
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:toastification/toastification.dart';
 import '../firebase_options.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -461,14 +461,12 @@ class _DialTabContentState extends State<DialTabContent> {
                     onTap: () {
                       String dialTo = dialNumberController.text.trim().replaceAll(' ', '');
                       if (dialTo == mApplicationUtil.mSubscriberName) {
-                        Fluttertoast.showToast(
-                          msg: "You cannot dial to yourself.",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.BOTTOM,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.black,
-                          textColor: Colors.white,
-                          fontSize: 16.0,
+                        toastification.show(
+                          title: Text("You cannot dial to yourself."),
+                          type: ToastificationType.warning,
+                          style: ToastificationStyle.fillColored,
+                          autoCloseDuration: const Duration(seconds: 2),
+                          alignment: Alignment.bottomCenter,
                         );
                       } else {
                         navigatorKey.currentState!.pushNamedAndRemoveUntil(

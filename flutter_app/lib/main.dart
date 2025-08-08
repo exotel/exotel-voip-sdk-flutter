@@ -15,6 +15,7 @@ import 'Service/PushNotificationService.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:toastification/toastification.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
@@ -48,38 +49,40 @@ class _MyAppState extends State<MyApp> {
     initializeNotifications();
     PushNotificationService pushNotificationService = PushNotificationService.getInstance();
     pushNotificationService.initialize();
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      initialRoute: '/',
-      routes: {
-        '/login': (context) => LoginPage(),
-        '/home': (context) => HomePage(),
-        '/call': (context) => CallPage(),
-        '/ringing': (context) => Ringing(),
-        '/connected': (context) => Connected(),
-        '/incoming': (context) => Incoming(),
-        '/dtmf': (context) => DtmfPage(),
+    return ToastificationWrapper(
+      child: MaterialApp(
+        navigatorKey: navigatorKey,
+        initialRoute: '/',
+        routes: {
+          '/login': (context) => LoginPage(),
+          '/home': (context) => HomePage(),
+          '/call': (context) => CallPage(),
+          '/ringing': (context) => Ringing(),
+          '/connected': (context) => Connected(),
+          '/incoming': (context) => Incoming(),
+          '/dtmf': (context) => DtmfPage(),
 
-      },
-      debugShowCheckedModeBanner: false,
-      title: ' Exotel Sample App',
-      theme: ThemeData(
-        // Your theme data
-      ),
-      home: FutureBuilder<bool>(
-        future: checkIfUserIsLoggedIn(),
-        builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator(); // Show loading spinner while waiting for future to complete
-          } else {
-            if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}');
-            } else {
-              mApplicationUtil.requestPermissions(); // Request permissions at app launch
-              return (snapshot.data ?? false) ? const HomePage() : LoginPage();
-            }
-          }
         },
+        debugShowCheckedModeBanner: false,
+        title: ' Exotel Sample App',
+        theme: ThemeData(
+          // Your theme data
+        ),
+        home: FutureBuilder<bool>(
+          future: checkIfUserIsLoggedIn(),
+          builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator(); // Show loading spinner while waiting for future to complete
+            } else {
+              if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else {
+                mApplicationUtil.requestPermissions(); // Request permissions at app launch
+                return (snapshot.data ?? false) ? const HomePage() : LoginPage();
+              }
+            }
+          },
+        ),
       ),
     );
   }
