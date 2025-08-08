@@ -1,6 +1,8 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [1.0.12] 18-06-2025
+- [VST-1068](https://exotel.atlassian.net/browse/VST-1068): Fix the crash causing by Boot_Start broadcast listener for stating the foreground service
 
 ## [1.0.11] 18-06-2025
 - [VST-1030](https://exotel.atlassian.net/browse/VST-1030): removed microphone service to fix crash
