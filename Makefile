@@ -17,3 +17,7 @@ generate-sdk: clean android-deps ios-deps
 	cp -r flutter_app/lib/exotelSDK ./SDK/flutter-sdk/lib/
 	cd SDK && tar -czvf flutter-sdk-v${SDK_VERSION}.tar.gz ./flutter-sdk/
 	rm -rf SDK/flutter-sdk
+
+exotel-plugin:
+	tar -czvf Plugin/flutter-sdk-plugin-${SDK_VERSION}.tar.gz ./exotel_plugin
+
