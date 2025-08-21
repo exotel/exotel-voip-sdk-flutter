@@ -14,7 +14,7 @@ import 'package:flutter_app/Utils/ApplicationSharedPreferenceData.dart';
 import 'package:exotel_plugin/ExotelSDKCallback.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:toastification/toastification.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import 'package:flutter_app/main.dart';
@@ -338,7 +338,10 @@ class ApplicationUtils implements ExotelSDKCallback {
   // }
 
   void showToast(String message) {
-    Fluttertoast.showToast(msg: message);
+    toastification.show(
+      title: Text(message),
+      autoCloseDuration: const Duration(seconds: 3),
+    );
   }
 
   void setDialTo(String dialTo) {
