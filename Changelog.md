@@ -1,7 +1,10 @@
 # Changelog
 
+## [1.0.12] 18-06-2025
+- [VST-1068](https://exotel.atlassian.net/browse/VST-1068): Fix the crash causing by Boot_Start broadcast listener for stating the foreground service
+
 ## [1.0.11] 18-06-2025
-- [VST-1030](https://exotel.atlassian.net/browse/VST-1030): removed microphone service to fix crash
+- [VST-1068](https://exotel.atlassian.net/browse/VST-1068): removed microphone service to fix crash
 
 ## [1.0.10] 28-11-2024
 - [VST-907] integrated plugin, with Handle Permission Denial Callback fix
