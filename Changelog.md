@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.0.13] 09-09-2025
+- [VST-1087](https://exotel.atlassian.net/browse/VST-1087): fixed s3 log upload.
+
 ## [1.0.12] 18-06-2025
 - [VST-1068](https://exotel.atlassian.net/browse/VST-1068): Fix the crash causing by Boot_Start broadcast listener for stating the foreground service
 
