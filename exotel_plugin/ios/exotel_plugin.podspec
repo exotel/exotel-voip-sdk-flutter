@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'exotel_plugin'
-  s.version          = '1.0.12'
+  s.version          = '1.0.13'
   s.summary          = 'A new Flutter plugin project.'
   s.description      = <<-DESC
 A new Flutter plugin project.
