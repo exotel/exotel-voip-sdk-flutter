@@ -179,7 +179,12 @@ class ExotelSDKChannel {
             self.callController?.setCallListener(callListener: self)
             
             VoiceAppLogger.debug(TAG: self.TAG, message: "Returning from exotel voice client init")
-        }
+            
+            // Manually trigger initialization success since the new xcframework doesnt call it automatically
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                VoiceAppLogger.info(TAG: self.TAG, message: "Manually triggering initialization success for new xcframework")
+                ExotelPlugin.getChannel().invokeMethod(MethodChannelInvokeMethod.ON_INITIALIZATION_SUCCESS, arguments: nil)
+            }        }
     }
     
     func reset(){
@@ -362,18 +367,23 @@ class ExotelSDKChannel {
     func convertToDate(dateString: String) throws -> Date {
         let dateFormatter = DateFormatter()
 
-        // Set the date format of the input string
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        // Handle fractional seconds (S up to 9 digits)
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
 
-        // Convert the string to a Date object
         if let date = dateFormatter.date(from: dateString) {
             print("Date object:", date)
             return date
         } else {
-            throw NSError(domain: Bundle.main.bundleIdentifier ?? "com.exotel.voiceflutterapp" , code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid input provided"])
+            throw NSError(
+                domain: Bundle.main.bundleIdentifier ?? "com.exotel.voiceflutterapp",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Invalid input provided"]
+            )
         }
     }
-    
+
     func relaySessionData(payload: [String: String]) throws -> Bool {
         if nil != exotelVoiceClient {
             let isRelayed:Bool? = try exotelVoiceClient?.relaySessionData(payload: payload)
