@@ -6,3 +6,4 @@ Download latest flutter plugin sdk from [Plugin directory](./Plugin)
 
 ## Exotel Voice Flutter SDK Integration Guide  
 File: [Exotel Flutter SDK Integration Guide.pdf](Exotel%20Flutter%20SDK%20Integration%20Guide.pdf)
+Documentation: https://docs.exotel.com/voice-apis/client-flutter-sdk
