@@ -44,7 +44,7 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'YOUR_FIREBASE_API_KEY',
+    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace with your own from flutterfire configure
     appId: 'YOUR_WEB_APP_ID',
     messagingSenderId: 'YOUR_PROJECT_NUMBER',
     projectId: 'YOUR_PROJECT_ID',
@@ -54,7 +54,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_FIREBASE_API_KEY',
+    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace with your own from flutterfire configure
     appId: 'YOUR_ANDROID_APP_ID',
     messagingSenderId: 'YOUR_PROJECT_NUMBER',
     projectId: 'YOUR_PROJECT_ID',
@@ -62,7 +62,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR_FIREBASE_API_KEY',
+    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace with your own from flutterfire configure
     appId: 'YOUR_IOS_APP_ID',
     messagingSenderId: 'YOUR_PROJECT_NUMBER',
     projectId: 'YOUR_PROJECT_ID',
@@ -72,7 +72,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'YOUR_FIREBASE_API_KEY',
+    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace with your own from flutterfire configure
     appId: 'YOUR_MACOS_APP_ID',
     messagingSenderId: 'YOUR_PROJECT_NUMBER',
     projectId: 'YOUR_PROJECT_ID',
