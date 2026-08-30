@@ -1,0 +1,10 @@
+
+# VST-2003: never commit real Firebase / Google service configs
+**/google-services.json
+**/GoogleService-Info.plist
+!**/google-services.json.sample
+!**/GoogleService-Info.plist.sample
+
+# VST-2003: no compiled sample APKs in git
+APK/
+*.apk

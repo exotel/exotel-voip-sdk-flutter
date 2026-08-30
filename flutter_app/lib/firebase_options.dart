@@ -44,7 +44,7 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDMa9QdZdpQNqcMprhAXLIK_GJbD4Fu71o',
+    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace with your own from flutterfire configure
     appId: '1:1030927669521:web:aa081bf4ea51505e7154b0',
     messagingSenderId: '1030927669521',
     projectId: 'voice-app-sample',
@@ -54,7 +54,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBpbajdR8DTJNClJKPQDooCjCf4NszPGSQ',
+    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace with your own from flutterfire configure
     appId: '1:1030927669521:android:b661376b510d854a7154b0',
     messagingSenderId: '1030927669521',
     projectId: 'voice-app-sample',
@@ -62,7 +62,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyC079uir1m8ChXKnb3na0BHRYGAzvKupnk',
+    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace with your own from flutterfire configure
     appId: '1:1030927669521:ios:aa6bb0778249b08e7154b0',
     messagingSenderId: '1030927669521',
     projectId: 'voice-app-sample',
@@ -72,7 +72,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyC079uir1m8ChXKnb3na0BHRYGAzvKupnk',
+    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace with your own from flutterfire configure
     appId: '1:1030927669521:ios:184cc4dc2683c00d7154b0',
     messagingSenderId: '1030927669521',
     projectId: 'voice-app-sample',
