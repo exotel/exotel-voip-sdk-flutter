@@ -3,30 +3,30 @@
 <plist version="1.0">
 <dict>
     <key>ANDROID_CLIENT_ID</key>
-    <string>1030927669521-h0rpd7h1lrkhbl78jnmg4obt8j5r8co4.apps.googleusercontent.com</string>
+    <string>YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com</string>
     <key>API_KEY</key>
     <string>YOUR_FIREBASE_API_KEY</string>
     <key>GCM_SENDER_ID</key>
-    <string>1030927669521</string>
+    <string>YOUR_GCM_SENDER_ID</string>
     <key>PLIST_VERSION</key>
     <string>1</string>
     <key>BUNDLE_ID</key>
-    <string>com.exotel.flutterApp</string>
+    <string>YOUR_BUNDLE_ID</string>
     <key>PROJECT_ID</key>
-    <string>voice-app-sample</string>
+    <string>YOUR_PROJECT_ID</string>
     <key>STORAGE_BUCKET</key>
-    <string>voice-app-sample.appspot.com</string>
+    <string>YOUR_PROJECT_ID.appspot.com</string>
     <key>IS_ADS_ENABLED</key>
     <false></false>
     <key>IS_ANALYTICS_ENABLED</key>
     <false></false>
     <key>IS_APPINVITE_ENABLED</key>
-    <true></true>
+    <false></false>
     <key>IS_GCM_ENABLED</key>
     <true></true>
     <key>IS_SIGNIN_ENABLED</key>
     <true></true>
     <key>GOOGLE_APP_ID</key>
-    <string>1:1030927669521:ios:fdc264a242238c857154b0</string>
+    <string>YOUR_GOOGLE_APP_ID</string>
 </dict>
 </plist>

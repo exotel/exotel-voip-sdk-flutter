@@ -44,40 +44,40 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace with your own from flutterfire configure
-    appId: '1:1030927669521:web:aa081bf4ea51505e7154b0',
-    messagingSenderId: '1030927669521',
-    projectId: 'voice-app-sample',
-    authDomain: 'voice-app-sample.firebaseapp.com',
-    storageBucket: 'voice-app-sample.appspot.com',
-    measurementId: 'G-75EVRVJ4WZ',
+    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace via flutterfire configure
+    appId: 'YOUR_WEB_APP_ID',
+    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
+    projectId: 'YOUR_PROJECT_ID',
+    authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
+    storageBucket: 'YOUR_PROJECT_ID.appspot.com',
+    measurementId: 'YOUR_MEASUREMENT_ID',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace with your own from flutterfire configure
-    appId: '1:1030927669521:android:b661376b510d854a7154b0',
-    messagingSenderId: '1030927669521',
-    projectId: 'voice-app-sample',
-    storageBucket: 'voice-app-sample.appspot.com',
+    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace via flutterfire configure
+    appId: 'YOUR_ANDROID_APP_ID',
+    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
+    projectId: 'YOUR_PROJECT_ID',
+    storageBucket: 'YOUR_PROJECT_ID.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace with your own from flutterfire configure
-    appId: '1:1030927669521:ios:aa6bb0778249b08e7154b0',
-    messagingSenderId: '1030927669521',
-    projectId: 'voice-app-sample',
-    storageBucket: 'voice-app-sample.appspot.com',
-    androidClientId: '1030927669521-h0rpd7h1lrkhbl78jnmg4obt8j5r8co4.apps.googleusercontent.com',
-    iosBundleId: 'com.example.flutterApp',
+    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace via flutterfire configure
+    appId: 'YOUR_IOS_APP_ID',
+    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
+    projectId: 'YOUR_PROJECT_ID',
+    storageBucket: 'YOUR_PROJECT_ID.appspot.com',
+    androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com',
+    iosBundleId: 'YOUR_IOS_BUNDLE_ID',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace with your own from flutterfire configure
-    appId: '1:1030927669521:ios:184cc4dc2683c00d7154b0',
-    messagingSenderId: '1030927669521',
-    projectId: 'voice-app-sample',
-    storageBucket: 'voice-app-sample.appspot.com',
-    androidClientId: '1030927669521-h0rpd7h1lrkhbl78jnmg4obt8j5r8co4.apps.googleusercontent.com',
-    iosBundleId: 'com.example.flutterApp.RunnerTests',
+    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace via flutterfire configure
+    appId: 'YOUR_MACOS_APP_ID',
+    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
+    projectId: 'YOUR_PROJECT_ID',
+    storageBucket: 'YOUR_PROJECT_ID.appspot.com',
+    androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com',
+    iosBundleId: 'YOUR_MACOS_BUNDLE_ID',
   );
 }
