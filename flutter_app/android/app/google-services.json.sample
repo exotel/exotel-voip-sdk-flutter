@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "YOUR_ANDROID_APP_ID",
+        "mobilesdk_app_id": "YOUR_MOBILESDK_APP_ID",
         "android_client_info": {
-          "package_name": "com.app.rmconnect"
+          "package_name": "YOUR_PACKAGE_NAME"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.app.rmconnect",
+            "package_name": "YOUR_PACKAGE_NAME",
             "certificate_hash": "YOUR_CERTIFICATE_HASH"
           }
         },
@@ -42,115 +42,7 @@
               "client_id": "YOUR_IOS_CLIENT_ID.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.exotel.voicesample"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "YOUR_ANDROID_APP_ID",
-        "android_client_info": {
-          "package_name": "com.exotel.myvoiceapp"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "YOUR_FIREBASE_API_KEY"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "YOUR_IOS_CLIENT_ID.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.exotel.voicesample"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "YOUR_ANDROID_APP_ID",
-        "android_client_info": {
-          "package_name": "com.exotel.voice_sample"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "YOUR_FIREBASE_API_KEY"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "YOUR_IOS_CLIENT_ID.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.exotel.voicesample"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "YOUR_ANDROID_APP_ID",
-        "android_client_info": {
-          "package_name": "com.exotel.voicesample"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "YOUR_FIREBASE_API_KEY"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "YOUR_IOS_CLIENT_ID.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.exotel.voicesample"
+                "bundle_id": "YOUR_BUNDLE_ID"
               }
             }
           ]

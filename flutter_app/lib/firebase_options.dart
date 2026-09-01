@@ -44,9 +44,9 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace with your own from flutterfire configure
+    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace via flutterfire configure
     appId: 'YOUR_WEB_APP_ID',
-    messagingSenderId: 'YOUR_PROJECT_NUMBER',
+    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
     projectId: 'YOUR_PROJECT_ID',
     authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
     storageBucket: 'YOUR_PROJECT_ID.appspot.com',
@@ -54,30 +54,30 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace with your own from flutterfire configure
+    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace via flutterfire configure
     appId: 'YOUR_ANDROID_APP_ID',
-    messagingSenderId: 'YOUR_PROJECT_NUMBER',
+    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
     projectId: 'YOUR_PROJECT_ID',
     storageBucket: 'YOUR_PROJECT_ID.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace with your own from flutterfire configure
+    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace via flutterfire configure
     appId: 'YOUR_IOS_APP_ID',
-    messagingSenderId: 'YOUR_PROJECT_NUMBER',
+    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
     projectId: 'YOUR_PROJECT_ID',
     storageBucket: 'YOUR_PROJECT_ID.appspot.com',
     androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com',
-    iosBundleId: 'com.example.flutterApp',
+    iosBundleId: 'YOUR_IOS_BUNDLE_ID',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace with your own from flutterfire configure
+    apiKey: 'YOUR_FIREBASE_API_KEY', // VST-2003: replace via flutterfire configure
     appId: 'YOUR_MACOS_APP_ID',
-    messagingSenderId: 'YOUR_PROJECT_NUMBER',
+    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
     projectId: 'YOUR_PROJECT_ID',
     storageBucket: 'YOUR_PROJECT_ID.appspot.com',
     androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com',
-    iosBundleId: 'com.example.flutterApp.RunnerTests',
+    iosBundleId: 'YOUR_MACOS_BUNDLE_ID',
   );
 }
