@@ -110,13 +110,19 @@ class ExotelSDKClient implements ExotelVoiceClient {
   @override
    Future<void> reset() async{
     print("going to reset SDK ");
-    _channel?.invokeMethod(MethodChannelInvokeMethod.RESET);
+    await _channel?.invokeMethod(MethodChannelInvokeMethod.RESET);
+  }
+
+  @override
+  Future<void> forceReset() async{
+    print("going to force reset SDK ");
+    await _channel?.invokeMethod(MethodChannelInvokeMethod.FORCE_RESET);
   }
 
   @override
   Future<void> stop() async{
     print("going to stop SDK ");
-    _channel?.invokeMethod(MethodChannelInvokeMethod.STOP);
+    await _channel?.invokeMethod(MethodChannelInvokeMethod.STOP);
   }
 
   @override

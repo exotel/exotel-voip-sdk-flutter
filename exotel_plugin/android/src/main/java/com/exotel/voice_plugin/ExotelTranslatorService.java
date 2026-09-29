@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
 
 
 import com.exotel.voice.Call;
@@ -112,6 +113,11 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
     private Call mPreviousCall;
     private Handler uiThreadHandler = new Handler(Looper.getMainLooper());
     private static final int NOTIFICATION_ID = 7;
+    private static final String EXTRA_CALL_ACTIVE = "call_active";
+    /* The instance Android runs as the service. Method calls arrive on a different instance
+       created by ExotelPlugin, so foreground updates must go through this one */
+    private static ExotelTranslatorService sRunningService;
+    private static boolean sCallActive = false;
 
     private Context context;
     private Activity activity;
@@ -150,6 +156,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         VoiceAppLogger.setContext(getApplicationContext());
         VoiceAppLogger.debug(TAG, "Entry: onCreate VoiceAppService");
         super.onCreate();
+        sRunningService = this;
         createNotificationChannel();
         VoiceAppLogger.debug(TAG, "Exit: onCreate VoiceAppService");
     }
@@ -207,11 +214,12 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
     public int onStartCommand(Intent intent, int flags, int startId) {
         VoiceAppLogger.debug(TAG, "in onStartCommand of ExotelTranslatorService");
 
-        // Create the notification for the foreground service
-        Notification notification = createNotification();
+        if (null != intent && intent.hasExtra(EXTRA_CALL_ACTIVE)) {
+            sCallActive = intent.getBooleanExtra(EXTRA_CALL_ACTIVE, false);
+        }
 
         // Move startForeground to the very beginning
-        startForeground(NOTIFICATION_ID, notification);
+        applyForegroundServiceType(sCallActive);
 
         // Ensure permissions are granted
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE_MICROPHONE) == PackageManager.PERMISSION_GRANTED &&
@@ -229,7 +237,65 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (sRunningService == this) {
+            sRunningService = null;
+        }
         VoiceAppLogger.debug(TAG, "Background service destroyed");
+    }
+
+    /* Runs on the service Android started. Android 11+ only keeps the mic working in the
+       background if a foreground service of the app has the microphone type, and Android 14
+       only allows adding that type while the app is in the foreground (dial / answer) */
+    private void applyForegroundServiceType(boolean callActive) {
+        Notification notification = createNotification();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, notification);
+            return;
+        }
+        int type = ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL;
+        if (callActive && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED) {
+            type |= ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+        }
+        try {
+            ServiceCompat.startForeground(this, NOTIFICATION_ID, notification, type);
+            VoiceAppLogger.debug(TAG, "Foreground service type set to: " + type);
+        } catch (Exception e) {
+            // e.g. SecurityException when the microphone type is requested from the background
+            VoiceAppLogger.error(TAG, "Unable to set foreground service type " + type + ": " + e.getMessage()
+                    + ", falling back to phoneCall");
+            try {
+                ServiceCompat.startForeground(this, NOTIFICATION_ID, notification,
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL);
+            } catch (Exception fallbackError) {
+                VoiceAppLogger.error(TAG, "Unable to start foreground service: " + fallbackError.getMessage());
+            }
+        }
+    }
+
+    /* Called on the method-call instance: adds the microphone type for a call, removes it after */
+    void updateForegroundServiceType(boolean callActive) {
+        sCallActive = callActive;
+        if (null != sRunningService) {
+            uiThreadHandler.post(() -> {
+                if (null != sRunningService) {
+                    sRunningService.applyForegroundServiceType(callActive);
+                }
+            });
+            return;
+        }
+        if (!callActive || null == context) {
+            return;
+        }
+        /* Service was not started when the plugin attached (e.g. mic permission granted later) */
+        try {
+            Intent serviceIntent = new Intent(context, ExotelTranslatorService.class);
+            serviceIntent.putExtra(EXTRA_CALL_ACTIVE, true);
+            ContextCompat.startForegroundService(context, serviceIntent);
+        } catch (Exception e) {
+            VoiceAppLogger.error(TAG, "Unable to start foreground service: " + e.getMessage());
+        }
     }
 
     public void onMethodCall(MethodCall call, Result result) {
@@ -252,8 +318,9 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
                 mDisplayName = call.argument("display_name");
                 try {
                     initialize(mSDKHostName, mUserName, mAccountSid, mSubsriberToken, mDisplayName);
+                    result.success(true);
                 } catch (Exception e) {
-                    result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(), null);
+                    result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(), getErrorDetails(e));
                 }
                 break;
             case "reInitialize":
@@ -265,10 +332,28 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
                 reInitialize();
                 break;
             case "reset":
-                reset();
+                try {
+                    reset();
+                    result.success(true);
+                } catch (Exception e) {
+                    result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(), getErrorDetails(e));
+                }
+                break;
+            case "force-reset":
+                try {
+                    forceReset();
+                    result.success(true);
+                } catch (Exception e) {
+                    result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(), getErrorDetails(e));
+                }
                 break;
             case "stop":
-                stop();
+                try {
+                    stop();
+                    result.success(true);
+                } catch (Exception e) {
+                    result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(), getErrorDetails(e));
+                }
                 break;
             case "dial":
                 String dialNumber = call.argument("dialTo");
@@ -278,7 +363,8 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
                 try {
                     mCall = dial(dialNumber, contextMessage);
                 } catch (Exception e) {
-                    result.error(ErrorType.INTERNAL_ERROR.name(), "Outgoing call Failed", e);
+                    result.error(ErrorType.INTERNAL_ERROR.name(), "Outgoing call Failed", getErrorDetails(e));
+                    break;
                 }
                 if (mCall != null) {
                     result.success(true);
@@ -311,7 +397,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
                 try {
                     answer();
                 } catch (Exception e) {
-                    result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(), e);
+                    result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(), getErrorDetails(e));
                 }
                 break;
             case "send-dtmf":
@@ -324,7 +410,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
                     char digitChar = digit.charAt(0);
                     sendDtmf(digitChar);
                 } catch (Exception e) {
-                    result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(), e);
+                    result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(), getErrorDetails(e));
                 }
                 break;
             case "post-feedback":
@@ -357,7 +443,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
                     VoiceAppLogger.debug(TAG, "description = " + description);
                     uploadLogs(startDate, endDate, description);
                 } catch (Exception e) {
-                    result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(), e);
+                    result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(), getErrorDetails(e));
                 }
                 break;
             case "relay-session-data":
@@ -367,7 +453,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
                     Boolean relaySucces = relaySessionData(data);
                     result.success(relaySucces);
                 } catch (Exception e) {
-                    result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(), e);
+                    result.error(ErrorType.INTERNAL_ERROR.name(), e.getMessage(), getErrorDetails(e));
                 }
                 break;
             case "sendMessage":
@@ -398,8 +484,8 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
             try {
                 exotelVoiceClient.initialize(this.context, hostname, subscriberName, displayName, accountSid, subscriberToken);
             } catch (Exception e) {
-                VoiceAppLogger.error(TAG, "Exception in SDK initialization: " + e.getMessage());
-                throw new Exception(e.getMessage());
+                VoiceAppLogger.error(TAG, "Exception in SDK initialization: " + e);
+                throw new Exception(e.getMessage(), e);
             }
         }
         callController = exotelVoiceClient.getCallController();
@@ -441,16 +527,40 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         VoiceAppLogger.debug(TAG, "End: Reset in sample App Service");
     }
 
+    void forceReset() {
+        VoiceAppLogger.info(TAG, "Force reset sample application Service");
+        if (null == exotelVoiceClient) {
+            VoiceAppLogger.error(TAG, "SDK is not yet initialized");
+        } else {
+            exotelVoiceClient.forceReset();
+        }
+        mCall = null;
+        updateForegroundServiceType(false);
+        VoiceAppLogger.debug(TAG, "End: Force reset in sample App Service");
+    }
+
+    /* Error details must be codec-encodable, an Exception object is not */
+    private static String getErrorDetails(Exception e) {
+        Throwable root = e;
+        while (null != root.getCause() && root.getCause() != root) {
+            root = root.getCause();
+        }
+        return root.getClass().getName() + ": " + root.getMessage() + "\n" + Log.getStackTraceString(e);
+    }
+
     public Call dial(String destination, String message) throws Exception {
         Call call;
         VoiceAppLogger.debug(TAG, "In dial API in Sample Service, SDK initialized is: "
                 + exotelVoiceClient.isInitialized());
         VoiceAppLogger.debug(TAG, "Destination is: " + destination);
+        /* App is in the foreground here, so the microphone type can be added */
+        updateForegroundServiceType(true);
         try {
             call = callController.dial(destination,message);
         } catch (Exception e) {
             VoiceAppLogger.error(TAG, "Exception in dial :"+e.getMessage());
-            throw new Exception("Error in dial");
+            updateForegroundServiceType(false);
+            throw new Exception("Error in dial: " + e.getMessage(), e);
         }
         return call;
     }
@@ -513,6 +623,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
             throw new Exception(message);
         }
         try {
+            updateForegroundServiceType(true);
             mCall.answer();
         } catch (Exception e) {
             VoiceAppLogger.warn(TAG,"Error while answer : "+e.getMessage());
@@ -697,6 +808,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
     public void onCallEnded(Call call) {
         mCall = null;
         mPreviousCall = call;
+        updateForegroundServiceType(false);
 //        uiThreadHandler.post(()-> {
 //            HashMap<String, String> arguments = new HashMap<>();
 //            arguments.put("direction", call.getCallDetails().getCallDirection().toString());
