@@ -145,6 +145,8 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         this.activity = activity;
     }
 
+    private static ExotelTranslatorService androidServiceInstance;
+
     private Context getCtx() {
         return context != null ? context : getApplicationContext();
     }
@@ -154,6 +156,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         VoiceAppLogger.setContext(getApplicationContext());
         VoiceAppLogger.debug(TAG, "Entry: onCreate VoiceAppService");
         super.onCreate();
+        androidServiceInstance = this;
         createNotificationChannel();
         VoiceAppLogger.debug(TAG, "Exit: onCreate VoiceAppService");
     }
@@ -217,17 +220,23 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 
     private void startCallForeground() {
         VoiceAppLogger.debug(TAG, "Starting foreground for active call");
-        createNotificationChannel();
-        Notification notification = createNotification();
-        startForeground(NOTIFICATION_ID, notification);
+        if (androidServiceInstance != null) {
+            createNotificationChannel();
+            Notification notification = createNotification();
+            androidServiceInstance.startForeground(NOTIFICATION_ID, notification);
+        } else {
+            VoiceAppLogger.error(TAG, "Android service instance not available for foreground");
+        }
     }
 
     private void stopCallForeground() {
         VoiceAppLogger.debug(TAG, "Stopping foreground, no active call");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(Service.STOP_FOREGROUND_REMOVE);
-        } else {
-            stopForeground(true);
+        if (androidServiceInstance != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                androidServiceInstance.stopForeground(Service.STOP_FOREGROUND_REMOVE);
+            } else {
+                androidServiceInstance.stopForeground(true);
+            }
         }
     }
 
