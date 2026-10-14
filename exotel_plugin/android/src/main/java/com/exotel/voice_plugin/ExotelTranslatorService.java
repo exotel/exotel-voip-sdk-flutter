@@ -215,7 +215,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
             startForeground(NOTIFICATION_ID, notification);
         } else {
             ServiceCompat.startForeground(this, NOTIFICATION_ID, notification,
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL);
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
         }
         return START_STICKY;
     }
