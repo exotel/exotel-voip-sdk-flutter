@@ -2,6 +2,7 @@ class MethodChannelInvokeMethod {
   static final INITIALIZE = "initialize";
   static final GET_DEVICE_ID = "get-device-id";
   static final RESET = "reset";
+  static final FORCE_RESET = "force-reset";
   static final DIAL = "dial";
   static final MUTE = "mute";
   static final UNMUTE = "unmute";

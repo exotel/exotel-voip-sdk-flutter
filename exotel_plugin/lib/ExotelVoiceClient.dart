@@ -7,6 +7,9 @@ abstract class ExotelVoiceClient {
   Future<String> getDeviceId();
   Future<void> initialize(String hostname, String subsriberName, String displayName, String accountSid,String subscriberToken);
   Future<void> reset();
+  /// Resets the SDK whatever its state, ending any call in progress.
+  /// Use when reset() fails because the SDK is not in Idle state.
+  Future<void> forceReset();
   Future<void> stop();
   Future<void> dial(String dialTo, String message);
   Future<void> mute();
