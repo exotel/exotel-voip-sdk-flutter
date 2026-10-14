@@ -223,7 +223,12 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         if (androidServiceInstance != null) {
             createNotificationChannel();
             Notification notification = createNotification();
-            androidServiceInstance.startForeground(NOTIFICATION_ID, notification);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                androidServiceInstance.startForeground(NOTIFICATION_ID, notification,
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL);
+            } else {
+                androidServiceInstance.startForeground(NOTIFICATION_ID, notification);
+            }
         } else {
             VoiceAppLogger.error(TAG, "Android service instance not available for foreground");
         }
