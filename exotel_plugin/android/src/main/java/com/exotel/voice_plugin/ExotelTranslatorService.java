@@ -145,6 +145,10 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         this.activity = activity;
     }
 
+    private Context getCtx() {
+        return context != null ? context : getApplicationContext();
+    }
+
     @Override
     public void onCreate() {
         VoiceAppLogger.setContext(getApplicationContext());
@@ -158,23 +162,24 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel serviceChannel = new NotificationChannel(CHANNEL_ID,
                     "Exotel Voip Sample", NotificationManager.IMPORTANCE_DEFAULT);
-            NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            NotificationManager manager = (NotificationManager) getCtx().getSystemService(Context.NOTIFICATION_SERVICE);
             manager.createNotificationChannel(serviceChannel);
         }
     }
 
     Notification createNotification() {
-        Intent notificationIntent = new Intent(context, ExotelPlugin.class);
+        Context ctx = getCtx();
+        Intent notificationIntent = new Intent(ctx, ExotelPlugin.class);
         PendingIntent pendingIntent;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            pendingIntent = PendingIntent.getActivity(context,
+            pendingIntent = PendingIntent.getActivity(ctx,
                     0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
         } else {
-            pendingIntent = PendingIntent.getActivity(context,
+            pendingIntent = PendingIntent.getActivity(ctx,
                     0, notificationIntent, 0);
         }
 
-        Notification notification = new NotificationCompat.Builder(context, CHANNEL_ID)
+        Notification notification = new NotificationCompat.Builder(ctx, CHANNEL_ID)
                 .setContentTitle("Exotel Voice Application")
                 .setContentText("Service is running...")
 //                .setSmallIcon(R.drawable.ic_service_icon)
