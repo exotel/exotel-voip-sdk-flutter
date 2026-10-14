@@ -247,7 +247,12 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
     @Override
     public void onDestroy() {
         VoiceAppLogger.debug(TAG, "Background service destroyed");
-        makeServiceBackground();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(Service.STOP_FOREGROUND_REMOVE);
+        } else {
+            stopForeground(true);
+        }
+        androidServiceInstance = null;
         super.onDestroy();
     }
 
@@ -298,11 +303,13 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
                 try {
                     mCall = dial(dialNumber, contextMessage);
                 } catch (Exception e) {
+                    makeServiceBackground();
                     result.error(ErrorType.INTERNAL_ERROR.name(), "Outgoing call Failed", e);
                 }
                 if (mCall != null) {
                     result.success(true);
                 } else {
+                    makeServiceBackground();
                     result.error(ErrorType.INTERNAL_ERROR.name(), "Outgoing call not initiated", "call instance is null");
                 }
                 break;
@@ -750,6 +757,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         else {
             VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
         }
+        makeServiceBackground();
     }
 
     @Override
