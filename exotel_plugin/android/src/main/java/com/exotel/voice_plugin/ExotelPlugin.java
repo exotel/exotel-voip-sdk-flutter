@@ -70,7 +70,7 @@ public class ExotelPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
             exotelTranslatorService.setContext(context);
         }
         Intent serviceIntent = new Intent(context, ExotelTranslatorService.class);
-        context.startForegroundService(serviceIntent);
+        context.startService(serviceIntent);
     }
 
     @Override
@@ -84,13 +84,6 @@ public class ExotelPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
         System.out.println("ExotelPlugin onAttachedToActivity: isEngineAttached = " + isEngineAttached);
         System.out.println("eventQueue: " + eventQueue);
 
-        if (ContextCompat.checkSelfPermission(binding.getActivity(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(binding.getActivity(), Manifest.permission.FOREGROUND_SERVICE_MICROPHONE) == PackageManager.PERMISSION_GRANTED) {
-            startExotelTranslatorService();
-        } else {
-            // Handle permission not granted scenario
-            System.out.println("Permission not granted to start the service.");
-        }
         new Handler(Looper.getMainLooper()).postDelayed(() -> processEventQueue(), 5000);
     }
 

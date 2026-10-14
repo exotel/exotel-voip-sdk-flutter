@@ -207,30 +207,29 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         VoiceAppLogger.debug(TAG, "in onStartCommand of ExotelTranslatorService");
-
-        // Create the notification for the foreground service
-        Notification notification = createNotification();
-
-        // Move startForeground to the very beginning
-        startForeground(NOTIFICATION_ID, notification);
-
-        // Ensure permissions are granted
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE_MICROPHONE) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            // Continue with service operations
-        } else {
-            // Handle the case where permissions are not granted
-            VoiceAppLogger.debug(TAG, "Required permissions not granted. Stopping service.");
-            stopSelf();
-        }
-
         return START_STICKY;
+    }
+
+    private void startCallForeground() {
+        VoiceAppLogger.debug(TAG, "Starting foreground for active call");
+        createNotificationChannel();
+        Notification notification = createNotification();
+        startForeground(NOTIFICATION_ID, notification);
+    }
+
+    private void stopCallForeground() {
+        VoiceAppLogger.debug(TAG, "Stopping foreground, no active call");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(Service.STOP_FOREGROUND_REMOVE);
+        } else {
+            stopForeground(true);
+        }
     }
 
     @Override
     public void onDestroy() {
         VoiceAppLogger.debug(TAG, "Background service destroyed");
-        stopForeground(STOP_FOREGROUND_REMOVE);
+        stopCallForeground();
         super.onDestroy();
     }
 
@@ -273,6 +272,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
                 stop();
                 break;
             case "dial":
+                startCallForeground();
                 String dialNumber = call.argument("dialTo");
                 VoiceAppLogger.debug(TAG, "Dial number = " + dialNumber);
                 String contextMessage = call.argument("message");
@@ -602,6 +602,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 
     @Override
     public void onIncomingCall(Call call) {
+        startCallForeground();
         mCall = call;
         String callId = call.getCallDetails().getCallId();
         String destination = call.getCallDetails().getRemoteId();
@@ -716,7 +717,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
             VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
         }
 
-        stopForeground(STOP_FOREGROUND_REMOVE);
+        stopCallForeground();
     }
 
     @Override
