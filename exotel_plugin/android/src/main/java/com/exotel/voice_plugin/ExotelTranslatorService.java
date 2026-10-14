@@ -172,7 +172,11 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 
     Notification createNotification() {
         Context ctx = getCtx();
-        Intent notificationIntent = new Intent(ctx, ExotelPlugin.class);
+        Intent notificationIntent = ctx.getPackageManager().getLaunchIntentForPackage(ctx.getPackageName());
+        if (notificationIntent == null) {
+            notificationIntent = new Intent();
+        }
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             pendingIntent = PendingIntent.getActivity(ctx,
