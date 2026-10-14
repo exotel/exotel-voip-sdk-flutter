@@ -209,23 +209,24 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         VoiceAppLogger.debug(TAG, "in onStartCommand of ExotelTranslatorService");
+        createNotificationChannel();
+        Notification notification = createNotification();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            startForeground(NOTIFICATION_ID, notification);
+        } else {
+            ServiceCompat.startForeground(this, NOTIFICATION_ID, notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL);
+        }
         return START_STICKY;
     }
 
     private void makeServiceForeground() {
         VoiceAppLogger.debug(TAG, "Making the service as foreground");
-        ExotelTranslatorService svc = androidServiceInstance;
-        if (svc != null) {
-            svc.createNotificationChannel();
-            Notification notification = svc.createNotification();
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                svc.startForeground(NOTIFICATION_ID, notification);
-            } else {
-                ServiceCompat.startForeground(svc, NOTIFICATION_ID, notification,
-                        ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL);
-            }
+        if (context != null) {
+            Intent serviceIntent = new Intent(context, ExotelTranslatorService.class);
+            context.startForegroundService(serviceIntent);
         } else {
-            VoiceAppLogger.error(TAG, "Android service instance not available for foreground");
+            VoiceAppLogger.error(TAG, "Context not available for foreground service");
         }
     }
 
