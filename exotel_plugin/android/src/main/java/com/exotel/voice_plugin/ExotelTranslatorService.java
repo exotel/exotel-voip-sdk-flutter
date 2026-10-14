@@ -158,23 +158,23 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel serviceChannel = new NotificationChannel(CHANNEL_ID,
                     "Exotel Voip Sample", NotificationManager.IMPORTANCE_DEFAULT);
-            NotificationManager manager = getSystemService(NotificationManager.class);
+            NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             manager.createNotificationChannel(serviceChannel);
         }
     }
 
     Notification createNotification() {
-        Intent notificationIntent = new Intent(this, ExotelPlugin.class);
+        Intent notificationIntent = new Intent(context, ExotelPlugin.class);
         PendingIntent pendingIntent;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            pendingIntent = PendingIntent.getActivity(this,
+            pendingIntent = PendingIntent.getActivity(context,
                     0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
         } else {
-            pendingIntent = PendingIntent.getActivity(this,
+            pendingIntent = PendingIntent.getActivity(context,
                     0, notificationIntent, 0);
         }
 
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+        Notification notification = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setContentTitle("Exotel Voice Application")
                 .setContentText("Service is running...")
 //                .setSmallIcon(R.drawable.ic_service_icon)
