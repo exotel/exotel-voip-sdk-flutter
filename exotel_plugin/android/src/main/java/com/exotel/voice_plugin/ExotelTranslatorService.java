@@ -179,6 +179,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
                 .setContentText("Service is running...")
 //                .setSmallIcon(R.drawable.ic_service_icon)
                 .setContentIntent(pendingIntent)
+                .setOngoing(true)
                 .build();
 
         return notification;
@@ -223,13 +224,14 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
             stopSelf();
         }
 
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         VoiceAppLogger.debug(TAG, "Background service destroyed");
+        stopForeground(STOP_FOREGROUND_REMOVE);
+        super.onDestroy();
     }
 
     public void onMethodCall(MethodCall call, Result result) {
@@ -714,6 +716,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
             VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
         }
 
+        stopForeground(STOP_FOREGROUND_REMOVE);
     }
 
     @Override
