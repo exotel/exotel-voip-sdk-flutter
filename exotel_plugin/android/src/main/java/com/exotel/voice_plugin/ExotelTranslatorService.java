@@ -145,40 +145,50 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         this.activity = activity;
     }
 
+    private static ExotelTranslatorService androidServiceInstance;
+
     @Override
     public void onCreate() {
         VoiceAppLogger.setContext(getApplicationContext());
         VoiceAppLogger.debug(TAG, "Entry: onCreate VoiceAppService");
         super.onCreate();
+        androidServiceInstance = this;
         createNotificationChannel();
         VoiceAppLogger.debug(TAG, "Exit: onCreate VoiceAppService");
     }
 
     void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        Context ctx = androidServiceInstance != null ? androidServiceInstance.getApplicationContext() : context;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && ctx != null) {
             NotificationChannel serviceChannel = new NotificationChannel(CHANNEL_ID,
                     "Exotel Voip Sample", NotificationManager.IMPORTANCE_DEFAULT);
-            NotificationManager manager = getSystemService(NotificationManager.class);
+            NotificationManager manager = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
             manager.createNotificationChannel(serviceChannel);
         }
     }
 
     Notification createNotification() {
-        Intent notificationIntent = new Intent(this, ExotelPlugin.class);
+        Context ctx = androidServiceInstance != null ? androidServiceInstance.getApplicationContext() : context;
+        Intent notificationIntent = ctx.getPackageManager().getLaunchIntentForPackage(ctx.getPackageName());
+        if (notificationIntent == null) {
+            notificationIntent = new Intent();
+        }
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            pendingIntent = PendingIntent.getActivity(this,
+            pendingIntent = PendingIntent.getActivity(ctx,
                     0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
         } else {
-            pendingIntent = PendingIntent.getActivity(this,
+            pendingIntent = PendingIntent.getActivity(ctx,
                     0, notificationIntent, 0);
         }
 
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+        Notification notification = new NotificationCompat.Builder(ctx, CHANNEL_ID)
                 .setContentTitle("Exotel Voice Application")
                 .setContentText("Service is running...")
 //                .setSmallIcon(R.drawable.ic_service_icon)
                 .setContentIntent(pendingIntent)
+                .setOngoing(true)
                 .build();
 
         return notification;
@@ -196,40 +206,54 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
     }
 
 
-    public void makeServiceForeground(Notification notification) {
-        VoiceAppLogger.debug(TAG, "Making the service as foreground");
-
-        // Start the service as a foreground service
-        startForeground(NOTIFICATION_ID, notification);
-    }
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         VoiceAppLogger.debug(TAG, "in onStartCommand of ExotelTranslatorService");
-
-        // Create the notification for the foreground service
+        createNotificationChannel();
         Notification notification = createNotification();
-
-        // Move startForeground to the very beginning
-        startForeground(NOTIFICATION_ID, notification);
-
-        // Ensure permissions are granted
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE_MICROPHONE) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            // Continue with service operations
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            startForeground(NOTIFICATION_ID, notification);
         } else {
-            // Handle the case where permissions are not granted
-            VoiceAppLogger.debug(TAG, "Required permissions not granted. Stopping service.");
-            stopSelf();
+            ServiceCompat.startForeground(this, NOTIFICATION_ID, notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
         }
+        return START_STICKY;
+    }
 
-        return START_NOT_STICKY;
+    private void makeServiceForeground() {
+        VoiceAppLogger.debug(TAG, "Making the service as foreground");
+        if (context != null) {
+            Intent serviceIntent = new Intent(context, ExotelTranslatorService.class);
+            context.startForegroundService(serviceIntent);
+        } else {
+            VoiceAppLogger.error(TAG, "Context not available for foreground service");
+        }
+    }
+
+    private void makeServiceBackground() {
+        if (null == mCall) {
+            VoiceAppLogger.debug(TAG, "Removing the service from foreground");
+            ExotelTranslatorService svc = androidServiceInstance;
+            if (svc != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    svc.stopForeground(Service.STOP_FOREGROUND_REMOVE);
+                } else {
+                    svc.stopForeground(true);
+                }
+            }
+        }
     }
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         VoiceAppLogger.debug(TAG, "Background service destroyed");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(Service.STOP_FOREGROUND_REMOVE);
+        } else {
+            stopForeground(true);
+        }
+        androidServiceInstance = null;
+        super.onDestroy();
     }
 
     public void onMethodCall(MethodCall call, Result result) {
@@ -271,6 +295,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
                 stop();
                 break;
             case "dial":
+                makeServiceForeground();
                 String dialNumber = call.argument("dialTo");
                 VoiceAppLogger.debug(TAG, "Dial number = " + dialNumber);
                 String contextMessage = call.argument("message");
@@ -278,11 +303,13 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
                 try {
                     mCall = dial(dialNumber, contextMessage);
                 } catch (Exception e) {
+                    makeServiceBackground();
                     result.error(ErrorType.INTERNAL_ERROR.name(), "Outgoing call Failed", e);
                 }
                 if (mCall != null) {
                     result.success(true);
                 } else {
+                    makeServiceBackground();
                     result.error(ErrorType.INTERNAL_ERROR.name(), "Outgoing call not initiated", "call instance is null");
                 }
                 break;
@@ -600,6 +627,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
 
     @Override
     public void onIncomingCall(Call call) {
+        makeServiceForeground();
         mCall = call;
         String callId = call.getCallDetails().getCallId();
         String destination = call.getCallDetails().getRemoteId();
@@ -714,6 +742,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
             VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
         }
 
+        makeServiceBackground();
     }
 
     @Override
@@ -728,6 +757,7 @@ public class ExotelTranslatorService extends Service implements ExotelVoiceClien
         else {
             VoiceAppLogger.error(TAG, "plugin is null. Unable to invoke method.");
         }
+        makeServiceBackground();
     }
 
     @Override
