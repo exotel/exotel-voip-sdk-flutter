@@ -293,8 +293,7 @@ class ApplicationUtils implements ExotelSDKCallback {
   void navigateToRinging() {
     print("Navigating to /ringing with state: Ringing");
     // Add the call to recent calls before navigating
-    Navigator.pushNamed(
-      context!,
+    navigatorKey.currentState?.pushReplacementNamed(
       '/ringing',
       arguments: {'dialTo': mDialTo, 'state': "Ringing"},
     );

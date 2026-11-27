@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.16] 27-11-2026
+- [VST-2578](https://exotel.atlassian.net/browse/VST-2578): Android voice SDK upgraded to 1.0.73 (fixes IllegalThreadStateException from initialize() after stop() is rejected during a call).
+- Sample app: fixed null check crash when navigating to the ringing screen.
+
 ## [1.0.13] 09-09-2025
 - [VST-1087](https://exotel.atlassian.net/browse/VST-1087): fixed s3 log upload.
 
