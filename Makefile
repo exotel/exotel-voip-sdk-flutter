@@ -19,5 +19,5 @@ generate-sdk: clean android-deps ios-deps
 	rm -rf SDK/flutter-sdk
 
 exotel-plugin:
-	tar -czvf Plugin/flutter-sdk-plugin-${SDK_VERSION}.tar.gz ./exotel_plugin
+	tar --exclude='.DS_Store' --exclude='.idea' --exclude='google-services.json' --exclude='local.properties' -czvf Plugin/flutter-sdk-plugin-${SDK_VERSION}.tar.gz ./exotel_plugin
 
