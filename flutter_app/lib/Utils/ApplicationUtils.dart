@@ -257,8 +257,7 @@ class ApplicationUtils implements ExotelSDKCallback {
     } else {
       print('Context is not null');
     }
-    Navigator.pushNamedAndRemoveUntil(
-      context!,
+    navigatorKey.currentState?.pushNamedAndRemoveUntil(
       '/home',
       (route) => false,
     );
@@ -283,8 +282,7 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   void navigateToIncoming() {
     print("in navigateToIncoming");
-    Navigator.pushNamed(
-      context!,
+    navigatorKey.currentState?.pushNamed(
       '/incoming',
     );
     onCallEnd(mDestination!, true);
@@ -302,8 +300,7 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   void navigateToStart() {
     print("in navigateToStart()");
-    Navigator.pushNamedAndRemoveUntil(
-      context!,
+    navigatorKey.currentState?.pushNamedAndRemoveUntil(
       '/',
       (route) => false,
     );
