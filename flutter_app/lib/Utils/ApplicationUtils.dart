@@ -476,7 +476,9 @@ class ApplicationUtils implements ExotelSDKCallback {
     );
 
     // Access the CallList provider to add the new call
-    final callList = Provider.of<CallList>(context!, listen: false);
+    final callContext = navigatorKey.currentContext;
+    if (callContext == null) return;
+    final callList = Provider.of<CallList>(callContext, listen: false);
     callList.addCall(call);
   }
 
