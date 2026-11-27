@@ -257,8 +257,7 @@ class ApplicationUtils implements ExotelSDKCallback {
     } else {
       print('Context is not null');
     }
-    Navigator.pushNamedAndRemoveUntil(
-      context!,
+    navigatorKey.currentState?.pushNamedAndRemoveUntil(
       '/home',
       (route) => false,
     );
@@ -283,8 +282,7 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   void navigateToIncoming() {
     print("in navigateToIncoming");
-    Navigator.pushNamed(
-      context!,
+    navigatorKey.currentState?.pushNamed(
       '/incoming',
     );
     onCallEnd(mDestination!, true);
@@ -293,8 +291,7 @@ class ApplicationUtils implements ExotelSDKCallback {
   void navigateToRinging() {
     print("Navigating to /ringing with state: Ringing");
     // Add the call to recent calls before navigating
-    Navigator.pushNamed(
-      context!,
+    navigatorKey.currentState?.pushReplacementNamed(
       '/ringing',
       arguments: {'dialTo': mDialTo, 'state': "Ringing"},
     );
@@ -303,8 +300,7 @@ class ApplicationUtils implements ExotelSDKCallback {
 
   void navigateToStart() {
     print("in navigateToStart()");
-    Navigator.pushNamedAndRemoveUntil(
-      context!,
+    navigatorKey.currentState?.pushNamedAndRemoveUntil(
       '/',
       (route) => false,
     );
@@ -477,7 +473,9 @@ class ApplicationUtils implements ExotelSDKCallback {
     );
 
     // Access the CallList provider to add the new call
-    final callList = Provider.of<CallList>(context!, listen: false);
+    final callContext = navigatorKey.currentContext;
+    if (callContext == null) return;
+    final callList = Provider.of<CallList>(callContext, listen: false);
     callList.addCall(call);
   }
 
